@@ -29,11 +29,13 @@ const LoginPage = () => {
   // Handle Google OAuth2 login
   const handleGoogleLogin = () => {
     // Redirect to the backend endpoint that initiates Google OAuth2
-    window.location.href = "http://localhost:4000/api/auth/google";
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`;
+    // window.location.href = "http://localhost:4000/api/auth/google";
   };
-
+  // Handle Facebook OAuth2 login
   const handleLogin = () => {
-    window.location.href = "http://localhost:4000/api/auth/facebook";
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/facebook`;
+    // window.location.href = "http://localhost:4000/api/auth/facebook";
   };
 
   // Handle form submission

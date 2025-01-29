@@ -2,28 +2,43 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    firstname: {
       type: String,
-      required: true,
+      trim: true,
+      default: null, // Default is null if not provided by Google or Facebook
+    },
+    lastname: {
+      type: String,
+      trim: true,
+      default: null, // Default is null if not provided by Google or Facebook
+    },
+    phonenumber: {
+      type: String,
+      trim: true,
+      unique: false,
+      sparse: true, // Allows multiple `null` values and prevents duplicate key errors
+      default: null, // Default is null if not provided by Google or Facebook
     },
     profile_image: {
-      type: String, // Store image URL
+      type: String,
       default: null, // Default profile image for new users
     },
     email: {
-      type: String, // Store user email address for login
-      required: true, // Email is required
-      unique: true, // Ensure email is unique
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
     },
     googleId: {
       type: String,
-      unique: true, // Ensure Google ID is unique
-      sparse: true, // Allow multiple null values for Google users
+      unique: true,
+      sparse: true,
     },
     facebookId: {
       type: String,
-      unique: true, // Ensure Facebook ID is unique
-      sparse: true, // Allow multiple null values for Facebook users
+      unique: true,
+      sparse: true,
     },
     password: {
       type: String,
@@ -31,27 +46,27 @@ const userSchema = new mongoose.Schema(
     },
     isVerified: {
       type: Boolean,
-      default: false, // Google and Facebook users are automatically verified
+      default: false,
     },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
-      default: "approved", // Default status for Google and Facebook users
+      default: "approved",
     },
     role: {
       type: String,
       required: true,
-      enum: ["admin", "user"],
-      default: "user", // Default role for Google and Facebook users
+      enum: ["admin", "user", "subadmin"],
+      default: "user",
     },
     adminId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null, // For users without admin references
+      default: null,
     },
     joined_date: {
-      type: Date, // Store user registration date
-      default: Date.now, // Default value is current date
+      type: Date,
+      default: Date.now,
     },
     resetPasswordToken: String,
     resetPasswordExpiresAt: Date,
