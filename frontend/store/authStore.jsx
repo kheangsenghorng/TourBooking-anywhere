@@ -1,6 +1,8 @@
 import { create } from "zustand";
 
-const API_URL = "http://localhost:4000/api/auth";
+// const API_URL = "http://localhost:4000/api/auth";
+
+const API_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth`;
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -160,28 +162,28 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  signup: async (name, email, password) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await fetch(`${API_URL}/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok)
-        throw new Error(data.message || "Signup failed. Please try again.");
-      set({ user: data.user, isLoading: false, error: null });
-    } catch (error) {
-      set({ isLoading: false, error: error.message });
-      throw error;
-    }
-  },
+  // signup: async (name, email, password) => {
+  //   set({ isLoading: true, error: null });
+  //   try {
+  //     const response = await fetch(`${API_URL}/signup`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       credentials: "include",
+  //       body: JSON.stringify({
+  //         name,
+  //         email,
+  //         password,
+  //       }),
+  //     });
+  //     const data = await response.json();
+  //     if (!response.ok)
+  //       throw new Error(data.message || "Signup failed. Please try again.");
+  //     set({ user: data.user, isLoading: false, error: null });
+  //   } catch (error) {
+  //     set({ isLoading: false, error: error.message });
+  //     throw error;
+  //   }
+  // },
 
   verifyEmail: async (code) => {
     set({ isLoading: true, error: null });
@@ -258,7 +260,7 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  signup: async (email, password, name) => {
+  signup: async (firstname, lastname, phonenumber, email, password) => {
     set({ isLoading: true, error: null });
     try {
       const response = await fetch(`${API_URL}/signup`, {
@@ -267,7 +269,13 @@ export const useAuthStore = create((set, get) => ({
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({
+          firstname,
+          lastname,
+          phonenumber,
+          email,
+          password,
+        }),
       });
       const data = await response.json();
       console.log(data);
