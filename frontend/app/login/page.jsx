@@ -33,7 +33,7 @@ const LoginPage = () => {
     // window.location.href = "http://localhost:4000/api/auth/google";
   };
   // Handle Facebook OAuth2 login
-  const handleLogin = () => {
+  const handleFacebookLogin = () => {
     window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/facebook`;
     // window.location.href = "http://localhost:4000/api/auth/facebook";
   };
@@ -67,11 +67,11 @@ const LoginPage = () => {
         }
 
         // Redirect based on user role
-        if (role === "subadmin") {
+        if (role === "admin") {
           if (!id) {
             throw new Error("User ID is required for subadmin redirection");
           }
-          router.push(`/company/${id}/dashboard`);
+          router.push(`/${id}/dashboard`);
         } else {
           router.push(`/profile/${id}/topcard`);
         }
@@ -103,8 +103,8 @@ const LoginPage = () => {
           <h1 className="text-2xl font-bold mb-4 text-center">Welcome Back!</h1>
           <p className="text-sm text-center mb-6 text-gray-600">
             Don't have an account?{" "}
-            <Link href="/signup" className="text-blue-500 underline">
-              Sign up
+            <Link href="/register" className="text-blue-500 underline">
+              Register
             </Link>
           </p>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -193,10 +193,10 @@ const LoginPage = () => {
               <span>Google</span>
             </Button>
             <Button
-              className="flex-1 bg-red-600 text-white flex items-center justify-center space-x-1"
-              onClick={handleLogin}
+              className="flex-1 bg-blue-600 text-white flex items-center justify-center space-x-1"
+              onClick={handleFacebookLogin}
             >
-              <img src="/google.png" alt="Google" className="w-5 h-5" />
+              <img src="/facebook.png" alt="Facebook" className="w-10 h-10" />
               <span>Facebook</span>
             </Button>
           </div>
@@ -204,7 +204,7 @@ const LoginPage = () => {
 
         {/* Right Side: Illustration */}
         <div className="w-1/2 bg-gray-50 flex items-center justify-center">
-          <img src="/form.png" alt="Login Illustration" className="w-3/4" />
+          <img src="/image/login.jpg" alt="Login Illustration" className="w-3/4" />
         </div>
       </div>
     </div>
