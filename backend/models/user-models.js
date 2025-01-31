@@ -14,9 +14,6 @@ const userSchema = new mongoose.Schema(
     },
     phonenumber: {
       type: String,
-      trim: true,
-      unique: false,
-      sparse: true, // Allows multiple `null` values and prevents duplicate key errors
       default: null, // Default is null if not provided by Google or Facebook
     },
     profile_image: {
@@ -56,7 +53,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ["admin", "user", "subadmin"],
+      enum: ["admin", "user"],
       default: "user",
     },
     adminId: {

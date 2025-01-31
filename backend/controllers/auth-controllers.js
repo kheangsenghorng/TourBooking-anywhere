@@ -14,278 +14,7 @@ import path from "path";
 import fs from "fs";
 import axios from "axios";
 
-// Signup function
-// export const signup = async (req, res) => {
-//   const {
-//     firstname,
-//     lastname,
-//     phonenumber,
-//     email,
-//     password,
-//     adminId, // Optional for users or subadmins
-//     status: requestedStatus,
-//     role: requestedRole,
-//   } = req.body;
-
-//   // Define allowed roles and statuses
-//   const allowedRoles = ["admin", "user", "subadmin"];
-//   const allowedStatuses = ["pending", "approved", "rejected"];
-
-//   // Validate role and status
-//   const role = allowedRoles.includes(requestedRole) ? requestedRole : "user";
-//   const status = allowedStatuses.includes(requestedStatus)
-//     ? requestedStatus
-//     : "pending";
-
-//   try {
-//     // Validate required fields
-//     if (!firstname) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "First name,",
-//       });
-//     }
-//     if (!lastname) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "last name required.",
-//       });
-//     }
-//     if (!email) {
-//       return res.status(400).json({
-//         success: false,
-//         message: " email are required.",
-//       });
-//     }
-//     if (!password) {
-//       return res.status(400).json({
-//         success: false,
-//         message: ", and password are required.",
-//       });
-//     }
-
-//     // Check if the user already exists
-//     const userAlreadyExists = await User.findOne({ email });
-//     if (userAlreadyExists) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "User with this email already exists.",
-//       });
-//     }
-
-//     // Hash the password
-//     const hashedPassword = await bcrypt.hash(password, 10);
-//     const verificationToken = generateVerificationToken();
-
-//     // Validate adminId if the role is user or subadmin
-//     let admin = null;
-
-//     admin = await User.findOne({ role: "admin" });
-//     if (!admin) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Admin not found. Check the provided admin ID.",
-//       });
-//     }
-
-//     // Create a new user
-//     const newUser = new User({
-//       firstname,
-//       lastname,
-//       phonenumber,
-//       email,
-//       password: hashedPassword,
-//       role,
-//       status,
-//       adminId: admin, // Link to admin if applicable
-//       verificationToken,
-//       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-//     });
-
-//     // Save the user to the database
-//     const savedUser = await newUser.save();
-
-//     // Handle role-specific actions
-//     if (role === "admin") {
-//       console.log(`New admin created: ${savedUser.email}`);
-//       // Additional admin setup can be added here, if necessary
-//     } else if (role === "subadmin" || role === "user") {
-//       console.log(`User linked to admin: ${admin.email}`);
-//       // Optionally: Link this user to the admin's sub-users list if required
-//     }
-
-//     // Generate JWT token and set it in a cookie
-//     const token = generateJWTToken(res, savedUser._id, savedUser.role);
-
-//     // Send a verification email
-//     await sendVerificationEmail(savedUser.email, verificationToken);
-
-//     // Send the final response
-//     return res.status(201).json({
-//       success: true,
-//       message: "User created successfully. Verification email sent.",
-//       token,
-//       user: {
-//         id: savedUser._id,
-//         firstname: savedUser.firstname,
-//         lastname: savedUser.lastname,
-//         email: savedUser.email,
-//         phonenumber: savedUser.phonenumber,
-//         role: savedUser.role,
-//         status: savedUser.status,
-//         profile_image: savedUser.profile_image,
-//         joined_date: savedUser.joined_date,
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Error during signup:", error);
-
-//     // Handle duplicate key error for email or unique fields
-//     if (error.code === 11000) {
-//       const duplicateField = Object.keys(error.keyValue)[0];
-//       return res.status(400).json({
-//         success: false,
-//         message: `User with this ${duplicateField} already exists.`,
-//       });
-//     }
-
-//     // Fallback for other errors
-//     return res.status(500).json({
-//       success: false,
-//       message: "An error occurred during signup. Please try again later.",
-//     });
-//   }
-// };
-// export const signup = async (req, res) => {
-//   const {
-//     firstname,
-//     lastname,
-//     phonenumber,
-//     email,
-//     password,
-//     adminId, // Optional for users or subadmins
-//     status: requestedStatus,
-//     role: requestedRole,
-//   } = req.body;
-
-//   // Define allowed roles and statuses
-//   const allowedRoles = ["admin", "user", "subadmin"];
-//   const allowedStatuses = ["pending", "approved", "rejected"];
-
-//   // Validate role and status
-//   const role = allowedRoles.includes(requestedRole) ? requestedRole : "user";
-//   const status = allowedStatuses.includes(requestedStatus)
-//     ? requestedStatus
-//     : "pending";
-
-//   try {
-//     // Validate required fields
-
-//     if (
-//       !firstname ||
-//       !lastname ||
-//       !phonenumber ||
-//       !password ||
-//       !email ||
-//       !password
-//     ) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Name, email, and password are required.",
-//       });
-//     }
-
-//     // Check if the user already exists
-//     const userAlreadyExists = await User.findOne({ email });
-//     if (userAlreadyExists) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "User with this email already exists.",
-//       });
-//     }
-
-//     // Hash the password
-//     const hashedPassword = await bcrypt.hash(password, 10);
-//     const verificationToken = generateVerificationToken();
-
-//     // Validate adminId if the role is user or subadmin
-//     let admin = null;
-
-//     if (role === "subadmin" || role === "user") {
-//       admin = await User.findOne({ role: "admin" });
-//       if (!admin) {
-//         return res.status(404).json({
-//           success: false,
-//           message: "Admin not found. Check the provided admin ID.",
-//         });
-//       }
-//     }
-
-//     // Create a new user
-//     const newUser = new User({
-//       firstname,
-//       lastname,
-//       phonenumber,
-//       email,
-//       password: hashedPassword,
-//       role,
-//       status,
-//       adminId: admin ? admin._id : null, // Link to admin if applicable
-//       verificationToken,
-//       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-//     });
-
-//     // Save the user to the database
-//     const savedUser = await newUser.save();
-
-//     // Handle role-specific actions
-//     if (role === "admin") {
-//       console.log(`New admin created: ${savedUser.email}`);
-//     } else if (role === "subadmin" || role === "user") {
-//       console.log(`User linked to admin: ${admin.email}`);
-//     }
-
-//     // Generate JWT token and set it in a cookie
-//     const token = generateJWTToken(res, savedUser._id, savedUser.role);
-
-//     // Send a verification email
-//     await sendVerificationEmail(savedUser.email, verificationToken);
-
-//     // Send the final response
-//     return res.status(201).json({
-//       success: true,
-//       message: "User created successfully. Verification email sent.",
-//       token,
-//       user: {
-//         id: savedUser._id,
-//         name: savedUser.name,
-//         email: savedUser.email,
-//         role: savedUser.role,
-//         status: savedUser.status,
-//         profile_image: savedUser.profile_image,
-//         joined_date: savedUser.joined_date,
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Error during signup:", error);
-
-//     // Handle duplicate key error for email or unique fields
-//     if (error.code === 11000) {
-//       const duplicateField = Object.keys(error.keyValue)[0];
-//       return res.status(400).json({
-//         success: false,
-//         message: `User with this ${duplicateField} already exists.`,
-//       });
-//     }
-
-//     // Fallback for other errors
-//     return res.status(500).json({
-//       success: false,
-//       message: "An error occurred during signup. Please try again later.",
-//     });
-//   }
-// };
-
+//function to get all users
 export const signup = async (req, res) => {
   const {
     firstname,
@@ -438,7 +167,7 @@ export const verifyEmail = async (req, res) => {
     user.verificationTokenExpiresAt = undefined;
     await user.save();
 
-    await sendWelcomeEmail(user.email, user.first_name);
+    await sendWelcomeEmail(user.email, user.firstname);
 
     res.status(200).json({
       success: true,
@@ -651,7 +380,7 @@ export const deleteUser = async (req, res) => {
     });
   }
 };
-// login handle google
+
 // login handle google
 export const handleGoogle = async (req, res) => {
   try {
@@ -741,10 +470,8 @@ export const handleGoogle = async (req, res) => {
           : "pending",
         isVerified: true,
         adminId: admin ? admin._id : null,
-        verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
-        phonenumber: `GOOGLE_${userInfo.sub}`, // Unique placeholder
+        phonenumber: `NULL`, // Unique placeholder
       });
-
 
       // Save the new user to the database
       const savedUser = await newUser.save();
@@ -806,50 +533,55 @@ export const showGoogleAuth = async (req, res) => {
   return res.redirect(googleAuthUrl);
 };
 
-// function to handle facebook
-
+// Facebook Login
 export const handleFacebook = async (req, res) => {
   try {
-    const { code } = req.query;
+    const { code, error, error_description } = req.query;
 
-    if (!code) {
-      return res.status(400).json({
-        success: false,
-        message: "Authorization code is required.",
-      });
+    if (error) {
+      return res.redirect(
+        `${process.env.CLIENT_URL}/login?error=${
+          error_description || "Login cancelled"
+        }`
+      );
     }
 
-    // Step 1: Exchange the authorization code for an access token
-    const tokenResponse = await axios.get(
-      `https://graph.facebook.com/v12.0/oauth/access_token`,
+    if (!code) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Authorization code is required." });
+    }
+
+    // Exchange the authorization code for an access token
+    const { data: tokenData } = await axios.get(
+      "https://graph.facebook.com/v12.0/oauth/access_token",
       {
         params: {
           client_id: process.env.FACEBOOK_APP_ID,
           redirect_uri: process.env.FACEBOOK_REDIRECT_URI,
           client_secret: process.env.FACEBOOK_APP_SECRET,
           code,
+          grant_type: "authorization_code",
         },
       }
     );
 
-    const { access_token } = tokenResponse.data;
-
-    if (!access_token) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to retrieve access token.",
-      });
+    if (!tokenData.access_token) {
+      return res
+        .status(500)
+        .json({ success: false, message: "Failed to retrieve access token." });
     }
 
-    // Step 2: Fetch user information from Facebook
-    const userResponse = await axios.get(`https://graph.facebook.com/me`, {
-      params: {
-        access_token,
-        fields: "id,name,email,picture,first_name,last_name",
-      },
-    });
-
-    const userInfo = userResponse.data;
+    // Fetch user information from Facebook
+    const { data: userInfo } = await axios.get(
+      "https://graph.facebook.com/me",
+      {
+        params: {
+          access_token: tokenData.access_token,
+          fields: "id,name,email,picture,first_name,last_name",
+        },
+      }
+    );
 
     if (!userInfo.email || !userInfo.id) {
       return res.status(400).json({
@@ -858,19 +590,14 @@ export const handleFacebook = async (req, res) => {
       });
     }
 
-    // Step 3: Check if the user already exists
     let user = await User.findOne({ email: userInfo.email });
-
     const allowedRoles = ["admin", "user", "subadmin"];
-    const allowedStatuses = ["pending", "approved", "rejected"];
     const defaultRole = "user";
     const defaultStatus = "approved";
     let admin = null;
 
     if (!user) {
-      // If the user doesn't exist, create a new user
-
-      if (defaultRole === "user" || defaultRole === "subadmin") {
+      if (defaultRole !== "admin") {
         admin = await User.findOne({ role: "admin" });
         if (!admin) {
           return res.status(404).json({
@@ -880,36 +607,31 @@ export const handleFacebook = async (req, res) => {
         }
       }
 
-      // Create a new user
-      const newUser = new User({
-        firstname: userInfo.first_name || "FirstName", // Default if Facebook does not provide it
-        lastname: userInfo.last_name || "LastName", // Default if Facebook does not provide it
+      user = new User({
+        firstname: userInfo.first_name || "FirstName",
+        lastname: userInfo.last_name || "LastName",
         email: userInfo.email,
         facebookId: userInfo.id,
-        profile_image: userInfo.picture.data.url,
+        profile_image: userInfo.picture?.data?.url || "",
         role: allowedRoles.includes(defaultRole) ? defaultRole : "user",
-        status: allowedStatuses.includes(defaultStatus)
-          ? defaultStatus
-          : "pending",
-        isVerified: true, // Automatically verified for Facebook users
+        status: defaultStatus,
+        isVerified: true,
         adminId: admin ? admin._id : null,
-        verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
       });
 
-      const savedUser = await newUser.save();
-
-      // Redirect after successful signup
-      return res.redirect(`${process.env.CLIENT_URL}/profile/${savedUser._id}`);
-    } else {
-      // If the user exists, update their information
-      user.facebookId = userInfo.id;
-      user.profile_image = userInfo.picture.data.url;
       await user.save();
-
-      console.log(`Existing user logged in: ${user.email}`);
-
-      return res.redirect(`${process.env.CLIENT_URL}/profile/${user._id}`);
+      generateJWTToken(res, user._id, user.email, user.role);
+      return res.redirect(`${process.env.CLIENT_URL}/${user._id}`);
     }
+
+    user.facebookId = userInfo.id;
+    user.profile_image = userInfo.picture?.data?.url || user.profile_image;
+    await user.save();
+
+    console.log(`Existing user logged in: ${user.email}`);
+
+    generateJWTToken(res, user._id, user.email, user.role);
+    return res.redirect(`${process.env.CLIENT_URL}/profile/${user._id}`);
   } catch (error) {
     console.error("Error during Facebook OAuth:", error.message);
     return res.status(500).json({
@@ -920,9 +642,8 @@ export const handleFacebook = async (req, res) => {
   }
 };
 
-// function to show facebook auth
-export const showFacebookAuth = async (req, res) => {
-  const facebookAuthUrl = `https://www.facebook.com/v12.0/dialog/oauth?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${process.env.FACEBOOK_REDIRECT_URI}&scope=email,public_profile`;
+export const showFacebookAuth = (req, res) => {
+  const facebookAuthUrl = `https://www.facebook.com/v12.0/dialog/oauth?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${process.env.FACEBOOK_REDIRECT_URI}&scope=email,public_profile&state=random_string`;
 
   if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_REDIRECT_URI) {
     return res
