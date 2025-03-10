@@ -498,7 +498,7 @@ export const handleGoogle = async (req, res) => {
       // Redirect based on user role
       if (user.role === "user") {
         return res.redirect(
-          `${process.env.CLIENT_URL}/profile/${user._id}/topcard`
+          `${process.env.CLIENT_URL}/profile/${user._id}/myprofile`
         );
       } else if (user.role === "subadmin") {
         return res.redirect(
