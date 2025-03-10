@@ -1,14 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-export default function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
+export default function Navbar({ id }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // If the id is provided, we can assume the user is logged in (customize this logic as needed)
+    if (id) {
+      setIsLoggedIn(true);
+    }
+  }, [id]);
 
   const handleLogout = () => {
-    // Perform logout operations here
+    // Perform logout operations here (e.g., clear tokens, session)
     setIsLoggedIn(false);
   };
 
