@@ -204,7 +204,7 @@ const LoginPage = () => {
 
         {/* Right Side: Illustration */}
         <div className="w-1/2 bg-gray-50 flex items-center justify-center">
-          <img src="/image/login.jpg" alt="Login Illustration" className="w-3/4" />
+          <img src="/image/login1.jpg" alt="Login Illustration" className="w-3/4" />
         </div>
       </div>
     </div>

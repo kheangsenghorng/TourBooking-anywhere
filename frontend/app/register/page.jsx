@@ -196,7 +196,7 @@ const Register = () => {
         {/* Right Side: Illustration */}
         <div className="w-1/2 bg-gray-50 flex items-center justify-center">
           <img
-            src="/image/login.jpg"
+            src="/image/login1.jpg"
             alt="Sign Up Illustration"
             className="w-3/4"
           />
