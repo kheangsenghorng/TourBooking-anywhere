@@ -19,7 +19,7 @@ const Sidebar = ({ children, id }) => {
       <aside className="w-64 h-screen bg-white border-r shadow-lg overflow-y-auto fixed">
         <div className="text-center py-6 border-b">
           <Image
-            src="/image/login.jpg"
+            src="/image/logo.png"
             alt="logo"
             width={120}
             height={120}
