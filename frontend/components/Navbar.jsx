@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-export default function Navbar({ id }) {
+export default function Navbar() {
+  const { id } = useParams();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // If the id is provided, we can assume the user is logged in (customize this logic as needed)
     if (id) {
       setIsLoggedIn(true);
     }
@@ -24,17 +25,20 @@ export default function Navbar({ id }) {
       <div className="flex items-center justify-between max-w-7xl mx-auto px-4 h-full">
         {/* Logo */}
         <div className="flex items-center h-full">
-          <img
-            src="/image/logo-edit.png"
-            alt="Travel With Us"
-            className="h-[160px] w-auto object-contain"
-          />
+        <Link
+            href={id ? `/${id}/` : "/"}>
+            <img
+              src="/image/logo-edit.png"
+              alt="Travel With Us"
+              className="h-[160px] w-auto object-contain"
+            />
+          </Link>
         </div>
 
         {/* Menu Items */}
         <div className="hidden md:flex space-x-7">
           <Link
-            href="/"
+            href={id ? `/${id}/` : "/"}
             className="text-green-700 hover:text-green-900 flex items-center space-x-2"
             aria-label="Home"
           >
@@ -42,7 +46,7 @@ export default function Navbar({ id }) {
             <span>Home</span>
           </Link>
           <Link
-            href="/about"
+            href={id ? `/${id}/about` : "/about"}
             className="text-green-700 hover:text-green-900 flex items-center space-x-2"
             aria-label="About"
           >
@@ -50,7 +54,7 @@ export default function Navbar({ id }) {
             <span>About</span>
           </Link>
           <Link
-            href="/contact"
+            href={id ? `/${id}/contact` : "/contact"}
             className="text-green-700 hover:text-green-900 flex items-center space-x-2"
             aria-label="Contact"
           >
@@ -61,19 +65,19 @@ export default function Navbar({ id }) {
 
         {/* Buttons */}
         <div className="flex space-x-2">
-          <Link
-            href="#"
-            className="border-2 border-yellow-500 text-yellow-500 py-2 px-4 rounded-md hover:bg-yellow-500 hover:text-white flex items-center space-x-2"
-            aria-label="Booking"
-          >
-            <i className="fa-solid fa-b"></i>
-            <span>Booking Now</span>
-          </Link>
-
           {isLoggedIn ? (
             <>
               <Link
-                href="/profile"
+                href={`/${id}/list-tour`}
+                className="border-2 border-yellow-500 text-yellow-500 py-2 px-4 rounded-md hover:bg-yellow-500 hover:text-white flex items-center space-x-2"
+                aria-label="Booking"
+              >
+                <i className="fa-solid fa-calendar-check"></i>
+                <span>Booking Now</span>
+              </Link>
+
+              <Link
+                href={`/profile/${id}/myprofile`}
                 className="text-green-700 py-2 px-4 border border-green-700 rounded-md hover:bg-green-700 hover:text-white flex items-center space-x-2"
                 aria-label="Profile"
               >
@@ -96,7 +100,7 @@ export default function Navbar({ id }) {
                 className="text-green-700 py-2 px-4 border border-green-700 rounded-md hover:bg-green-700 hover:text-white flex items-center space-x-2"
                 aria-label="Login"
               >
-                <i className="fas fa-sign-in"></i>
+                <i className="fas fa-sign-in-alt"></i>
                 <span>Login</span>
               </Link>
               <Link
