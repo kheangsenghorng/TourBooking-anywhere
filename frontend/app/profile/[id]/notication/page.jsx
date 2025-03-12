@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Trash2, Building, Users } from "lucide-react";
-
+import Link from "next/link";
+import { useParams } from "next/navigation";
 export default function NotificationPage() {
+  const { id, Id } = useParams();
   const [activeTab, setActiveTab] = useState("hotel");
   const [activePage, setActivePage] = useState(1);
 
@@ -13,6 +15,7 @@ export default function NotificationPage() {
       sender: "Mr.Ronaldo",
       message: "A concise message confirming the booking",
       date: "Nov 19",
+      
     },
     {
       id: 2,
@@ -74,29 +77,31 @@ export default function NotificationPage() {
       <div className="border-t border-gray-200 mb-6"></div>
 
       {/* Notification List */}
-      <div className="space-y-4">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className="flex items-center justify-between py-5 px-6 border border-gray-200 rounded-lg"
-          >
-            <div className="w-32">
-              <p className="font-medium">{notification.sender}</p>
+      <Link href={`/profile/${id}/reservationspage/${Id}`}>
+        <div className="space-y-4">
+          {notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className="flex items-center justify-between py-5 px-6 border border-gray-200 rounded-lg"
+            >
+              <div className="w-32">
+                <p className="font-medium">{notification.sender}</p>
+              </div>
+              <div className="flex-grow">
+                <p className="text-gray-700">{notification.message}</p>
+              </div>
+              <div className="flex items-center gap-6">
+                <button className="text-gray-400 hover:text-gray-600">
+                  <Trash2 size={20} />
+                </button>
+                <p className="text-gray-600 w-16 text-right">
+                  {notification.date}
+                </p>
+              </div>
             </div>
-            <div className="flex-grow">
-              <p className="text-gray-700">{notification.message}</p>
-            </div>
-            <div className="flex items-center gap-6">
-              <button className="text-gray-400 hover:text-gray-600">
-                <Trash2 size={20} />
-              </button>
-              <p className="text-gray-600 w-16 text-right">
-                {notification.date}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </Link>
 
       {/* Pagination */}
       <div className="flex justify-center items-center mt-8 gap-2">
