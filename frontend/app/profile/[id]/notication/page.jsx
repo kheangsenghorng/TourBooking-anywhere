@@ -1,162 +1,109 @@
 "use client";
 
-import { useState } from "react";
-import { Trash2, Building, Users } from "lucide-react";
+import { Suspense } from "react";
 import Link from "next/link";
+import { CalendarDays, Clock, MapPin, Users } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import TourNotifications from "@/components/Notifcatiom";
+import UpcomingTours from "@/components/UpcomingTours";
 import { useParams } from "next/navigation";
-export default function NotificationPage() {
-  const { id, Id } = useParams();
-  const [activeTab, setActiveTab] = useState("hotel");
-  const [activePage, setActivePage] = useState(1);
 
-  const notifications = [
-    {
-      id: 1,
-      sender: "Mr.Ronaldo",
-      message: "A concise message confirming the booking",
-      date: "Nov 19",
-      
-    },
-    {
-      id: 2,
-      sender: "Mr.Ronaldo",
-      message: "A concise message confirming the booking",
-      date: "Nov 19",
-    },
-    {
-      id: 3,
-      sender: "Mr.Ronaldo",
-      message: "A concise message confirming the booking",
-      date: "Nov 19",
-    },
-    {
-      id: 4,
-      sender: "Mr.Ronaldo",
-      message: "A concise message confirming the booking",
-      date: "Nov 19",
-    },
-    {
-      id: 5,
-      sender: "Mr.Ronaldo",
-      message: "A concise message confirming the booking",
-      date: "Nov 19",
-    },
-  ];
-
+export default function Home() {
+  const { id, tourID } = useParams();
   return (
-    <div className="px-6 py-8">
-      <h1 className="text-3xl font-bold mb-6">Notification</h1>
-
-      {/* Tabs */}
-      <div className="flex gap-4 mb-6">
-        <button
-          className={`flex items-center gap-2 px-6 py-2 rounded-full ${
-            activeTab === "hotel"
-              ? "bg-gray-900 text-white"
-              : "bg-white border border-gray-300 text-gray-700"
-          }`}
-          onClick={() => setActiveTab("hotel")}
-        >
-          <Building size={18} />
-          <span>Hotel</span>
-        </button>
-        <button
-          className={`flex items-center gap-2 px-6 py-2 rounded-full ${
-            activeTab === "tour"
-              ? "bg-gray-900 text-white"
-              : "bg-white border border-gray-300 text-gray-700"
-          }`}
-          onClick={() => setActiveTab("tour")}
-        >
-          <Users size={18} />
-          <span>Tour</span>
-        </button>
+    <div className="container mx-auto py-10">
+      <div className="mb-10 space-y-2">
+        <p className="text-muted-foreground">
+          Manage your bookings and receive notifications for upcoming tours.
+        </p>
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-gray-200 mb-6"></div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Notifications</CardTitle>
+            <CardDescription>
+              Your upcoming tour alerts and reminders
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Suspense fallback={<div>Loading notifications...</div>}>
+              <TourNotifications />
+            </Suspense>
+          </CardContent>
+        </Card>
 
-      {/* Notification List */}
-      <Link href={`/profile/${id}/reservationspage/${Id}`}>
-        <div className="space-y-4">
-          {notifications.map((notification) => (
-            <div
-              key={notification.id}
-              className="flex items-center justify-between py-5 px-6 border border-gray-200 rounded-lg"
-            >
-              <div className="w-32">
-                <p className="font-medium">{notification.sender}</p>
-              </div>
-              <div className="flex-grow">
-                <p className="text-gray-700">{notification.message}</p>
-              </div>
-              <div className="flex items-center gap-6">
-                <button className="text-gray-400 hover:text-gray-600">
-                  <Trash2 size={20} />
-                </button>
-                <p className="text-gray-600 w-16 text-right">
-                  {notification.date}
-                </p>
+        <Card className="md:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle>Upcoming Tours</CardTitle>
+            <CardDescription>
+              Tours you've booked that are coming up soon
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Suspense fallback={<div>Loading tours...</div>}>
+              <UpcomingTours />
+            </Suspense>
+          </CardContent>
+          <CardFooter>
+            <Button asChild className="w-full">
+              <Link href="/bookings">View All Bookings</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Featured Tour</CardTitle>
+            <CardDescription>Special offer for this month</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <img
+                src="/placeholder.svg?height=200&width=400"
+                alt="Beach resort tour"
+                className="h-48 w-full rounded-md object-cover"
+              />
+              <h3 className="text-lg font-semibold">
+                Tropical Paradise Getaway
+              </h3>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="flex items-center gap-1">
+                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                  <span>5 days</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span>Up to 8 guests</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span>Bali, Indonesia</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>All-inclusive</span>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      </Link>
-
-      {/* Pagination */}
-      <div className="flex justify-center items-center mt-8 gap-2">
-        <button className="p-2 text-gray-500 hover:text-gray-700">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-5 h-5"
-          >
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-        <button
-          className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            activePage === 1
-              ? "bg-gray-100 text-gray-800"
-              : "text-gray-500 hover:bg-gray-50"
-          }`}
-          onClick={() => setActivePage(1)}
-        >
-          1
-        </button>
-        <button
-          className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            activePage === 2
-              ? "bg-gray-100 text-gray-800"
-              : "text-gray-500 hover:bg-gray-50"
-          }`}
-          onClick={() => setActivePage(2)}
-        >
-          2
-        </button>
-        <button className="p-2 text-gray-500 hover:text-gray-700">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-5 h-5"
-          >
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
+          </CardContent>
+          <CardFooter>
+            <Button asChild className="w-full">
+              <Link href={`/profile/${id}/tourDetails/${tourID}`}>
+                Book Now
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );
