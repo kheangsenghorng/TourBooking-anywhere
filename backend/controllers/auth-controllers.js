@@ -470,7 +470,6 @@ export const handleGoogle = async (req, res) => {
           : "pending",
         isVerified: true,
         adminId: admin ? admin._id : null,
-        phonenumber: `NULL`, // Unique placeholder
       });
 
       // Save the new user to the database
@@ -484,7 +483,7 @@ export const handleGoogle = async (req, res) => {
       }
 
       // Redirect to the profile page
-      return res.redirect(`${process.env.CLIENT_URL}/profile/${savedUser._id}`);
+      return res.redirect(`${process.env.CLIENT_URL}/profile/${savedUser._id}/myprofile`);
     } else {
       // If the user exists, update their information
       user.googleId = userInfo.sub;
