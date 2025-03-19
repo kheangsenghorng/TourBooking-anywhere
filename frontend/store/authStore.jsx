@@ -101,7 +101,7 @@ export const useAuthStore = create((set, get) => ({
       throw error;
     }
   },
-  // Edit user profile
+  // Edit user admin edit user
   editUser: async (userId, name, email, role, status) => {
     set({ isLoading: true, error: null });
     try {
@@ -292,7 +292,7 @@ export const useAuthStore = create((set, get) => ({
   checkAuth: async () => {
     set({ isCheckingAuth: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/check-auth`, {
+      const response = await fetch(`${API_URL}/auth/check-auth`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -310,22 +310,22 @@ export const useAuthStore = create((set, get) => ({
       console.log(error);
     }
   },
-  logout: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await fetch(`${API_URL}/logout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-      set({ isLoading: false, isAuthenticated: false, user: null });
-    } catch (error) {
-      set({ isLoading: false, error: error.message });
-      throw error;
-    }
-  },
+  // logout: async () => {
+  //   set({ isLoading: true, error: null });
+  //   try {
+  //     const response = await fetch(`${API_URL}/logout`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       credentials: "include",
+  //     });
+  //     set({ isLoading: false, isAuthenticated: false, user: null });
+  //   } catch (error) {
+  //     set({ isLoading: false, error: error.message });
+  //     throw error;
+  //   }
+  // },
   uploadImage: async (file) => {
     set({ isLoading: true, error: null });
     try {

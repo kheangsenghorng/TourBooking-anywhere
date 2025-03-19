@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema(
     },
     phonenumber: {
       type: String,
+      sparse: true,
       default: null, // Default is null if not provided by Google or Facebook
     },
     profile_image: {

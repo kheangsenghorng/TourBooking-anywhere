@@ -14,7 +14,7 @@ import {
   showFacebookAuth,
   handleFacebook,
 } from "../controllers/auth-controllers.js";
-import { getAllUsers } from "../controllers/display-user-controllers.js";
+import { getAllUsers, getUserById } from "../controllers/display-user-controllers.js";
 import { verifyToken } from "../middlewares/verifyToken.js";
 // import upload from "../middleware/uploadImage.js";
 
@@ -44,7 +44,11 @@ router.get("/facebook/callback", handleFacebook); // Handle Facebook response
 // // Route to edit a user
 router.put("/users/:userId", editUser); // Use PUT to edit
 
+//id admin display all users
 router.get("/:id/users", getAllUsers);
+
+// // Route to get a user by ID
+router.get("/users/:id", getUserById);
 // router.get("/users/:id", companyUser);
 
 // // Delete user route

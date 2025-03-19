@@ -1,11 +1,13 @@
+import SearchTour from "@/components/Search";
+import Banner from "@/components/BannerHotel";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
-const TourIndexPage = () => {
-    return (
-        <div>
-            <h1>Welcome to the Tour</h1>
-            <p>This is the index page for the tour.</p>
-        </div>
-    );
-};
-
-export default TourIndexPage;
+export default function Home() {
+  return (
+    <div>
+      <SearchTour />
+      <Banner />
+    </div>
+  );
+}

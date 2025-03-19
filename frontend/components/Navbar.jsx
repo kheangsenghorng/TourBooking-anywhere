@@ -2,11 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation"; // Import useRouter
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { userStore } from "@/store/userStore";
 
 export default function Navbar() {
   const { id } = useParams();
+  const router = useRouter(); // Initialize useRouter
+  const { user, loading, error, fetchUserById, logout } = userStore();
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -15,9 +19,9 @@ export default function Navbar() {
     }
   }, [id]);
 
-  const handleLogout = () => {
-    // Perform logout operations here (e.g., clear tokens, session)
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    await logout(); // Call Zustand logout function
+    router.push("/login"); // Redirect to login page
   };
 
   return (
@@ -25,8 +29,7 @@ export default function Navbar() {
       <div className="flex items-center justify-between max-w-7xl mx-auto px-4 h-full">
         {/* Logo */}
         <div className="flex items-center h-full">
-        <Link
-            href={id ? `/${id}/` : "/"}>
+          <Link href={id ? `/${id}/` : "/"}>
             <img
               src="/image/logo-edit.png"
               alt="Travel With Us"

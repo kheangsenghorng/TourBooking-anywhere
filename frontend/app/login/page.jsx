@@ -73,7 +73,7 @@ const LoginPage = () => {
           }
           router.push(`/${id}/dashboard`);
         } else {
-          router.push(`/profile/${id}/topcard`);
+          router.push(`/profile/${id}/myprofile`);
         }
       }, 2000); // Redirect after 2 seconds
     } catch (err) {

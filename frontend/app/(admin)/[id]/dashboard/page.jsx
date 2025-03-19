@@ -1,21 +1,12 @@
 // // app/(admin)/[id]/add/page.jsx
-// export default function AddPage({ params }) {
-//   const { id } = params;
-
-//   return (
-//     <div>
-//       <h1>Add Page for ID: {id}</h1>
-//       <p>This is the add page for the admin section.</p>
-//       {/* Add your form or other content here */}
-//     </div>
-//   );
-// }
 
 "use client";
 import { useState } from "react";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
+import { useParams } from "next/navigation";
+import { userStore } from "@/store/userStore";
+import { useEffect } from "react";
 import {
   faTachometerAlt,
   faBook,
@@ -30,8 +21,27 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function AdminDashboard() {
+  const { id } = useParams();
+  const { user, loading, error, fetchUserById, getAllUsers ,count } = userStore();
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 10;
+
+  useEffect(() => {
+    if (id) {
+      fetchUserById(id);
+    }
+  }, [id]);
+  useEffect(() => {
+    if (id) {
+      getAllUsers(id);
+      console.log("id", id);
+      
+    }
+  }, [id]);
+
+  // if (loading) return <p>Loading user...</p>;
+  // if (error) return <p className="text-red-500">{error}</p>;
+  // if (!user) return <p>No user found.</p>
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -120,12 +130,15 @@ export default function AdminDashboard() {
             <FontAwesomeIcon icon={faBell} className="text-gray-600 w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">
-              MR
+            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm uppercase">
+              {user?.firstname?.charAt(0)}
+              {user?.lastname?.charAt(4)}
             </div>
             <div>
-              <p className="text-sm font-medium">Moni Roy</p>
-              <p className="text-xs text-gray-500">Admin</p>
+              <p className="text-sm font-medium up">
+                {user?.lastname || "N/A"}
+              </p>
+              <p className="text-xs text-gray-500">{user?.role || "N/A"}</p>
             </div>
           </div>
         </div>
@@ -135,7 +148,9 @@ export default function AdminDashboard() {
         <div className="p-6 bg-white rounded-lg shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-bold text-gray-700">40,689</h2>
+              <h2 className="text-2xl font-bold text-gray-700">
+                {count} 
+              </h2>
               <p className="text-sm text-gray-500">Total User</p>
             </div>
             <div className="text-2xl">👥</div>
