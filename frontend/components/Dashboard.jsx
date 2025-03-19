@@ -11,10 +11,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import Image from "next/image";
+import { useParams } from "next/navigation";
 
-const Sidebar = ({ children, id }) => {
+const Sidebar = ({ children }) => {
+  const { id } = useParams();
+
   return (
-    <div className="flex">
+    <div className="flex sticky top-0">
       {/* Sidebar */}
       <aside className="w-64 h-screen bg-white border-r shadow-lg overflow-y-auto fixed">
         <div className="text-center py-6 border-b">
@@ -41,6 +44,7 @@ const Sidebar = ({ children, id }) => {
                 icon: faPlusSquare,
                 label: "Add Package",
               },
+              { href: `/${id}/user`, icon: faBook, label: "User" },
               {
                 href: `/${id}/feedback`,
                 icon: faCommentDots,

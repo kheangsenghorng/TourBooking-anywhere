@@ -11,9 +11,10 @@ import {
 import crypto from "crypto";
 import { createCanvas } from "canvas";
 import path from "path";
-import fs from "fs";
+import fs, { access } from "fs";
 import axios from "axios";
-
+import { verifyGoogleToken } from "../utils/googleAuth.js"; // Utility function to verify Google token
+import { verifyFacebookToken } from "../utils/facebookAuth.js"; //
 //function to get all users
 export const signup = async (req, res) => {
   const {
@@ -291,23 +292,23 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-export const checkAuth = async (req, res) => {
-  try {
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not found" });
-    }
+// export const checkAuth = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.userId);
+//     if (!user) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "User not found" });
+//     }
 
-    res
-      .status(200)
-      .json({ success: true, user: { ...user._doc, password: undefined } });
-  } catch (error) {
-    console.log("error checking auth", error);
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
+//     res
+//       .status(200)
+//       .json({ success: true, user: { ...user._doc, password: undefined } });
+//   } catch (error) {
+//     console.log("error checking auth", error);
+//     res.status(400).json({ success: false, message: error.message });
+//   }
+// };
 
 // fuction edit user
 export const editUser = async (req, res) => {
@@ -461,6 +462,7 @@ export const handleGoogle = async (req, res) => {
       const newUser = new User({
         firstname: userInfo.given_name || "FirstName",
         lastname: userInfo.family_name || "LastName",
+        phonenumber: userInfo.phone_number || undefined, // Avoid null
         email: userInfo.email,
         googleId: userInfo.sub,
         profile_image: userInfo.picture,
@@ -483,7 +485,9 @@ export const handleGoogle = async (req, res) => {
       }
 
       // Redirect to the profile page
-      return res.redirect(`${process.env.CLIENT_URL}/profile/${savedUser._id}/myprofile`);
+      return res.redirect(
+        `${process.env.CLIENT_URL}/profile/${savedUser._id}/myprofile`
+      );
     } else {
       // If the user exists, update their information
       user.googleId = userInfo.sub;
@@ -620,7 +624,9 @@ export const handleFacebook = async (req, res) => {
 
       await user.save();
       generateJWTToken(res, user._id, user.email, user.role);
-      return res.redirect(`${process.env.CLIENT_URL}/${user._id}`);
+      return res.redirect(
+        `${process.env.CLIENT_URL}/profile/${user._id}/myprofile`
+      );
     }
 
     user.facebookId = userInfo.id;
@@ -630,7 +636,9 @@ export const handleFacebook = async (req, res) => {
     console.log(`Existing user logged in: ${user.email}`);
 
     generateJWTToken(res, user._id, user.email, user.role);
-    return res.redirect(`${process.env.CLIENT_URL}/profile/${user._id}`);
+    return res.redirect(
+      `${process.env.CLIENT_URL}/profile/${user._id}/myprofile`
+    );
   } catch (error) {
     console.error("Error during Facebook OAuth:", error.message);
     return res.status(500).json({
@@ -651,4 +659,50 @@ export const showFacebookAuth = (req, res) => {
   }
 
   return res.redirect(facebookAuthUrl);
+};
+
+export const checkAuth = async (req, res) => {
+  try {
+    let user;
+
+    if (req.userId) {
+      // Traditional authentication (JWT or session-based)
+      user = await User.findById(req.userId);
+    } else if (req.headers.authorization) {
+      // OAuth authentication (Google/Facebook)
+      const token = req.headers.authorization.split(" ")[1]; // Bearer <TOKEN>=
+      if (req.headers.auth_provider === "google") {
+        const googleUser = await verifyGoogleToken(token);
+
+        if (!googleUser) {
+          return res
+            .status(401)
+            .json({ success: false, message: "Invalid Google token" });
+        }
+        user = await User.findOne({ email: googleUser.email });
+      } else if (req.headers.auth_provider === "facebook") {
+        const facebookUser = await verifyFacebookToken(token);
+        if (!facebookUser) {
+          return res
+            .status(401)
+            .json({ success: false, message: "Invalid Facebook token" });
+        }
+        user = await User.findOne({ email: facebookUser.email });
+      }
+    }
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: { ...user._doc, password: undefined },
+    });
+  } catch (error) {
+    console.log("Error checking auth", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
 };

@@ -1,5 +1,10 @@
-import Image from "next/image"
-import { Star, MapPin, ChevronLeft, ChevronRight, Users } from "lucide-react"
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { Star, MapPin, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import Feedback from "@/app/(admin)/[id]/feedback-admin/page";
 
 const hotels = [
   {
@@ -34,9 +39,10 @@ const hotels = [
     reviews: 1257,
     image: "/placeholder.svg?height=200&width=300",
   },
-]
+];
 
 export default function HotelListing() {
+  const { id, feedbackId } = useParams();
   return (
     <div className="max-w-4xl  p-4">
       {/* Tabs */}
@@ -58,7 +64,12 @@ export default function HotelListing() {
             className="flex flex-col sm:flex-row bg-white rounded-lg overflow-hidden shadow-sm border"
           >
             <div className="sm:w-1/3 h-48 sm:h-auto relative">
-              <Image src={hotel.image || "/placeholder.svg"} alt={hotel.name} fill className="object-cover" />
+              <Image
+                src={hotel.image || "/placeholder.svg"}
+                alt={hotel.name}
+                fill
+                className="object-cover"
+              />
             </div>
             <div className="sm:w-2/3 p-4 flex flex-col justify-between">
               <div>
@@ -67,7 +78,9 @@ export default function HotelListing() {
                   <div className="flex items-center">
                     <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                     <span className="ml-1 font-medium">{hotel.rating}</span>
-                    <span className="text-gray-500 text-sm ml-1">({hotel.reviews})</span>
+                    <span className="text-gray-500 text-sm ml-1">
+                      ({hotel.reviews})
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center mt-1 text-gray-500">
@@ -79,14 +92,23 @@ export default function HotelListing() {
               </div>
 
               <div className="mt-4">
-                <p className="text-gray-600 mb-2">How would you rate the hotel?</p>
+                <p className="text-gray-600 mb-2">
+                  How would you rate the hotel?
+                </p>
                 <div className="flex justify-between items-center">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="w-5 h-5 text-gray-300 cursor-pointer" />
+                      <Star
+                        key={star}
+                        className="w-5 h-5 text-gray-300 cursor-pointer"
+                      />
                     ))}
                   </div>
-                  <button className="bg-primary text-primary-foreground px-4 py-1 rounded-md">Evaluate</button>
+                  <Link href={`/profile/${id}/feedbackpage/${feedbackId}`}>
+                    <button className="bg-primary text-primary-foreground px-4 py-1 rounded-md">
+                      Evaluate
+                    </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -99,13 +121,16 @@ export default function HotelListing() {
         <button className="w-8 h-8 flex items-center justify-center rounded-md border">
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <button className="w-8 h-8 flex items-center justify-center rounded-md bg-primary text-white">1</button>
-        <button className="w-8 h-8 flex items-center justify-center rounded-md border">2</button>
+        <button className="w-8 h-8 flex items-center justify-center rounded-md bg-primary text-white">
+          1
+        </button>
+        <button className="w-8 h-8 flex items-center justify-center rounded-md border">
+          2
+        </button>
         <button className="w-8 h-8 flex items-center justify-center rounded-md border">
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>
-  )
+  );
 }
-

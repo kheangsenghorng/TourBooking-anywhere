@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 // // Updated datasets with more items to test pagination
@@ -28,6 +29,7 @@ const lowestPriceData = Array(1).fill({
 });
 
 export default function Home() {
+  const { id } = useParams();
   const [cards, setCards] = useState(highestPriceData);
   const [currentPage, setCurrentPage] = useState(1);
   const cardsPerPage = 5;

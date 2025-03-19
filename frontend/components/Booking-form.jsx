@@ -13,17 +13,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PaymentOptions } from "./payment-options";
-
+import { useEffect } from "react";
+import { userStore } from "@/store/userStore";
 export function BookingForm() {
   const { id } = useParams();
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const { user, loading, error, fetchUserById } = userStore();
+
+  useEffect(() => {
+    if (id) {
+      fetchUserById(id);
+    }
+  }, [id]);
+
+  if (loading) return <p>Loading user...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+  if (!user) return <p>No user found.</p>;
 
   const handleConfirm = () => {
     if (!id) {
       router.push("/login"); // Redirects to login if no ID is found
     } else {
-      console.log("Proceed with booking, ID:", id);
+      console.log("Proceed with booking, ID:", id, user.phonenumber);
+
       // Add logic here to submit booking details
     }
   };
@@ -34,25 +47,32 @@ export function BookingForm() {
         <h2 className="text-2xl font-bold mb-6">Confirm Booking</h2>
 
         <div className="mb-6">
-          <h3 className="text-lg font-medium mb-4">Your details</h3>
+          <h3 className="text-lg font-medium mb-4">
+            Your details : {user?.firstname || "N/A"}
+            <span> {user?.lastname || "N/A"}</span>
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First name *</Label>
-              <Input id="firstName" placeholder="First name" />
+              <Input id="firstName" placeholder={user?.firstname || "N/A"} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Last name *</Label>
-              <Input id="lastName" placeholder="Last name" />
+              <Input id="lastName" placeholder={user?.lastname || "N/A"} />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number *</Label>
-              <Input id="phone" placeholder="(201) 830-8210" />
+              <Input id="phone" placeholder={user?.phonenumber || "N/A"} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address *</Label>
-              <Input id="email" type="email" placeholder="example@gmail.com" />
+              <Input
+                id="email"
+                type="email"
+                placeholder={user?.email || "N/A"}
+              />
             </div>
           </div>
         </div>
