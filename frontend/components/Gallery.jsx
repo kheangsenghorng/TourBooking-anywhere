@@ -14,11 +14,11 @@ export default function Gallery() {
   };
 
   return (
-    <div className="container mx-auto p-4 w-[1200px]">
+    <div className="container my-24 mx-auto p-4 w-[1200px]">
       {/* Main Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Main Image */}
-        <div className="relative">
+        <div className="relative">  
           <img
             src="/image/Hotel in kompot/9.jpg"
             alt="Main Photo"

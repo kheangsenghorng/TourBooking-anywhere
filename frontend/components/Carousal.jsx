@@ -45,7 +45,7 @@ const Carousel = () => {
       />
 
       {/* Title and Description */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-center bg-opacity-50 bg-black p-5 rounded-lg">
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-center bg-opacity-50 p-5 rounded-lg">
         <h2 className="text-2xl md:text-3xl font-bold">
           {images[currentIndex].title}
         </h2>
@@ -55,13 +55,13 @@ const Carousel = () => {
       {/* Navigation Buttons */}
       <button
         onClick={prevSlide}
-        className="absolute top-1/2 left-5 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-md z-10 hover:bg-gray-200"
+        className="absolute top-1/2 text-white left-5 transform -translate-y-1/2 rounded-full p-3 shadow-md z-10 hover:bg-green-400 hover:text-white"
       >
         &#10094; {/* Left Arrow */}
       </button>
       <button
         onClick={nextSlide}
-        className="absolute top-1/2 right-5 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-md z-10 hover:bg-gray-200"
+        className="absolute top-1/2 right-5 text-white transform -translate-y-1/2 rounded-full p-3 shadow-md z-10 hover:bg-green-400 hover:text-white"
       >
         &#10095; {/* Right Arrow */}
       </button>
@@ -73,7 +73,7 @@ const Carousel = () => {
             key={index}
             onClick={() => setCurrentIndex(index)}
             className={`w-3 h-3 rounded-full cursor-pointer ${
-              currentIndex === index ? "bg-blue-500" : "bg-gray-400"
+              currentIndex === index ? "bg-green-500" : "bg-gray-400"
             }`}
           />
         ))}
