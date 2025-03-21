@@ -28,8 +28,12 @@ const Page = () => {
         <div className="flex">
           <div className="relative">
             <Image
-              src={user?.profile_image || "/avatar.png"}
-              alt="Profile Picture"
+              src={
+                user?.profile_image && user.profile_image.startsWith("https")
+                  ? user.profile_image
+                  : "/images.png"
+              }
+              alt="User profile image"
               width={120}
               height={120}
               className="rounded-full object-cover border-4 border-white shadow-md"

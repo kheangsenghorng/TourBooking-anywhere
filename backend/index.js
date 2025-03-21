@@ -6,6 +6,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectToDatabase from "./database/db.js";
 import authRoutes from "./routes/user-routes.js";
+import filerouter from "./routes/file-rotes.js";
+import e from "express";
 // import locationRoute from "./routes/loaction-route.js";
 // import categoryRoutes from "./routes/category-route.js";
 // import tourRoutes from "./routes/company-routes/addpackage-route.js";
@@ -16,11 +18,12 @@ import authRoutes from "./routes/user-routes.js";
 dotenv.config();
 
 const app = express();
+// Serve static files from the 'uploads' directory
 
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use("/uploads", express.static(path.resolve("uploads")));
+app.use(express.static(path.join(path.resolve(), "public")));
 
 connectToDatabase();
 
@@ -28,6 +31,7 @@ app.get("/", (req, res) => {
   res.json("Hello");
 });
 app.use("/api/auth", authRoutes);
+app.use("/api/files", filerouter);
 // app.use("/v1/locations", locationRoute);
 // app.use("/v1/categories", categoryRoutes);
 // app.use("/v1/tours", tourRoutes);
