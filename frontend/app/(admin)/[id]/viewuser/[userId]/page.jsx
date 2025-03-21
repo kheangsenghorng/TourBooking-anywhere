@@ -14,6 +14,7 @@ import { CalendarDays, CreditCard, MapPin, User } from "lucide-react";
 import { useParams } from "next/navigation";
 import { userStore } from "@/store/userStore";
 import { useEffect } from "react";
+import Image from "next/image";
 
 export default function ProfilePage() {
   const params = useParams(); //// Correctly calling useParams inside the component
@@ -33,13 +34,16 @@ export default function ProfilePage() {
             <CardContent className="pt-6">
               <div className="flex flex-col items-center space-y-4">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={user?.profile_image} alt="User profile" />
-                  <AvatarFallback className="h-24 w-24 bg-red-300 text-gray-500 uppercase">
-                    {" "}
-                    {user?.firstname?.charAt(0)}
-                    {user?.lastname?.charAt(0)}
-                    {""}
-                  </AvatarFallback>
+                  <Image
+                    src={
+                      user?.profile_image &&
+                      user.profile_image.startsWith("https")
+                        ? user.profile_image
+                        : "/images.png"
+                    }
+                    alt="User profile image"
+                    layout="fill"
+                  />
                 </Avatar>
                 <div className="space-y-1 text-center">
                   <h2 className="text-2xl font-bold">{user?.lastname}</h2>

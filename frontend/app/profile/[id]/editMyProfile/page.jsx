@@ -4,13 +4,16 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { userStore } from "@/store/userStore";
-import { use, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { profileStore } from "@/store/profileStore";
 
 export default function ProfilePage() {
   const { id } = useParams(); // Extract user ID from URL
   const router = useRouter();
+  const fileInputRef = useRef(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const { profileImage, setProfileImage, uploadProfileImage } = profileStore();
   const { user, loading, error, fetchUserById, editUser } = userStore();
   const [formData, setFormData] = useState({
     firstname: "",
@@ -19,12 +22,14 @@ export default function ProfilePage() {
     email: "",
   });
 
+  // Fetch user data when the component mounts or `id` changes
   useEffect(() => {
     if (id) {
       fetchUserById(id);
     }
   }, [id, fetchUserById]);
 
+  // Update form data when `user` changes
   useEffect(() => {
     if (user) {
       setFormData({
@@ -36,16 +41,36 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  // Handle form input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handle file input changes
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  // Handle profile image upload
+  const handleUpload = async () => {
+    if (selectedFile) {
+      await uploadProfileImage(id, selectedFile);
+      // Refresh user data after upload
+      fetchUserById(id);
+    }
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     await editUser(id, formData);
     router.push(`/profile/${id}/myprofile`);
   };
 
+  // Loading and error states
   if (loading) return <p>Loading user...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
   if (!user) return <p>No user found.</p>;
@@ -59,12 +84,37 @@ export default function ProfilePage() {
             <div className="flex">
               <div className="relative">
                 <Image
-                  src={user?.profile_image || "/avatar.png"}
-                  alt="Profile Picture"
+                  src={
+                    user?.profile_image
+                      ? user.profile_image.startsWith("http")
+                        ? user.profile_image
+                        : `/uploads/profile/${user.profile_image}`
+                      : "/images.png"
+                  }
+                  alt="User profile image"
                   width={120}
                   height={120}
                   className="rounded-full object-cover border-4 border-white shadow-md"
                 />
+              </div>
+              {/* File Upload Section */}
+              <div className="mb-6 ml-4">
+                <label className="block mb-2 text-sm font-medium">
+                  Upload Profile Picture
+                </label>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                <Button
+                  onClick={handleUpload}
+                  className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2"
+                >
+                  Upload
+                </Button>
               </div>
               <div className="flex flex-col justify-center ml-4">
                 <h2 className="mt-4 text-xl font-semibold uppercase">
@@ -96,7 +146,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium">
-                    last Name
+                    Last Name
                   </label>
                   <Input
                     name="lastname"
@@ -141,6 +191,7 @@ export default function ProfilePage() {
               </div>
             </form>
           </section>
+
           <section className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-xl font-bold mb-6">Address</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

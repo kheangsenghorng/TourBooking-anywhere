@@ -11,9 +11,11 @@ import Link from "next/link";
 const UserPage = () => {
   const params = useParams();
   const { users, loading, error, getAllUsers } = userStore();
+  const { uploadProfileImage } = useProfileStore();
+  const [profile, setProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // ✅ Add search state
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5;
+  const usersPerPage = 8;
 
   useEffect(() => {
     if (params.id) {
@@ -31,7 +33,10 @@ const UserPage = () => {
   // ✅ Apply pagination AFTER filtering
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
   const startIndex = (currentPage - 1) * usersPerPage;
-  const currentUsers = filteredUsers.slice(startIndex, startIndex + usersPerPage);
+  const currentUsers = filteredUsers.slice(
+    startIndex,
+    startIndex + usersPerPage
+  );
 
   return (
     <div>
@@ -103,7 +108,12 @@ const UserPage = () => {
                       <Link href={`/${params.id}/viewuser/${user._id}`}>
                         <div className="w-10 h-10 rounded-full overflow-hidden">
                           <Image
-                            src={user?.profile_image || "/image/1.jpg"}
+                            src={
+                              user?.profile_image &&
+                              user.profile_image + profile
+                                ? user.profile_image
+                                : "/images.png"
+                            }
                             alt="Profile"
                             width={40}
                             height={40}
