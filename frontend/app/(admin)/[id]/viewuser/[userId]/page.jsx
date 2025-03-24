@@ -13,18 +13,31 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, CreditCard, MapPin, User } from "lucide-react";
 import { useParams } from "next/navigation";
 import { userStore } from "@/store/userStore";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import Image from "next/image";
+import { profileStore } from "@/store/profileStore";
 
 export default function ProfilePage() {
   const params = useParams(); //// Correctly calling useParams inside the component
   const { user, loading, error, fetchUserById } = userStore();
-
+  const {
+    profileImage,
+    setProfileImage,
+    fetchProfileImage,
+    uploadProfileImage,
+  } = profileStore();
   useEffect(() => {
     if (params.userId) {
       fetchUserById(params.userId);
+
+      // Ensure param.id is a valid string before using it
+      if (typeof params.userId === "string" && params.userId.trim() !== "") {
+        fetchProfileImage(params.userId);
+      } else {
+        console.error("Invalid param.id:", params.userId);
+      }
     }
-  }, [params.userId, fetchUserById]);
+  }, [params.userId, fetchUserById, fetchProfileImage]);
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
       <div className="flex flex-col md:flex-row gap-6 md:gap-10">
@@ -36,10 +49,8 @@ export default function ProfilePage() {
                 <Avatar className="h-24 w-24">
                   <Image
                     src={
-                      user?.profile_image &&
-                      user.profile_image.startsWith("https")
-                        ? user.profile_image
-                        : "/images.png"
+                      profileImage  ||
+                      "https://www.gravatar.com/avatar/?d=mp&s=120"
                     }
                     alt="User profile image"
                     layout="fill"

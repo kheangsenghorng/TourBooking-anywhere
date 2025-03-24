@@ -46,6 +46,154 @@ export const uploadProfileImage = (req, res) => {
   });
 };
 
+//upload multiple files
+
+export const uploadMultipleFiles = (req, res) => {
+  const { id } = req.params; // Get the admin ID from the URL
+  const files = req.files; // Get uploaded files
+
+  if (!files || files.length === 0) {
+    return res.status(400).json({ message: "No files uploaded" });
+  }
+  const fileall = files.length;
+  return res.status(200).json({
+    message: "Files uploaded successfully",
+    adminId: id,
+    fileall,
+    files: files.map((file) => ({
+      originalname: file.originalname,
+      filename: file.filename,
+      path: file.path,
+      mimetype: file.mimetype,
+      size: file.size,
+    })),
+  });
+};
+
+// export const getProfileImage = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const user = await User.findById(id);
+
+//     if (!user || !user.profile_image) {
+//       return res.status(404).json({ message: "Profile image not found" });
+//     }
+
+//     // Construct the absolute path to the image
+//     const imagePath = path.join(
+//       process.cwd(),
+//       "uploads/profile",
+//       user.profile_image
+//     );
+
+//     // Check if the file exists
+//     if (!fs.existsSync(imagePath)) {
+//       return res.status(404).json({ message: "Image file not found" });
+//     }
+
+//     // Send the image file directly as a response
+//     res.sendFile(imagePath);
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Internal server error", error: error.message });
+//   }
+// };
+
+export const getProfileImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user || !user.profile_image) {
+      return res.status(404).json({ message: "Profile image not found" });
+    }
+
+    const imagePath = path.join(
+      process.cwd(),
+      "uploads/profile",
+      user.profile_image
+    );
+
+    if (!fs.existsSync(imagePath)) {
+      return res.status(404).json({ message: "Image file not found" });
+    }
+
+    res.sendFile(imagePath);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+// Get All Users
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: { $ne: "admin" } }); // Exclude admin users
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ message: "No users found" });
+    }
+
+    // Map users to include full image URLs
+    const usersWithImages = users.map((user) => ({
+      ...user._doc,
+      profile_image_url: user.profile_image
+        ? `${req.protocol}://${req.get("host")}/uploads/profile/${
+            user.profile_image
+          }`
+        : null,
+    }));
+
+    res.status(200).json(usersWithImages);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+export const getProfileImageadmin = async (req, res) => {
+  try {
+    const { id } = req.params; // ID of the user whose profile image is being fetched
+    // ID of the admin making the request (from authentication middleware)
+
+    // Check if the user making the request is an admin
+    const admin = await User.findById(id);
+    if (!admin || admin.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "You must be an admin to perform this action.",
+      });
+    }
+
+    // Find the user by ID
+    const user = await User.findById(id);
+    if (!user || !user.profile_image) {
+      return res.status(404).json({ message: "Profile image not found" });
+    }
+
+    // Construct the image path
+    const imagePath = path.join(
+      process.cwd(),
+      "uploads/profile",
+      user.profile_image
+    );
+
+    if (!fs.existsSync(imagePath)) {
+      return res.status(404).json({ message: "Image file not found" });
+    }
+
+    // Serve the image file
+    res.sendFile(imagePath);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
 export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;

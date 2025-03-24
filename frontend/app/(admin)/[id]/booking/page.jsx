@@ -1,259 +1,180 @@
 "use client"
 
-import { FaUserSecret } from "react-icons/fa6"
-import { IoIosArrowDropdown } from "react-icons/io"
-import { FaBell } from "react-icons/fa"
-import { BiEditAlt } from "react-icons/bi"
 import { useState } from "react"
-import Image from "next/image"
+import { Search, ChevronLeft, ChevronRight, Trash2, Edit2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 
-// These components would need to be created in your project
-// I'm assuming they exist based on your imports
-const TourDetailsGuest = () => (
-  <div className="bg-white border border-gray-200 p-6 rounded-lg w-full space-y-4 h-fit shadow-sm">
-    <div className="flex justify-between items-center">
-      <h2 className="text-xl font-semibold text-[#495560]">Guests</h2>
-      <Button variant="outline" size="sm">
-        Add Guest
-      </Button>
-    </div>
-    <div className="space-y-3">
-      <div className="flex items-center p-3 border border-gray-100 rounded-md hover:bg-gray-50">
-        <div className="bg-gray-200 rounded-full p-2 mr-3">
-          <FaUserSecret className="h-5 w-5 text-gray-700" />
-        </div>
-        <div>
-          <h3 className="font-medium">John Doe</h3>
-          <p className="text-sm text-[#7E92A2]">Confirmed • Paid</p>
-        </div>
-      </div>
-      <div className="flex items-center p-3 border border-gray-100 rounded-md hover:bg-gray-50">
-        <div className="bg-gray-200 rounded-full p-2 mr-3">
-          <FaUserSecret className="h-5 w-5 text-gray-700" />
-        </div>
-        <div>
-          <h3 className="font-medium">Jane Smith</h3>
-          <p className="text-sm text-[#7E92A2]">Pending • Unpaid</p>
-        </div>
-      </div>
-    </div>
-  </div>
-)
+export default function TourManagement() {
+  const [tours, setTours] = useState([
+    {
+      id: "#00001",
+      name: "Nacho Varga",
+      price: "$120",
+      date: "2020/02/09 - 25",
+      destination: "Phnom Penh",
+      participants: "20/20",
+      rating: 4.5,
+      status: "Full",
+    },
+    {
+      id: "#00002",
+      name: "Lalo Salamanca",
+      price: "$120",
+      date: "2020/02/09 - 25",
+      destination: "Phnom Penh - SiemReap",
+      participants: "10/20",
+      rating: 5.0,
+      status: "Ongoing",
+    },
+    {
+      id: "#00003",
+      name: "Pablo Escobar",
+      price: "$120",
+      date: "2020/02/09 - 25",
+      destination: "Phnom Penh - SiemReap - Kep",
+      participants: "15/15",
+      rating: 4.4,
+      status: "Full",
+    },
+    {
+      id: "#00004",
+      name: "Jesse Pinkman",
+      price: "$120",
+      date: "2020/02/09 - 25",
+      destination: "Phnom Penh - Kep",
+      participants: "#####",
+      rating: 1.2,
+      status: "Close",
+    },
+    {
+      id: "#00005",
+      name: "Jimmy McGill",
+      price: "$120",
+      date: "2020/02/09 - 25",
+      destination: "Phnom Penh - SiemReap",
+      participants: "12/13",
+      rating: 3.8,
+      status: "Ongoing",
+    },
+    {
+      id: "#00006",
+      name: "Gus Fring",
+      price: "$120",
+      date: "2020/02/09 - 25",
+      destination: "Phnom Penh - SiemReap - Kep",
+      participants: "15/20",
+      rating: 4.8,
+      status: "Ongoing",
+    },
+  ])
 
-const TourDetailsIteneray = () => (
-  <div className="bg-white border border-gray-200 p-6 rounded-lg w-full md:w-2/3 space-y-4 h-fit shadow-sm">
-    <div className="flex justify-between items-center">
-      <h2 className="text-xl font-semibold text-[#495560]">Itinerary</h2>
-      <Button variant="outline" size="sm">
-        Edit Itinerary
-      </Button>
-    </div>
-    <div className="space-y-4">
-      <div className="border-l-2 border-blue-500 pl-4 py-2">
-        <div className="flex justify-between">
-          <h3 className="font-medium">Day 1 - Arrival and Welcome Dinner</h3>
-          <span className="text-sm text-[#7E92A2]">March 20</span>
-        </div>
-        <p className="text-sm text-[#7E92A2] mt-1">
-          Airport pickup, hotel check-in, and welcome dinner at Mountain View Restaurant.
-        </p>
-      </div>
-      <div className="border-l-2 border-blue-500 pl-4 py-2">
-        <div className="flex justify-between">
-          <h3 className="font-medium">Day 2 - Hiking Trail Exploration</h3>
-          <span className="text-sm text-[#7E92A2]">March 21</span>
-        </div>
-        <p className="text-sm text-[#7E92A2] mt-1">
-          Breakfast at hotel, guided hiking tour, picnic lunch, and evening campfire.
-        </p>
-      </div>
-      <div className="border-l-2 border-blue-500 pl-4 py-2">
-        <div className="flex justify-between">
-          <h3 className="font-medium">Day 3 - Wildlife Observation</h3>
-          <span className="text-sm text-[#7E92A2]">March 22</span>
-        </div>
-        <p className="text-sm text-[#7E92A2] mt-1">
-          Early morning wildlife spotting, photography workshop, and local cuisine dinner.
-        </p>
-      </div>
-    </div>
-  </div>
-)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [searchQuery, setSearchQuery] = useState("")
 
-const TourDetailsDetail = () => (
-  <div className="bg-white border border-gray-200 p-6 rounded-lg w-full md:w-1/3 space-y-4 h-fit shadow-sm">
-    <h2 className="text-xl font-semibold text-[#495560]">Details</h2>
-    <div className="space-y-4">
-      <div className="flex justify-between border-b pb-2">
-        <span className="text-[#7E92A2]">Difficulty Level</span>
-        <span className="font-medium">Moderate</span>
-      </div>
-      <div className="flex justify-between border-b pb-2">
-        <span className="text-[#7E92A2]">Accommodation</span>
-        <span className="font-medium">Hotel & Camping</span>
-      </div>
-      <div className="flex justify-between border-b pb-2">
-        <span className="text-[#7E92A2]">Meals Included</span>
-        <span className="font-medium">Breakfast, Lunch</span>
-      </div>
-      <div className="flex justify-between border-b pb-2">
-        <span className="text-[#7E92A2]">Transportation</span>
-        <span className="font-medium">Private Van</span>
-      </div>
-      <div className="flex justify-between border-b pb-2">
-        <span className="text-[#7E92A2]">Group Size</span>
-        <span className="font-medium">5-12 People</span>
-      </div>
-      <div className="flex justify-between">
-        <span className="text-[#7E92A2]">Languages</span>
-        <span className="font-medium">English, Spanish</span>
-      </div>
-    </div>
-  </div>
-)
-
-export default function TourDetailsPage() {
-  const [isEditing, setIsEditing] = useState(false)
-  const [activeTab, setActiveTab] = useState("overview")
-
-  // Sample tour data - replace with actual data from your API/database
-  const tourData = {
-    name: "Mountain Expedition",
-    createdAt: "01/15/2023",
-    startDate: "03/20/2023",
-    endDate: "03/27/2023",
-    maxParticipants: "12",
-    price: "$1,299",
-    overview:
-      "Experience the breathtaking views of the mountain range with our expert guides. This 7-day expedition includes camping, hiking, and wildlife observation. Suitable for moderately experienced hikers with a good level of fitness.",
-    imageUrl: "/placeholder.svg?height=192&width=256",
-    status: "Active",
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case "Full":
+        return "bg-red-100 text-red-800 hover:bg-red-100"
+      case "Ongoing":
+        return "bg-blue-100 text-blue-800 hover:bg-blue-100"
+      case "Close":
+        return "bg-rose-100 text-rose-800 hover:bg-rose-100"
+      default:
+        return "bg-gray-100 text-gray-800 hover:bg-gray-100"
+    }
   }
 
   return (
-    <div className="min-h-screen space-y-5 bg-[#F5F6FA] pb-8">
-      <div className="sticky top-0 z-10">
-        <div className="flex p-6 items-center h-16 justify-between bg-white shadow-sm">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-semibold">Tour Details</h1>
-            <BiEditAlt
-              className={`text-xl cursor-pointer ${isEditing ? "text-blue-600" : "text-gray-600 hover:text-gray-900"}`}
-              onClick={() => setIsEditing(!isEditing)}
-            />
-            {isEditing && <span className="text-sm text-blue-600 font-medium">Editing Mode</span>}
-          </div>
-
-          <div className="flex items-center space-x-6">
+    <div className="bg-white rounded-lg shadow">
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Tour Management</h1>
+          <div className="flex gap-4">
+            <Button className="bg-blue-600 hover:bg-blue-700">Create New Tour</Button>
             <div className="relative">
-              <FaBell className="h-6 w-6 text-gray-600 hover:text-gray-900 cursor-pointer" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                3
-              </span>
-            </div>
-            <div className="flex space-x-3 items-center">
-              <div className="bg-gray-200 rounded-full p-2">
-                <FaUserSecret className="h-6 w-6 text-gray-700" />
-              </div>
-              <div className="text-sm">
-                <h1 className="font-medium">Gus Fring</h1>
-                <h1 className="text-gray-500">Admin</h1>
-              </div>
-              <IoIosArrowDropdown className="text-[#5C5C5C] h-5 w-5 cursor-pointer" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-4 md:mx-10 pt-6">
-        <div className="bg-white border border-gray-200 p-6 rounded-lg w-full space-y-6 h-fit shadow-sm">
-          <div className="flex flex-col lg:flex-row justify-between gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-6 flex-1">
-              <div>
-                <h1 className="text-[#7E92A2] text-sm font-medium">Tour Name:</h1>
-                <h1 className="text-[#495560] font-semibold">{tourData.name}</h1>
-              </div>
-              <div>
-                <h1 className="text-[#7E92A2] text-sm font-medium">Created At:</h1>
-                <h1 className="text-[#495560] font-semibold">{tourData.createdAt}</h1>
-              </div>
-              <div>
-                <h1 className="text-[#7E92A2] text-sm font-medium">Start Date:</h1>
-                <h1 className="text-[#495560] font-semibold">{tourData.startDate}</h1>
-              </div>
-              <div>
-                <h1 className="text-[#7E92A2] text-sm font-medium">End Date:</h1>
-                <h1 className="text-[#495560] font-semibold">{tourData.endDate}</h1>
-              </div>
-              <div>
-                <h1 className="text-[#7E92A2] text-sm font-medium">Maximum Participants:</h1>
-                <h1 className="text-[#495560] font-semibold">{tourData.maxParticipants}</h1>
-              </div>
-              <div>
-                <h1 className="text-[#7E92A2] text-sm font-medium">Price:</h1>
-                <h1 className="text-[#495560] font-semibold">{tourData.price}</h1>
-              </div>
-            </div>
-            <div className="flex flex-col items-center">
-              <Image
-                src={tourData.imageUrl || "/placeholder.svg"}
-                alt={tourData.name}
-                width={256}
-                height={192}
-                className="w-full lg:w-auto h-48 rounded-xl object-cover"
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <Input
+                className="pl-10 w-64"
+                placeholder="Search by name or ID"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <span
-                className={`mt-2 px-3 py-1 rounded-full text-xs font-medium ${
-                  tourData.status === "Active"
-                    ? "bg-green-100 text-green-800"
-                    : tourData.status === "Draft"
-                      ? "bg-gray-100 text-gray-800"
-                      : "bg-yellow-100 text-yellow-800"
-                }`}
-              >
-                {tourData.status}
-              </span>
             </div>
           </div>
-
-          <Tabs defaultValue="overview" className="w-full" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="inclusions">Inclusions</TabsTrigger>
-              <TabsTrigger value="notes">Notes</TabsTrigger>
-            </TabsList>
-            <TabsContent value="overview" className="pt-4">
-              <p className="text-[#495560]">{tourData.overview}</p>
-            </TabsContent>
-            <TabsContent value="inclusions" className="pt-4">
-              <ul className="list-disc pl-5 space-y-2 text-[#495560]">
-                <li>Professional English-speaking guide</li>
-                <li>7 nights accommodation (3 nights hotel, 4 nights camping)</li>
-                <li>All breakfasts and lunches</li>
-                <li>Transportation between locations</li>
-                <li>All permits and entrance fees</li>
-                <li>Camping equipment (tents, sleeping bags)</li>
-              </ul>
-            </TabsContent>
-            <TabsContent value="notes" className="pt-4">
-              <p className="text-[#495560]">
-                Participants should bring appropriate hiking boots, weather-appropriate clothing, personal medications,
-                and a camera. A detailed packing list will be provided upon booking. Tour may be modified due to weather
-                conditions or other factors.
-              </p>
-            </TabsContent>
-          </Tabs>
         </div>
-      </div>
 
-      <div className="flex flex-col md:flex-row mx-4 md:mx-10 space-y-6 md:space-y-0 md:space-x-6 mt-6">
-        <TourDetailsGuest />
-      </div>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">ID</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Tour Name</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Base Price</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Start/End Date</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Destination</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Participants</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Rating</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Status</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {tours.map((tour) => (
+                <tr key={tour.id} className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="py-4 px-4 text-sm">{tour.id}</td>
+                  <td className="py-4 px-4 text-sm">{tour.name}</td>
+                  <td className="py-4 px-4 text-sm">{tour.price}</td>
+                  <td className="py-4 px-4 text-sm">{tour.date}</td>
+                  <td className="py-4 px-4 text-sm">{tour.destination}</td>
+                  <td className="py-4 px-4 text-sm">{tour.participants}</td>
+                  <td className="py-4 px-4 text-sm">{tour.rating}</td>
+                  <td className="py-4 px-4 text-sm">
+                    <Badge className={getStatusBadgeClass(tour.status)}>{tour.status}</Badge>
+                  </td>
+                  <td className="py-4 px-4 text-sm">
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Trash2 size={18} className="text-gray-500" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Edit2 size={18} className="text-gray-500" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      <div className="flex flex-col md:flex-row mx-4 md:mx-10 space-y-6 md:space-y-0 md:space-x-6 pb-5">
-        <TourDetailsIteneray />
-        <TourDetailsDetail />
+        <div className="flex justify-between items-center mt-6">
+          <Button variant="outline" size="sm" className="flex items-center gap-1">
+            <ChevronLeft size={16} />
+            Prev. Date
+          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="bg-blue-50 text-blue-600 border-blue-200">
+              1
+            </Button>
+            <Button variant="outline" size="sm">
+              2
+            </Button>
+            <span className="text-gray-500">...</span>
+            <span className="text-gray-500">...</span>
+            <Button variant="outline" size="sm">
+              35
+            </Button>
+            <Button variant="outline" size="sm">
+              36
+            </Button>
+          </div>
+          <Button variant="outline" size="sm" className="flex items-center gap-1">
+            Next Date
+            <ChevronRight size={16} />
+          </Button>
+        </div>
       </div>
     </div>
   )

@@ -15,7 +15,7 @@ import fs, { access } from "fs";
 import axios from "axios";
 import { verifyGoogleToken } from "../utils/googleAuth.js"; // Utility function to verify Google token
 import { verifyFacebookToken } from "../utils/facebookAuth.js"; //
-//function to get all users
+
 export const signup = async (req, res) => {
   const {
     firstname,
@@ -465,7 +465,6 @@ export const handleGoogle = async (req, res) => {
         phonenumber: userInfo.phone_number || undefined, // Avoid null
         email: userInfo.email,
         googleId: userInfo.sub,
-        profile_image: userInfo.picture,
         role: allowedRoles.includes(defaultRole) ? defaultRole : "user",
         status: allowedStatuses.includes(defaultStatus)
           ? defaultStatus
@@ -491,7 +490,6 @@ export const handleGoogle = async (req, res) => {
     } else {
       // If the user exists, update their information
       user.googleId = userInfo.sub;
-      user.profile_image = userInfo.picture;
 
       // Save the updated user
       await user.save();
@@ -615,7 +613,6 @@ export const handleFacebook = async (req, res) => {
         lastname: userInfo.last_name || "LastName",
         email: userInfo.email,
         facebookId: userInfo.id,
-        profile_image: userInfo.picture?.data?.url || "",
         role: allowedRoles.includes(defaultRole) ? defaultRole : "user",
         status: defaultStatus,
         isVerified: true,
@@ -628,9 +625,7 @@ export const handleFacebook = async (req, res) => {
         `${process.env.CLIENT_URL}/profile/${user._id}/myprofile`
       );
     }
-
     user.facebookId = userInfo.id;
-    user.profile_image = userInfo.picture?.data?.url || user.profile_image;
     await user.save();
 
     console.log(`Existing user logged in: ${user.email}`);
