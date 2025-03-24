@@ -14,8 +14,12 @@ import {
   showFacebookAuth,
   handleFacebook,
 } from "../controllers/auth-controllers.js";
-import { getAllUsers, getUserById } from "../controllers/display-user-controllers.js";
+import {
+  getAllUsers,
+  getUserById,
+} from "../controllers/display-user-controllers.js";
 import { verifyToken } from "../middlewares/verifyToken.js";
+import { authenticateToken } from "../middlewares/authenticateToken.js";
 // import upload from "../middleware/uploadImage.js";
 
 const router = express.Router();

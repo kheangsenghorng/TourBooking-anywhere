@@ -8,6 +8,7 @@ import connectToDatabase from "./database/db.js";
 import authRoutes from "./routes/user-routes.js";
 import filerouter from "./routes/file-rotes.js";
 import e from "express";
+import addressrouter from "./routes/address-routes.js";
 // import locationRoute from "./routes/loaction-route.js";
 // import categoryRoutes from "./routes/category-route.js";
 // import tourRoutes from "./routes/company-routes/addpackage-route.js";
@@ -23,7 +24,7 @@ const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(path.resolve(), "public")));
+app.use("/uploads", express.static("uploads"));
 
 connectToDatabase();
 
@@ -32,6 +33,7 @@ app.get("/", (req, res) => {
 });
 app.use("/api/auth", authRoutes);
 app.use("/api/files", filerouter);
+app.use("/api/address", addressrouter);
 // app.use("/v1/locations", locationRoute);
 // app.use("/v1/categories", categoryRoutes);
 // app.use("/v1/tours", tourRoutes);

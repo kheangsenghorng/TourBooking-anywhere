@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const tourSchema = new mongoose.Schema(
   {
-    tour_id: { type: Number, required: true, unique: true }, // Unique ID for each tour
+    tour_id: { type: String, required: true, unique: true },
     tour_name: { type: String, required: true }, // Name of the tour
     description: { type: String, required: true }, // Description of the tour
     price: { type: Number, required: true }, // Price of the tour
@@ -37,7 +37,9 @@ const tourSchema = new mongoose.Schema(
       ref: "Location", // Reference to Location model
       required: true,
     },
-    company: {
+    limit: { type: Number, required: true }, // Maximum number of people allowed
+    galleryImages: { type: [String], default: [] },
+    admin: {
       type: mongoose.Types.ObjectId,
       ref: "User", // Reference to the User model (company)
       required: true,

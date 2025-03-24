@@ -46,7 +46,7 @@ const Sidebar = ({ children }) => {
               },
               { href: `/${id}/user`, icon: faBook, label: "User" },
               {
-                href: `/${id}/feedback`,
+                href: `/${id}/feedback-admin`,
                 icon: faCommentDots,
                 label: "Feedback",
               },

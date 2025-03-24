@@ -41,7 +41,6 @@ const LoginPage = () => {
         const { role, id } = user;
         if (!role) throw new Error("User role is not defined");
 
-<<<<<<< Updated upstream
         if (!role) {
           throw new Error("User role is not defined");
         }
@@ -56,10 +55,6 @@ const LoginPage = () => {
           router.push(`/profile/${id}/myprofile`);
         }
       }, 2000); // Redirect after 2 seconds
-=======
-        router.push(role === "admin" ? `/${id}/dashboard` : `/profile/${id}/topcard`);
-      }, 2000);
->>>>>>> Stashed changes
     } catch (err) {
       setError(err.message || "Login failed. Please try again.");
     } finally {

@@ -4,33 +4,36 @@ import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faCopy, faPen } from "@fortawesome/free-solid-svg-icons";
 import { useParams } from "next/navigation";
-import { userStore } from "@/store/userStore";
+
+import { profileStore } from "@/store/profileStore"; // Ensure correct path
 import Image from "next/image";
 import Link from "next/link";
 
 const UserPage = () => {
   const params = useParams();
-  const { users, loading, error, getAllUsers } = userStore();
-  const { uploadProfileImage } = useProfileStore();
-  const [profile, setProfile] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(""); // ✅ Add search state
+
+  const { users, fetchProfileImage, fetchUsers, loading, error } =
+    profileStore();
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 8;
 
+  // ✅ Fetch users when params.id changes
   useEffect(() => {
     if (params.id) {
-      getAllUsers(params.id);
+      fetchUsers(params.id);
     }
-  }, [params.id, getAllUsers]);
+  }, [params.id]);
 
-  // ✅ Filter users based on search query (before pagination)
-  const filteredUsers = users.filter((user) =>
-    `${user.firstname} ${user.lastname}`
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = Array.isArray(users)
+    ? users.filter((user) =>
+        `${user.firstname} ${user.lastname}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      )
+    : [];
 
-  // ✅ Apply pagination AFTER filtering
+  // ✅ Pagination logic
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
   const startIndex = (currentPage - 1) * usersPerPage;
   const currentUsers = filteredUsers.slice(
@@ -49,8 +52,8 @@ const UserPage = () => {
                 type="text"
                 placeholder="Search by user name"
                 className="pl-10 pr-4 py-2 border rounded-lg w-64 md:w-96"
-                value={searchQuery} // ✅ Correct binding
-                onChange={(e) => setSearchQuery(e.target.value)} // ✅ Correct event handler
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <FontAwesomeIcon
                 icon={faSearch}
@@ -102,17 +105,18 @@ const UserPage = () => {
                 </tr>
               ) : (
                 currentUsers.map((user, i) => (
-                  <tr key={i} className="border-t text-nowrap hover:bg-gray-50">
+                  <tr
+                    key={user._id}
+                    className="border-t text-nowrap hover:bg-gray-50"
+                  >
                     <td className="px-4 py-3">#{startIndex + i + 1000}</td>
                     <td className="px-4 py-3">
                       <Link href={`/${params.id}/viewuser/${user._id}`}>
                         <div className="w-10 h-10 rounded-full overflow-hidden">
                           <Image
                             src={
-                              user?.profile_image &&
-                              user.profile_image + profile
-                                ? user.profile_image
-                                : "/images.png"
+                              user.profile_image_url ||
+                              "https://www.gravatar.com/avatar/?d=mp&s=120"
                             }
                             alt="Profile"
                             width={40}
@@ -125,8 +129,8 @@ const UserPage = () => {
                     <td className="px-4 py-3">
                       {user.lastname} {user.firstname}
                     </td>
-                    <td className="px-4 py-3">{user.lastname}</td>
-                    <td className="px-4 py-3">{user.firstname}</td>
+                    <td className="px-4 py-3">{user.tourName || "N/A"}</td>
+                    <td className="px-4 py-3">{user.tourRating || "N/A"}</td>
                     <td className="px-4 py-3">{user.phonenumber}</td>
                     <td className="px-4 py-3">
                       <span

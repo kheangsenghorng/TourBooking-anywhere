@@ -5,16 +5,32 @@ import { PenSquare } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { userStore } from "@/store/userStore";
+import { profileStore } from "@/store/profileStore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 
 const Page = () => {
-  const { id } = useParams();
+  const params = useParams();
   const { user, loading, error, fetchUserById } = userStore();
+  const {
+    profileImage,
+    setProfileImage,
+    fetchProfileImage,
+    uploadProfileImage,
+  } = profileStore();
 
   useEffect(() => {
-    if (id) {
-      fetchUserById(id);
+    if (params.id) {
+      fetchUserById(params.id);
+
+      // Ensure param.id is a valid string before using it
+      if (typeof params.id === "string" && params.id.trim() !== "") {
+        fetchProfileImage(params.id);
+      } else {
+        console.error("Invalid param.id:", params.id);
+      }
     }
-  }, [id]);
+  }, [params.id, fetchUserById, fetchProfileImage]);
 
   if (loading) return <p>Loading user...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -26,19 +42,15 @@ const Page = () => {
 
       <div className="flex items-center mb-8">
         <div className="flex">
-          <div className="relative">
+          <Avatar className="h-24 w-24">
             <Image
               src={
-                user?.profile_image && user.profile_image.startsWith("https")
-                  ? user.profile_image
-                  : "/images.png"
+                profileImage || "https://www.gravatar.com/avatar/?d=mp&s=120"
               }
               alt="User profile image"
-              width={120}
-              height={120}
-              className="rounded-full object-cover border-4 border-white shadow-md"
+              layout="fill"
             />
-          </div>
+          </Avatar>
           <main className="flex flex-col justify-center ml-4">
             <h2 className="mt-4 text-xl font-semibold uppercase">
               {user?.firstname || "N/A"}
@@ -52,7 +64,7 @@ const Page = () => {
       </div>
 
       <div className="flex justify-end mb-4">
-        <Link href={`/profile/${id}/editMyProfile`}>
+        <Link href={`/profile/${params.id}/editMyProfile`}>
           <button className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-5 py-2 flex items-center gap-2 transition-colors">
             Edit Profile
             <PenSquare className="w-5 h-5" />

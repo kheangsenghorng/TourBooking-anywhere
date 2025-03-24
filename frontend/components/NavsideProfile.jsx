@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 const NavsideProfile = ({ children }) => {
   const { id } = useParams();
   return (
-    <div className="flex">
+    <div className="flex py-24">
       <div className="w-64 bg-white shadow-md">
         <div className="py-4 px-6">
           <h2 className="text-lg font-semibold text-gray-800">Settings</h2>
