@@ -4,26 +4,75 @@ import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faCopy, faPen } from "@fortawesome/free-solid-svg-icons";
 import { useParams } from "next/navigation";
-
-import { profileStore } from "@/store/profileStore"; // Ensure correct path
+import { profileStore } from "@/store/profileStore";
 import Image from "next/image";
 import Link from "next/link";
+import { userStore } from "@/store/userStore";
+import { useAddressStore } from "@/store/addressStore";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const UserPage = () => {
   const params = useParams();
-
   const { users, fetchProfileImage, fetchUsers, loading, error } =
     profileStore();
+  const {
+    address,
+    loading: addressLoading,
+    error: addressError,
+    fetchAddress,
+  } = useAddressStore();
+  const { user, fetchUserById, editUser } = userStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [hoveredUser, setHoveredUser] = useState(null);
   const usersPerPage = 8;
 
-  // ✅ Fetch users when params.id changes
+  const [formData, setFormData] = useState({
+    status: "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prevData) => ({
+        ...prevData,
+        status: user.status || "",
+      }));
+    }
+  }, [user]);
+
+  // Fix: Properly update formData when status changes
+  const handleStatusChange = async (userId, newStatus) => {
+    try {
+      // Update the user status in the backend
+      await editUser(userId, { status: newStatus });
+
+      // Update the local state to reflect the change immediately
+      const updatedUsers = users.map((user) =>
+        user._id === userId ? { ...user, status: newStatus } : user
+      );
+
+      // Assuming you have a way to update the users in your store
+      // This might need adjustment based on your actual store implementation
+      fetchUsers(params.id); // Refresh the user list
+    } catch (error) {
+      console.error("Failed to update user status:", error);
+      // You might want to show an error message to the user here
+    }
+  };
   useEffect(() => {
     if (params.id) {
       fetchUsers(params.id);
+      fetchAddress(params.id); // Fetch address data
     }
-  }, [params.id]);
+  }, [params.id, fetchAddress, fetchUsers]);
 
   const filteredUsers = Array.isArray(users)
     ? users.filter((user) =>
@@ -33,7 +82,6 @@ const UserPage = () => {
       )
     : [];
 
-  // ✅ Pagination logic
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
   const startIndex = (currentPage - 1) * usersPerPage;
   const currentUsers = filteredUsers.slice(
@@ -70,17 +118,72 @@ const UserPage = () => {
         </div>
 
         <div className="overflow-x-auto">
+          {/* Hover card positioned above the table body */}
+          {/* {hoveredUser && (
+            <div className="absolute ml-7 top-10 left-1/2 max-md:left-16 transform -translate-x-1/2 z-10 w-72 mb-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex flex-col items-center space-y-4">
+                    <Avatar className="h-24 w-24">
+                      <Image
+                        src={
+                          hoveredUser.profile_image_url ||
+                          "https://www.gravatar.com/avatar/?d=mp&s=120"
+                        }
+                        alt="User profile image"
+                        width={96}
+                        height={96}
+                        className="object-cover"
+                      />
+                    </Avatar>
+                    <div className="space-y-1 text-center">
+                      <h2 className="text-2xl font-bold">
+                        {hoveredUser.firstname} {hoveredUser.lastname}
+                      </h2>
+                      <p className="text-muted-foreground flex items-center justify-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        {hoveredUser.location || "Location not specified"}
+                      </p>
+                    </div>
+                    <div className="flex w-full justify-around text-center">
+                      <div>
+                        <p className="text-xl font-bold">
+                          {hoveredUser.tours || "0"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Tours</p>
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold">
+                          {hoveredUser.countries || "0"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Countries
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold">
+                          {hoveredUser.years || "0"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Years</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )} */}
+
           <table className="w-full">
             <thead>
               <tr className="text-left text-sm text-gray-500">
                 <th className="px-4 py-2">ID</th>
                 <th className="px-4 py-2">Profile</th>
                 <th className="px-4 py-2">User Name</th>
-                <th className="px-4 py-2">Tour Name</th>
-                <th className="px-4 py-2">Tour Rating</th>
+                <th className="px-4 py-2">Email</th>
                 <th className="px-4 py-2">Phone</th>
                 <th className="px-4 py-2">Status</th>
                 <th className="px-4 py-2">Role</th>
+                <th className="px-4 py-2">Date</th>
                 <th className="px-4 py-2">Actions</th>
               </tr>
             </thead>
@@ -108,6 +211,8 @@ const UserPage = () => {
                   <tr
                     key={user._id}
                     className="border-t text-nowrap hover:bg-gray-50"
+                    onMouseEnter={() => setHoveredUser(user)}
+                    onMouseLeave={() => setHoveredUser(null)}
                   >
                     <td className="px-4 py-3">#{startIndex + i + 1000}</td>
                     <td className="px-4 py-3">
@@ -127,25 +232,83 @@ const UserPage = () => {
                       </Link>
                     </td>
                     <td className="px-4 py-3">
-                      {user.lastname} {user.firstname}
-                    </td>
-                    <td className="px-4 py-3">{user.tourName || "N/A"}</td>
-                    <td className="px-4 py-3">{user.tourRating || "N/A"}</td>
-                    <td className="px-4 py-3">{user.phonenumber}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-3 py-1 text-xs font-medium rounded-full ${
-                          user?.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800 border border-yellow-200"
-                            : user?.status === "approved"
-                            ? "bg-green-100 text-green-800 border border-green-200"
-                            : "bg-gray-100 text-gray-800 border border-gray-200"
-                        }`}
+                      <Link
+                        href={`/${params.id}/viewuser/${user._id}`}
+                        className="hover:underline"
                       >
-                        {user?.status || "N/A"}
-                      </span>
+                        {user.lastname} {user.firstname}
+                      </Link>
                     </td>
+                    <td className="px-4 py-3">{user.email || "N/A"}</td>
+                    <td className="px-4 py-3">{user.phonenumber || "N/A"}</td>
+                    <td className="px-4 py-3">
+                      {/* <select
+                        className="px-3 py-1 text-xs font-medium rounded-full border outline-none transition-all duration-200 bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200 hover:border-yellow-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
+                        value={user?.status || "N/A"}
+                        onChange={(e) =>
+                          handleStatusChange(user._id, e.target.value)
+                        }
+                      >
+                        <option
+                          value="pending"
+                          className="bg-yellow-100 text-yellow-800 border border-yellow-200"
+                        >
+                          Pending
+                        </option>
+                        <option
+                          value="approved"
+                          className="bg-green-100 text-green-800"
+                        >
+                          Approved
+                        </option>
+                        <option
+                          value="rejected"
+                          className="bg-gray-100 text-gray-800"
+                        >
+                          Rejected
+                        </option>
+                      </select> */}
+                      <select
+                        className={`px-3 py-1 text-xs font-medium rounded-full border outline-none transition-all duration-200
+        ${
+          user.status === "pending"
+            ? "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200"
+            : user.status === "approved"
+            ? "bg-green-100 text-green-800 border border-green-200"
+            : "bg-red-600 text-white border-red-500 hover:bg-red-700"
+        }`}
+                        value={user.status}
+                        onChange={(e) =>
+                          handleStatusChange(user._id, e.target.value)
+                        }
+                      >
+                        <option
+                          value="pending"
+                          className="bg-yellow-100 text-yellow-800"
+                        >
+                          Pending
+                        </option>
+                        <option
+                          value="approved"
+                          className="bg-green-100 text-green-800"
+                        >
+                          Approved
+                        </option>
+                        <option
+                          value="rejected"
+                          className="bg-red-100 text-red-800"
+                        >
+                          Rejected
+                        </option>
+                      </select>
+                    </td>
+
                     <td className="px-4 py-3">{user.role}</td>
+                    <td className="px-4 py-3">
+                      {user.joined_date
+                        ? new Date(user.joined_date).toISOString().split("T")[0]
+                        : "N/A"}
+                    </td>
                     <td className="px-4 py-3 flex gap-2">
                       <button
                         className="p-1 hover:text-blue-500"
@@ -153,12 +316,13 @@ const UserPage = () => {
                       >
                         <FontAwesomeIcon icon={faCopy} className="w-4 h-4" />
                       </button>
-                      <button
+                      <Link
+                        href={`/${params.id}/edituser/${user._id}`}
                         className="p-1 hover:text-blue-500"
                         title="Edit user"
                       >
                         <FontAwesomeIcon icon={faPen} className="w-4 h-4" />
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))
