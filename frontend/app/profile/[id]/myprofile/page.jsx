@@ -6,8 +6,9 @@ import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { userStore } from "@/store/userStore";
 import { profileStore } from "@/store/profileStore";
+import { useAddressStore } from "@/store/addressStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import { ToastContainer, toast } from 'react-toastify';
 
 const Page = () => {
   const params = useParams();
@@ -19,18 +20,25 @@ const Page = () => {
     uploadProfileImage,
   } = profileStore();
 
+  const {
+    address,
+    loading: addressLoading,
+    error: addressError,
+    fetchAddress,
+  } = useAddressStore();
+
   useEffect(() => {
     if (params.id) {
       fetchUserById(params.id);
+      fetchAddress(params.id);
 
-      // Ensure param.id is a valid string before using it
       if (typeof params.id === "string" && params.id.trim() !== "") {
         fetchProfileImage(params.id);
       } else {
         console.error("Invalid param.id:", params.id);
       }
     }
-  }, [params.id, fetchUserById, fetchProfileImage]);
+  }, [params.id, fetchUserById, fetchProfileImage, fetchAddress]);
 
   if (loading) return <p>Loading user...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -43,13 +51,14 @@ const Page = () => {
       <div className="flex items-center mb-8">
         <div className="flex">
           <Avatar className="h-24 w-24">
-            <Image
-              src={
-                profileImage || "https://www.gravatar.com/avatar/?d=mp&s=120"
-              }
-              alt="User profile image"
-              layout="fill"
-            />
+            {profileImage ? (
+              <AvatarImage src={profileImage} alt="User profile image" />
+            ) : (
+              <AvatarFallback>
+                {user.firstname?.charAt(0) || "U"}
+                {user.lastname?.charAt(0) || "S"}
+              </AvatarFallback>
+            )}
           </Avatar>
           <main className="flex flex-col justify-center ml-4">
             <h2 className="mt-4 text-xl font-semibold uppercase">
@@ -115,51 +124,51 @@ const Page = () => {
       {/* Address */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h3 className="text-lg font-semibold mb-4">Address</h3>
+        {addressLoading && <p>Loading address...</p>}
+        {addressError}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Country</label>
-            <div className="text-gray-900">
-              {user?.address?.country || "N/A"}
+        {address ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Country
+              </label>
+              <div className="text-gray-900">{address?.country || "N/A"}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                City/State
+              </label>
+              <div className="text-gray-900">
+                {address?.city || "N/A"} {address?.state || "N/A"}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                ZIP Code
+              </label>
+              <div className="text-gray-900">{address?.zip || "N/A"}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Street</label>
+              <div className="text-gray-900">{address?.street || "N/A"}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Home Number
+              </label>
+              <div className="text-gray-900">
+                {address?.homenumber || "N/A"}
+              </div>
             </div>
           </div>
-
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">
-              City/State
-            </label>
-            <div className="text-gray-900">{user?.address?.city || "N/A"}</div>
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">ZIP Code</label>
-            <div className="text-gray-900">
-              {user?.address?.zipcode || "N/A"}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Street</label>
-            <div className="text-gray-900">
-              {user?.address?.street || "N/A"}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">
-              Home Number
-            </label>
-            <div className="text-gray-900">
-              {user?.address?.homeNumber || "N/A"}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded">
-          Create
-        </button>
+        ) : (
+          !addressLoading && <p>No address found</p>
+        )}
       </div>
     </div>
   );

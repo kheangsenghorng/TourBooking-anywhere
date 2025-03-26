@@ -1,12 +1,14 @@
-"use client"
+"use client";
+import { useState } from "react";
+import { Search, ChevronLeft, ChevronRight, Trash2, Edit2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
-import { useState } from "react"
-import { Search, ChevronLeft, ChevronRight, Trash2, Edit2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 
 export default function TourManagement() {
+
   const [tours, setTours] = useState([
     {
       id: "#00001",
@@ -68,23 +70,23 @@ export default function TourManagement() {
       rating: 4.8,
       status: "Ongoing",
     },
-  ])
+  ]);
 
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case "Full":
-        return "bg-red-100 text-red-800 hover:bg-red-100"
+        return "bg-red-100 text-red-800 hover:bg-red-100";
       case "Ongoing":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-100"
+        return "bg-blue-100 text-blue-800 hover:bg-blue-100";
       case "Close":
-        return "bg-rose-100 text-rose-800 hover:bg-rose-100"
+        return "bg-rose-100 text-rose-800 hover:bg-rose-100";
       default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-100"
+        return "bg-gray-100 text-gray-800 hover:bg-gray-100";
     }
-  }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -92,9 +94,14 @@ export default function TourManagement() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Tour Management</h1>
           <div className="flex gap-4">
-            <Button className="bg-blue-600 hover:bg-blue-700">Create New Tour</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              Create New Tour
+            </Button>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={18}
+              />
               <Input
                 className="pl-10 w-64"
                 placeholder="Search by name or ID"
@@ -109,20 +116,39 @@ export default function TourManagement() {
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">ID</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Tour Name</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Base Price</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Start/End Date</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Destination</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Participants</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Rating</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Status</th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">
+                  ID
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">
+                  Tour Name
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">
+                  Base Price
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">
+                  Start/End Date
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">
+                  Destination
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">
+                  Participants
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">
+                  Rating
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">
+                  Status
+                </th>
                 <th className="text-left py-3 px-4 font-medium text-sm text-gray-600"></th>
               </tr>
             </thead>
             <tbody>
               {tours.map((tour) => (
-                <tr key={tour.id} className="border-b border-gray-200 hover:bg-gray-50">
+                <tr
+                  key={tour.id}
+                  className="border-b border-gray-200 hover:bg-gray-50"
+                >
                   <td className="py-4 px-4 text-sm">{tour.id}</td>
                   <td className="py-4 px-4 text-sm">{tour.name}</td>
                   <td className="py-4 px-4 text-sm">{tour.price}</td>
@@ -131,7 +157,9 @@ export default function TourManagement() {
                   <td className="py-4 px-4 text-sm">{tour.participants}</td>
                   <td className="py-4 px-4 text-sm">{tour.rating}</td>
                   <td className="py-4 px-4 text-sm">
-                    <Badge className={getStatusBadgeClass(tour.status)}>{tour.status}</Badge>
+                    <Badge className={getStatusBadgeClass(tour.status)}>
+                      {tour.status}
+                    </Badge>
                   </td>
                   <td className="py-4 px-4 text-sm">
                     <div className="flex gap-2">
@@ -150,12 +178,20 @@ export default function TourManagement() {
         </div>
 
         <div className="flex justify-between items-center mt-6">
-          <Button variant="outline" size="sm" className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+          >
             <ChevronLeft size={16} />
             Prev. Date
           </Button>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="bg-blue-50 text-blue-600 border-blue-200">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-blue-50 text-blue-600 border-blue-200"
+            >
               1
             </Button>
             <Button variant="outline" size="sm">
@@ -170,13 +206,16 @@ export default function TourManagement() {
               36
             </Button>
           </div>
-          <Button variant="outline" size="sm" className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+          >
             Next Date
             <ChevronRight size={16} />
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
-

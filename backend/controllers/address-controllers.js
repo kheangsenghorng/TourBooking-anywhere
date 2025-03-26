@@ -43,14 +43,18 @@ export const getAddressById = async (req, res) => {
 // Update Address
 export const updateAddress = async (req, res) => {
   try {
-    const address = await Address.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const address = await Address.findOneAndUpdate(
+      { userId: req.params.id }, // Find address by userId
+      req.body, // Update with new data
+      { new: true } // Return the updated document
+    );
+
     if (!address) {
       return res
         .status(404)
         .json({ success: false, message: "Address not found" });
     }
+
     res.status(200).json({ success: true, data: address });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -60,7 +64,7 @@ export const updateAddress = async (req, res) => {
 // Delete Address
 export const deleteAddress = async (req, res) => {
   try {
-    const address = await Address.findByIdAndDelete(req.params.id);
+    const address = await Address.findOneAndDelete({ userId: req.params.id });
     if (!address) {
       return res
         .status(404)
