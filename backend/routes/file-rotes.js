@@ -10,11 +10,12 @@ import {
   updateUserProfile,
   uploadProfileImage,
   uploadMultipleFiles,
+  getGallery,
+  getGallerys,
 } from "../controllers/file-controllers.js";
 import { singleUpload, uploadMultiple } from "../middlewares/upload.js";
-import multer from "multer";
+
 import { verifyAdmin } from "../middlewares/adminVerify.js";
-import { authenticateToken } from "../middlewares/authenticateToken.js";
 
 filerouter.get("/profile/:id", verifyAdmin, getAllUsers);
 
@@ -22,11 +23,16 @@ filerouter.post("/single-upload", singleUpload, handleUpqload);
 
 //upload multiple files by admin id (Protected)
 filerouter.post(
-  "/multer-uploand/:id",
+  "/admin/:id/upload/:tourId",
   verifyAdmin, // Then, check if user is an admin
   uploadMultiple,
   uploadMultipleFiles
 );
+
+filerouter.get("/gallery", getGallerys);
+filerouter.get("/galleryid/:tourId", getGallery);
+
+filerouter.get("/admin/:adminId/tour/:tourId", getGallery);
 filerouter.post("/upload-profile/:id", uploadProfileImage);
 
 filerouter.get("/profile-image/:id", getProfileImage);

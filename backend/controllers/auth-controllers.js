@@ -144,7 +144,10 @@ export const signup = async (req, res) => {
 //function to logout
 export const logout = async (req, res) => {
   res.clearCookie("token");
-  res.status(200).json({ success: true, message: "Logged out successfully" });
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
 };
 
 export const verifyEmail = async (req, res) => {
@@ -184,14 +187,23 @@ export const verifyEmail = async (req, res) => {
 };
 
 // Login function
+
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
+  // Input validation
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide both email and password.",
+    });
+  }
+
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res
-        .status(400)
+        .status(401) // Changed from 400 to 401 for unauthorized
         .json({ success: false, message: "Invalid credentials." });
     }
 
@@ -199,17 +211,25 @@ export const login = async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res
-        .status(400)
+        .status(401) // Changed from 400 to 401 for unauthorized
         .json({ success: false, message: "Invalid credentials." });
     }
 
-    // Generate JWT token and set it in a cookie
+    const isVerified = user.isVerified;
+    if (!isVerified) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email not verified" });
+    }
+
+    // Generate JWT token
     const token = generateJWTToken(res, user._id, user.role);
 
     // Send successful login response
     res.status(200).json({
       success: true,
       message: "Login successful.",
+      isVerified,
       token,
       user: {
         id: user._id,
@@ -225,7 +245,10 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Error during login:", error);
-    res.status(500).json({ success: false, message: "Server error." });
+    res.status(500).json({
+      success: false,
+      message: "An error occurred during login. Please try again later.",
+    });
   }
 };
 
@@ -475,7 +498,7 @@ export const handleGoogle = async (req, res) => {
 
       // Save the new user to the database
       const savedUser = await newUser.save();
-
+      generateJWTToken(res, user._id, user.email, user.role);
       // Handle role-specific actions
       if (savedUser.role === "admin") {
         console.log(`New admin created: ${savedUser.email}`);
@@ -495,7 +518,15 @@ export const handleGoogle = async (req, res) => {
       await user.save();
 
       console.log(`Existing user logged in: ${user.email}`);
+      generateJWTToken(res, user._id, user.email, user.role);
 
+      // Check user status before allowing login
+      if (user.status === "rejected") {
+        // Redirect to a page explaining account status
+        return res.redirect(
+          `${process.env.CLIENT_URL}/login?error=account_${user.status}`
+        );
+      }
       // Redirect based on user role
       if (user.role === "user") {
         return res.redirect(

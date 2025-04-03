@@ -1,13 +1,28 @@
+"use client";
+import { useTourStore } from "@/store/tourStore";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function PhnomPenhTour() {
+  const { tourId } = useParams();
+  const { tour, loading, error, fetchTour } = useTourStore();
+
+  useEffect(() => {
+    if (tourId) {
+      fetchTour(tourId);
+    }
+  }, [tourId]);
+
+  if (loading) return <p className="text-center text-lg">Loading...</p>;
+  if (error) return <p className="text-center text-red-500">Error: {error}</p>;
   return (
     <div className="min-h-screen w-[800px]">
       {/* Header Section */}
       <header className="text-black py-8">
         <div className="container mx-auto ps-6">
           <Link href="#Explore" id="Explore">
-            <h1 className="text-4xl font-bold">Phnom Penh Tour</h1>
+            <h1 className="text-4xl font-bold">{tour?.tour_name}</h1>
           </Link>
 
           <p className="text-lg mt-2 text-yellow-500">
@@ -23,16 +38,7 @@ export default function PhnomPenhTour() {
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">
             Overview
           </h2>
-          <p className="text-gray-600 leading-relaxed">
-            Enjoy a seamless journey from Las Vegas to the stunning Grand Canyon
-            West, one of the most iconic destinations in the world. Relax in an
-            air-conditioned vehicle and spend your day marveling at the
-            awe-inspiring views from Eagle Point and Guano Point, and immerse
-            yourself in the rich culture of the Hudlopai Tribe. For an even more
-            unforgettable experience, customize your tour by adding a Grand
-            Canyon Skywalk ticket, giving you a thrilling perspective over the
-            canyon’s edge.
-          </p>
+          <p className="text-gray-600 leading-relaxed">{tour?.overview}</p>
           <p className="text-gray-600 mt-4">
             Read more about - Grand Canyon West, Hoover Dam Stop and Optional
             Lunch and Skywalk
