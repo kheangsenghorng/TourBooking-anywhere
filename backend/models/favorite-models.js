@@ -2,19 +2,17 @@ import mongoose from "mongoose";
 
 const favoriteSchema = new mongoose.Schema(
   {
-    tourId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Tour",
-      required: true,
-    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User", // Reference to User model
-      required: true,
     },
+    tourIds: [{ // Array of tourIds that the user has added to their favorites
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tour",
+    }],
     addedDate: {
       type: Date,
-      required,
+      default: Date.now, // Automatically set current date if not provided
     },
   },
   { timestamps: true }

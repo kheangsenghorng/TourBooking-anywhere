@@ -2,24 +2,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { PenSquare } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { userStore } from "@/store/userStore";
 import { profileStore } from "@/store/profileStore";
 import { useAddressStore } from "@/store/addressStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Page = () => {
   const params = useParams();
+  const router = useRouter();
   const { user, loading, error, fetchUserById } = userStore();
-  const {
-    profileImage,
-    setProfileImage,
-    fetchProfileImage,
-    uploadProfileImage,
-  } = profileStore();
-
+  const { profileImage, fetchProfileImage } = profileStore();
   const {
     address,
     loading: addressLoading,
@@ -28,24 +24,107 @@ const Page = () => {
   } = useAddressStore();
 
   useEffect(() => {
-    if (params.id) {
-      fetchUserById(params.id);
-      fetchAddress(params.id);
-
-      if (typeof params.id === "string" && params.id.trim() !== "") {
-        fetchProfileImage(params.id);
-      } else {
-        console.error("Invalid param.id:", params.id);
-      }
+    if (loading) {
+      toast.info("Loading user data...", {
+        autoClose: false,
+        toastId: "loading",
+      });
+    } else {
+      toast.dismiss("loading");
     }
-  }, [params.id, fetchUserById, fetchProfileImage, fetchAddress]);
 
-  if (loading) return <p>Loading user...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-  if (!user) return <p>No user found.</p>;
+    return () => {
+      toast.dismiss("loading");
+    };
+  }, [loading]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error("User not found");
+      const timer = setTimeout(() => router.push("not-found"));
+      return () => clearTimeout(timer);
+    }
+  }, [error, router]);
+
+  useEffect(() => {
+    if (!user && !loading) {
+      toast.error("No user data available");
+    }
+  }, [user, loading]);
+
+  useEffect(() => {
+    if (addressError) {
+      toast.error("Failed to load address");
+    }
+  }, [addressError]);
+
+  useEffect(() => {
+    if (!params.id) return;
+
+    const loadData = async () => {
+      try {
+        await fetchUserById(params.id);
+        await fetchAddress(params.id);
+        if (typeof params.id === "string") {
+          await fetchProfileImage(params.id);
+        }
+      } catch (err) {
+        console.error("Failed to load profile data:", err);
+      }
+    };
+
+    loadData();
+  }, [params.id, fetchUserById, fetchAddress, fetchProfileImage]);
+
+  if (loading) {
+    return (
+      <div className="flex-1 p-8 flex items-center justify-center">
+        <ToastContainer
+          position="top-right"
+          autoClose={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex-1 p-8 flex items-center justify-center">
+        <p>No user found.</p>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-8">
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
       <h1 className="text-2xl font-bold mb-8">My Profile</h1>
 
       <div className="flex items-center mb-8">

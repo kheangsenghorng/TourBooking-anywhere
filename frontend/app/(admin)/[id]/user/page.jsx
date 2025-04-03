@@ -8,27 +8,13 @@ import { profileStore } from "@/store/profileStore";
 import Image from "next/image";
 import Link from "next/link";
 import { userStore } from "@/store/userStore";
-import { useAddressStore } from "@/store/addressStore";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 
 const UserPage = () => {
   const params = useParams();
   const { users, fetchProfileImage, fetchUsers, loading, error } =
     profileStore();
-  const {
-    address,
-    loading: addressLoading,
-    error: addressError,
-    fetchAddress,
-  } = useAddressStore();
+
   const { user, fetchUserById, editUser } = userStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,9 +56,8 @@ const UserPage = () => {
   useEffect(() => {
     if (params.id) {
       fetchUsers(params.id);
-      fetchAddress(params.id); // Fetch address data
     }
-  }, [params.id, fetchAddress, fetchUsers]);
+  }, [params.id, fetchUsers]);
 
   const filteredUsers = Array.isArray(users)
     ? users.filter((user) =>

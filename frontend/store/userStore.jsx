@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
 
-
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Use base URL, don't append `/auth`
 
 export const userStore = create((set) => ({

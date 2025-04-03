@@ -220,6 +220,7 @@ export const useAuthStore = create((set, get) => ({
       }
 
       const data = await response.json();
+      console.log(data);
 
       // Ensure the user object has a role field
       if (data.user && data.user.role) {

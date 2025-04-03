@@ -42,7 +42,7 @@ const tourSchema = new mongoose.Schema(
     admin: {
       type: mongoose.Types.ObjectId,
       ref: "User", // Reference to the User model (company)
-      required: true,
+      default: null,
     },
   },
   {

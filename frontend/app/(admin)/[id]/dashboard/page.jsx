@@ -19,10 +19,14 @@ import {
   faCopy,
   faPen,
 } from "@fortawesome/free-solid-svg-icons";
+import { useTourStore } from "@/store/tourStore";
 
 export default function AdminDashboard() {
   const { id } = useParams();
-  const { user, loading, error, fetchUserById, getAllUsers ,count } = userStore();
+  const { user, loading, error, fetchUserById, getAllUsers, count } =
+    userStore();
+
+  const { fetchGalleryImages, countTour } = useTourStore();
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 10;
 
@@ -34,10 +38,12 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (id) {
       getAllUsers(id);
-      console.log("id", id);
-      
     }
   }, [id]);
+
+  useEffect(() => {
+    fetchGalleryImages(); // Fetch gallery images when the component mounts
+  }, [fetchGalleryImages]);
 
   // if (loading) return <p>Loading user...</p>;
   // if (error) return <p className="text-red-500">{error}</p>;
@@ -148,9 +154,7 @@ export default function AdminDashboard() {
         <div className="p-6 bg-white rounded-lg shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-bold text-gray-700">
-                {count} 
-              </h2>
+              <h2 className="text-2xl font-bold text-gray-700">{count}</h2>
               <p className="text-sm text-gray-500">Total User</p>
             </div>
             <div className="text-2xl">👥</div>
@@ -168,8 +172,8 @@ export default function AdminDashboard() {
         <div className="p-6 bg-white rounded-lg shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-bold text-gray-700">10293</h2>
-              <p className="text-sm text-gray-500">Total Active Tour</p>
+              <h2 className="text-2xl font-bold text-gray-700">{countTour}</h2>
+              <p className="text-sm text-gray-500">Total Tour</p>
             </div>
             <div className="text-2xl">📦</div>
           </div>
