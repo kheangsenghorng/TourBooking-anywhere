@@ -62,3 +62,33 @@ export const getUserById = async (req, res) => {
   }
 };
 
+export const getbyIdadmin = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const useById = await User.findById(userId); // Fetch the user by ID
+    if (!useById) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+
+    }
+    res.status(200).json({
+      success: true,
+      message: "User retrieved successfully.",
+      useById,
+    });
+  }
+  catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching user.",
+    });
+  }
+  
+ 
+
+  
+
+};

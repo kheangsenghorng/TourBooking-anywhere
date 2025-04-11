@@ -22,7 +22,8 @@ import Link from "next/link";
 export default function UserDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { user, loading, error, fetchUserById } = userStore();
+  const { useById, loading, error, fetchUserById, fetchUserByIdadmin } =
+    userStore();
   const { profileImage, fetchProfileImage } = profileStore();
   const { address, fetchAddress } = useAddressStore();
 
@@ -43,7 +44,7 @@ export default function UserDetailsPage() {
       name: "City Discovery Tour",
       image: "/placeholder.svg",
       bookedDate: "November 20, 2024",
-      status: "Completed",
+      status: "Completed",  
       price: "$349",
       startDate: "December 15, 2024",
       endDate: "December 18, 2024",
@@ -51,25 +52,21 @@ export default function UserDetailsPage() {
   ];
 
   useEffect(() => {
-    if (params.userId) {
-      const userId = Array.isArray(params.userId)
-        ? params.userId[0]
-        : params.userId;
-      fetchUserById(userId);
-      fetchAddress(userId);
-      if (userId.trim() !== "") {
-        fetchProfileImage(userId);
+    if (params.id && params.userId) {
+      fetchUserByIdadmin(params.id, params.userId);
+      fetchAddress(params.userId);
+      if (params.userId.trim() !== "") {
+        fetchProfileImage(params.userId);
       }
     }
-  }, [params.userId, fetchUserById, fetchProfileImage, fetchAddress]);
+  }, [
+    params.id,
+    params.userId,
+    fetchUserByIdadmin,
+    fetchProfileImage,
+    fetchAddress,
+  ]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
 
   if (error) {
     return <div className="text-center py-10 text-red-500">{error}</div>;
@@ -86,23 +83,23 @@ export default function UserDetailsPage() {
               {profileImage ? (
                 <AvatarImage
                   src={profileImage}
-                  alt={`${user?.firstname} ${user?.lastname}`}
+                  alt={`${useById?.firstname} ${useById?.lastname}`}
                 />
               ) : (
                 <AvatarFallback>
-                  {user?.firstname?.charAt(0) || "U"}
-                  {user?.lastname?.charAt(0) || "S"}
+                  {useById?.firstname?.charAt(0) || "U"}
+                  {useById?.lastname?.charAt(0) || "S"}
                 </AvatarFallback>
               )}
             </Avatar>
             <div>
               <h2 className="font-medium text-lg">
-                {user?.firstname || "Unknown"} {user?.lastname || "User"}
+                {useById?.firstname || "Unknown"} {useById?.lastname || "User"}
               </h2>
               <div className="flex justify-between items-center mb-4">
                 <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                  {user?.status?.charAt(0).toUpperCase() +
-                    user?.status?.slice(1) || "Active"}
+                  {useById?.status?.charAt(0).toUpperCase() +
+                    useById?.status?.slice(1) || "Active"}
                 </span>
               </div>
             </div>
@@ -135,7 +132,7 @@ export default function UserDetailsPage() {
                         Full Name
                       </h3>
                       <p className="text-base">
-                        {user?.firstname || "N/A"} {user?.lastname || "N/A"}
+                        {useById?.firstname || "N/A"} {useById?.lastname || "N/A"}
                       </p>
                     </div>
                     <div>
@@ -143,14 +140,14 @@ export default function UserDetailsPage() {
                         Email
                       </h3>
                       <p className="text-base text-wrap">
-                        {user?.email || "N/A"}
+                        {useById?.email || "N/A"}
                       </p>
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground">
                         Phone
                       </h3>
-                      <p className="text-base">{user?.phonenumber || "N/A"}</p>
+                      <p className="text-base">{useById?.phonenumber || "N/A"}</p>
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground">

@@ -48,4 +48,4 @@ export const uploadMultiple = multer({
   storage: tourStorage,
   limits: { fileSize: 2 * 1024 * 1024 }, // 1MB limit
   fileFilter: (req, file, cb) => checkFileType(file, cb),
-}).array("files", 100);
+}).array("files", 40);

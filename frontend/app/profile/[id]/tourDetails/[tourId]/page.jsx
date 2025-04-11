@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Suspense } from "react";
 import Link from "next/link";
@@ -14,12 +14,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TourItinerary from "@/components/Tour-itinerary";
+import TourItinerary from "@/components/Touritinerary";
 import { useParams } from "next/navigation";
 
 // Mock tour data - in a real app, this would come from an API or database
 const getTourData = () => {
-  const { id,tourId } = useParams();
+  const { id, tourId } = useParams();
   // This is just a mock function - in a real app, you'd fetch this data from an API
   return {
     id: Number.parseInt(tourId),
@@ -81,7 +81,7 @@ export default function TourDetailPage() {
     <div className="container mx-auto py-10">
       <div className="mb-6 flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
-        <Link href={`/profile/${id}/notication`}>
+          <Link href={`/profile/${id}/notication`}>
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>

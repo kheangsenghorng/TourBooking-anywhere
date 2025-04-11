@@ -28,7 +28,7 @@ export default function Explore() {
               </div>
             </Link>
             {/* Itinerary Link */}
-            <Link href="#Rooms">
+            <Link href="#Review">
               <div className="text-xl underline text-gray-600 hover:text-blue-800 cursor-pointer">
                 Review
               </div>

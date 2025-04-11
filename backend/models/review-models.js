@@ -26,7 +26,7 @@ const reviewSchema = new mongoose.Schema(
     },
     bookingDate: {
       type: Date,
-      required: true,
+      default: Date.now, // Automatically set current date if not provided
     },
   },
   { timestamps: true }

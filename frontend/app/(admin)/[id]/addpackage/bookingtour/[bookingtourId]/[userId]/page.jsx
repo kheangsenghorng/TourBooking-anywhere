@@ -13,18 +13,25 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 export default function BookingConfirmation() {
   const params = useParams();
   const router = useRouter();
-  const { user, loading, error, fetchUserById, editUser } = userStore();
+  const {
+    user,
+    useById,
+    loading,
+    error,
+    fetchUserById,
+    editUser,
+    fetchUserByIdadmin,
+  } = userStore();
   const {
     profileImage,
     setProfileImage,
     fetchProfileImage,
     uploadProfileImage,
   } = profileStore();
-  console.log(params.userId);
 
   useEffect(() => {
     if (params.userId) {
-      fetchUserById(params.userId);
+      fetchUserByIdadmin(params.id, params.userId);
       if (typeof params.userId === "string" && params.userId.trim() !== "") {
         fetchProfileImage(params.userId);
       } else {
@@ -77,16 +84,16 @@ export default function BookingConfirmation() {
               <Avatar className="h-16 w-16">
                 <AvatarImage src={profileImage} alt="User profile image" />
                 <AvatarFallback className="bg-sky-100">
-                  {user?.lastname.charAt(0)}
+                  {useById?.lastname.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h2 className="text-xl font-medium">
-                  {user?.firstname} {user?.lastname}
+                  {useById?.firstname} {useById?.lastname}
                 </h2>
                 <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                  {user?.status?.charAt(0).toUpperCase() +
-                    user?.status?.slice(1) || "Active"}
+                  {useById?.status?.charAt(0).toUpperCase() +
+                    useById?.status?.slice(1) || "Active"}
                 </span>
               </div>
             </div>

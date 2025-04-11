@@ -119,42 +119,13 @@ export default function AdminDashboard() {
 
   return (
     <main className="flex-1 p-6 overflow-y-auto">
-      <header className="flex items-center justify-between mb-6">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search"
-            className="pl-10 pr-4 py-2 border rounded-lg w-96"
-          />
-          <FontAwesomeIcon
-            icon={faSearch}
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-[20px] h-[20px]"
-          />
-        </div>
-        <div className="flex items-center space-x-4">
-          <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
-            <FontAwesomeIcon icon={faBell} className="text-gray-600 w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm uppercase">
-              {user?.firstname?.charAt(0)}
-              {user?.lastname?.charAt(4)}
-            </div>
-            <div>
-              <p className="text-sm font-medium up">
-                {user?.lastname || "N/A"}
-              </p>
-              <p className="text-xs text-gray-500">{user?.role || "N/A"}</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="grid grid-cols-3 gap-6 mb-6">
         <div className="p-6 bg-white rounded-lg shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-bold text-gray-700">{count}</h2>
+              <h2 className="text-2xl font-bold text-gray-700">
+                {count || "0"}
+              </h2>
               <p className="text-sm text-gray-500">Total User</p>
             </div>
             <div className="text-2xl">👥</div>
@@ -172,7 +143,10 @@ export default function AdminDashboard() {
         <div className="p-6 bg-white rounded-lg shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-bold text-gray-700">{countTour}</h2>
+              <h2 className="text-2xl font-bold text-gray-700">
+                {countTour ? countTour : "0"}
+              </h2>
+
               <p className="text-sm text-gray-500">Total Tour</p>
             </div>
             <div className="text-2xl">📦</div>

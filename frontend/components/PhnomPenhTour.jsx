@@ -1,5 +1,7 @@
 "use client";
+import { useReviewStore } from "@/store/reviewStore";
 import { useTourStore } from "@/store/tourStore";
+import { Star } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
@@ -7,12 +9,27 @@ import { useEffect } from "react";
 export default function PhnomPenhTour() {
   const { tourId } = useParams();
   const { tour, loading, error, fetchTour } = useTourStore();
+  const {
+    reviews,
+    fetchAllReviews,
+    isLoading,
+    error: reviewsError,
+    lengthuserRating,
+    averageRating,
+    ratingCounts,
+  } = useReviewStore();
 
   useEffect(() => {
     if (tourId) {
       fetchTour(tourId);
     }
   }, [tourId]);
+
+  useEffect(() => {
+    if (tourId) {
+      fetchAllReviews(tourId);
+    }
+  }, [tourId, fetchAllReviews]);
 
   if (loading) return <p className="text-center text-lg">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
@@ -25,9 +42,22 @@ export default function PhnomPenhTour() {
             <h1 className="text-4xl font-bold">{tour?.tour_name}</h1>
           </Link>
 
-          <p className="text-lg mt-2 text-yellow-500">
-            | ★★★★★ <span className="text-gray-500">4.9 (12:10 reviews)</span>
-          </p>
+          <div className="flex items-center">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                size={16}
+                className={`${
+                  star <= averageRating
+                    ? "fill-amber-400 text-amber-400"
+                    : "text-gray-300"
+                }`}
+              />
+            ))}
+            <span className="ml-1 text-gray-600">
+              {averageRating?.toFixed(1)} ({lengthuserRating} reviews)
+            </span>
+          </div>
         </div>
       </header>
 

@@ -33,6 +33,7 @@ export const useAuthStore = create((set, get) => ({
       set({ error: error.message, isLoading: false });
     }
   },
+  
   fetchUserCounts: async () => {
     set({ isLoading: true, error: null });
     try {

@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+
 const Page = () => {
   const params = useParams();
   const router = useRouter();
@@ -25,10 +26,9 @@ const Page = () => {
 
   useEffect(() => {
     if (loading) {
-      toast.info("Loading user data...", {
-        autoClose: false,
-        toastId: "loading",
-      });
+      setTimeout(() => {
+        toast.dismiss("loading");
+      }, 5000);
     } else {
       toast.dismiss("loading");
     }

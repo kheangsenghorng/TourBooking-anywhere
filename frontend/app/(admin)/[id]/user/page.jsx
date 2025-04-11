@@ -9,7 +9,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { userStore } from "@/store/userStore";
 
-
 const UserPage = () => {
   const params = useParams();
   const { users, fetchProfileImage, fetchUsers, loading, error } =
@@ -227,32 +226,6 @@ const UserPage = () => {
                     <td className="px-4 py-3">{user.email || "N/A"}</td>
                     <td className="px-4 py-3">{user.phonenumber || "N/A"}</td>
                     <td className="px-4 py-3">
-                      {/* <select
-                        className="px-3 py-1 text-xs font-medium rounded-full border outline-none transition-all duration-200 bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200 hover:border-yellow-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
-                        value={user?.status || "N/A"}
-                        onChange={(e) =>
-                          handleStatusChange(user._id, e.target.value)
-                        }
-                      >
-                        <option
-                          value="pending"
-                          className="bg-yellow-100 text-yellow-800 border border-yellow-200"
-                        >
-                          Pending
-                        </option>
-                        <option
-                          value="approved"
-                          className="bg-green-100 text-green-800"
-                        >
-                          Approved
-                        </option>
-                        <option
-                          value="rejected"
-                          className="bg-gray-100 text-gray-800"
-                        >
-                          Rejected
-                        </option>
-                      </select> */}
                       <select
                         className={`px-3 py-1 text-xs font-medium rounded-full border outline-none transition-all duration-200
         ${

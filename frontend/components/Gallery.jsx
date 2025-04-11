@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Gallery() {
-  const { tourId } = useParams();
+  const { id, tourId } = useParams();
   const { gallery, loading, error, fetchGallery } = useTourStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
