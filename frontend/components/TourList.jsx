@@ -3,63 +3,85 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useTourStore } from "@/store/tourStore";
-import "@fortawesome/fontawesome-free/css/all.min.css";
+import { useParams } from "next/navigation";
 import { Heart, Star, Clock, Bus, Calendar } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { useParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// Store imports - you'll need to create these stores
+import { useTourStore } from "@/store/tourStore";
+import { useFavoriteStore } from "@/store/favoriteStore";
+
 export default function Home() {
-  const parms = useParams();
-  const { galleryImages, fetchGalleryImages, loading, error } = useTourStore();
+  const params = useParams();
+  const userId = params?.id;
+
+  const { tours, fetchAllTours, loading, error } = useTourStore();
+
+  const {
+    favorites: favoriteList,
+    addFavorite,
+    removeFavorite,
+    loading: loadingFavorite,
+    error: errorFavorite,
+    fetchFavorites,
+  } = useFavoriteStore();
+
   const [filter, setFilter] = useState("highest");
   const [currentPage, setCurrentPage] = useState(1);
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState({});
   const itemsPerPage = 5;
 
   useEffect(() => {
-    fetchGalleryImages(); // Fetch gallery images when the component mounts
+    fetchAllTours();
+    if (userId) fetchFavorites(userId);
 
-    // Load favorites from localStorage or initialize empty array
     const savedFavorites = localStorage.getItem("favorites");
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
+    if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
+  }, [userId, fetchAllTours, fetchFavorites]);
+
+  useEffect(() => {
+    if (favoriteList) {
+      const favMap = {};
+      favoriteList.forEach((tour) => {
+        favMap[tour._id] = true;
+      });
+      setFavorites(favMap);
     }
-  }, [fetchGalleryImages]);
+  }, [favoriteList]);
 
-  // Function to handle favorite button click
-  const handleFavoriteClick = (tourId) => {
-    let newFavorites;
-
-    if (favorites.includes(tourId)) {
-      // Remove from favorites
-      newFavorites = favorites.filter((id) => id !== tourId);
-      toast.success("Tour removed from favorites!");
-    } else {
-      // Add to favorites
-      newFavorites = [...favorites, tourId];
-      toast.success("Tour added to favorites!");
+  const handleFavoriteClick = async (tourId) => {
+    if (!userId) {
+      toast.info("Please log in to favorite a tour.");
+      return;
     }
 
-    // Update state and save to localStorage
-    setFavorites(newFavorites);
-    localStorage.setItem("favorites", JSON.stringify(newFavorites));
+    const updatedFavorites = { ...favorites };
+
+    try {
+      if (favorites[tourId]) {
+        await removeFavorite(userId, tourId);
+        delete updatedFavorites[tourId];
+        toast.success("Removed from favorites.");
+      } else {
+        await addFavorite(userId, tourId);
+        updatedFavorites[tourId] = true;
+        toast.success("Added to favorites.");
+      }
+
+      setFavorites(updatedFavorites);
+      localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+    } catch (err) {
+      toast.error("Failed to update favorites.");
+    }
   };
 
-  // Check if a tour is favorited
-  const isFavorite = (tourId) => {
-    return favorites.includes(tourId);
-  };
+  const isFavorite = (tourId) => !!favorites[tourId];
 
-  if (loading) return <p className="text-center">Loading...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
-
-  // Function to calculate duration in days
   const getDuration = (startDate, endDate) => {
     if (!startDate || !endDate) return "N/A";
     const start = new Date(startDate);
@@ -67,74 +89,72 @@ export default function Home() {
     return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
   };
 
-  // Sort tours by price
   const sortedTours =
     filter === "highest"
-      ? [...galleryImages].sort((a, b) => b.price - a.price)
-      : [...galleryImages].sort((a, b) => a.price - b.price);
+      ? [...tours].sort((a, b) => b.price - a.price)
+      : [...tours].sort((a, b) => a.price - b.price);
 
-  // Pagination Logic
   const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTours = sortedTours.slice(indexOfFirstItem, indexOfLastItem);
+  const currentTours = sortedTours.slice(
+    indexOfLastItem - itemsPerPage,
+    indexOfLastItem
+  );
   const totalPages = Math.ceil(sortedTours.length / itemsPerPage);
+
+  if (loading) return <p className="text-center">Loading...</p>;
+  if (error)
+    return <p className="text-center text-red-500">{error || errorFavorite}</p>;
 
   return (
     <div className="p-6">
-      {/* Filter Buttons */}
+      {/* Filter Controls */}
       <div className="flex justify-center border w-[400px] mx-auto rounded-full my-5">
-        <button
-          onClick={() => setFilter("highest")}
-          className={`px-6 py-2 border w-full rounded-full hover:bg-gray-100 ${
-            filter === "highest" ? "bg-gray-200" : ""
-          }`}
-        >
-          Highest Price
-        </button>
-        <button
-          onClick={() => setFilter("lowest")}
-          className={`px-6 py-2 border w-full rounded-full hover:bg-gray-100 ${
-            filter === "lowest" ? "bg-gray-200" : ""
-          }`}
-        >
-          Lowest Price
-        </button>
+        {["highest", "lowest"].map((option) => (
+          <button
+            key={option}
+            onClick={() => setFilter(option)}
+            className={`px-6 py-2 w-full rounded-full border hover:bg-gray-100 ${
+              filter === option ? "bg-gray-200" : ""
+            }`}
+          >
+            {option === "highest" ? "Highest Price" : "Lowest Price"}
+          </button>
+        ))}
       </div>
 
-      {/* Render Tours */}
+      {/* Tour List */}
       <div className="grid gap-6">
-        {currentTours.map((tour) => (
+        {currentTours.map((tour, index) => (
           <Card
-            key={tour.tour_id || tour._id}
-            className="overflow-hidden border-none shadow-md hover:shadow-lg transition-shadow w-full mx-auto"
+            key={tour._id || index}
+            className="shadow-md hover:shadow-lg transition-shadow"
           >
             <CardContent className="p-0">
               <div className="flex flex-col sm:flex-row">
-                <div className="relative w-full sm:w-48">
+                {/* Image */}
+                <div className="relative w-full sm:w-80 h-64 sm:h-auto rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none overflow-hidden">
                   <Link
                     href={
-                      parms?.id
-                        ? `/${parms.id}/tour-detail/${tour._id}`
+                      userId
+                        ? `/${userId}/tour-detail/${tour._id}`
                         : `/tour-detail/${tour._id}`
                     }
                   >
-                    <div className="h-full w-full relative sm:w-48">
-                      <Image
-                        src={
-                          tour.galleryImages?.[0] ||
-                          "/placeholder.svg?height=200&width=200" ||
-                          "/placeholder.svg" ||
-                          "/placeholder.svg"
-                        }
-                        alt={tour.tour_name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
+                    <Image
+                      src={
+                        tour.galleryImages?.[0]
+                          ? `${tour.galleryImages?.[0]}`
+                          : "/placeholder.svg?height=200&width=200"
+                      }
+                      alt={`Image of ${tour.name} showing the main view`}
+                      fill
+                      className="object-cover"
+                    />
                   </Link>
                 </div>
 
-                <div className="p-6 flex flex-col justify-between w-full relative">
+                {/* Info */}
+                <div className="p-6 flex flex-col w-full relative">
                   {/* Favorite Button */}
                   <div className="absolute top-4 right-4">
                     <Button
@@ -154,20 +174,16 @@ export default function Home() {
                   </div>
 
                   <div>
-                    <div className="mb-3 flex flex-wrap gap-2">
-                      <Badge
-                        variant="secondary"
-                        className="bg-teal-100 text-teal-700 hover:bg-teal-200"
-                      >
+                    <div className="mb-3 flex gap-2 flex-wrap">
+                      <Badge className="bg-teal-100 text-teal-700">
                         {tour.tour_name || "Tour"}
                       </Badge>
                       {tour.status && (
                         <Badge
-                          variant="secondary"
                           className={
                             tour.status === "Sold out"
-                              ? "bg-rose-100 text-rose-700 hover:bg-rose-200"
-                              : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                              ? "bg-rose-100 text-rose-700"
+                              : "bg-emerald-100 text-emerald-700"
                           }
                         >
                           {tour.status}
@@ -177,12 +193,12 @@ export default function Home() {
 
                     <Link
                       href={
-                        parms?.id
-                          ? `/${parms.id}/tour-detail/${tour._id}`
+                        userId
+                          ? `/${userId}/tour-detail/${tour._id}`
                           : `/tour-detail/${tour._id}`
                       }
                     >
-                      <h2 className="text-xl font-semibold mb-2 hover:text-rose-600 transition-colors">
+                      <h2 className="text-xl font-semibold mb-2 hover:text-rose-600">
                         {tour.tour_name}
                       </h2>
                     </Link>
@@ -192,22 +208,22 @@ export default function Home() {
                     </p>
 
                     <div className="flex items-center mb-4">
-                      {Array.from({ length: 5 }).map((_, index) => (
+                      {Array.from({ length: 5 }).map((_, i) => (
                         <Star
-                          key={index}
+                          key={i}
                           className={`h-4 w-4 ${
-                            index < Math.floor(tour.rating || 0)
+                            i < Math.floor(tour.averageRating || 0)
                               ? "fill-amber-400 text-amber-400"
                               : "fill-gray-200 text-gray-200"
                           }`}
                         />
                       ))}
                       <span className="ml-2 font-medium">
-                        {tour.rating || "0"}
+                        {tour.averageRating || "0"}
                       </span>
                       <span className="ml-1 text-sm text-muted-foreground">
-                        {tour.reviews
-                          ? `(${tour.reviews} reviews)`
+                        {tour.totalReviews
+                          ? `(${tour.totalReviews} reviews)`
                           : "(No reviews yet)"}
                       </span>
                     </div>
@@ -216,25 +232,19 @@ export default function Home() {
                   <Separator className="my-4" />
 
                   <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex flex-wrap gap-4">
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
-                          <Clock className="h-4 w-4 text-rose-500" />
-                        </div>
+                    <div className="flex flex-wrap gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-rose-500" />
                         <span>
                           {getDuration(tour.startDate, tour.endDate)} days
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
-                          <Bus className="h-4 w-4 text-rose-500" />
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <Bus className="h-4 w-4 text-rose-500" />
                         <span>Transport</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
-                          <Calendar className="h-4 w-4 text-rose-500" />
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-rose-500" />
                         <span>
                           {tour.status === "Sold out"
                             ? "Unavailable"
@@ -243,12 +253,12 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="flex items-baseline gap-1">
-                      <div className="font-bold text-2xl text-rose-600">
+                      <span className="font-bold text-2xl text-rose-600">
                         ${tour.price}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
+                      </span>
+                      <span className="text-xs text-muted-foreground">
                         /person
-                      </div>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -258,22 +268,22 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Pagination Controls */}
+      {/* Pagination */}
       <div className="flex justify-center mt-6">
-        {Array.from({ length: totalPages }, (_, index) => (
+        {Array.from({ length: totalPages }, (_, i) => (
           <button
-            key={index + 1}
-            onClick={() => setCurrentPage(index + 1)}
+            key={i + 1}
+            onClick={() => setCurrentPage(i + 1)}
             className={`mx-2 px-4 py-2 rounded-md border ${
-              currentPage === index + 1
-                ? "bg-rose-500 text-white"
-                : "bg-gray-100"
+              currentPage === i + 1 ? "bg-rose-500 text-white" : "bg-gray-100"
             }`}
           >
-            {index + 1}
+            {i + 1}
           </button>
         ))}
       </div>
+
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }

@@ -11,33 +11,28 @@ import {
   Calendar,
   Clock,
   MessageCircle,
+  Check,
+  MessageSquare,
 } from "lucide-react";
 import { useEffect } from "react";
 import { useReviewStore } from "@/store/reviewStore";
+import { Button } from "@/components/ui/button";
 
 export default function TourFeedbackAlt() {
   const { id, feedbackId } = useParams();
-  const {
-    reviews,
-    getReviewsByUser,
-    loading,
-    error,
-    totalUserReviews,
-    reviewsByTour,
-  } = useReviewStore();
+  const { reviews, getReviewsByUser, isLoading, error } = useReviewStore();
 
   useEffect(() => {
     if (id) {
       getReviewsByUser(id);
     }
-  }, [id]);
+  }, [id, getReviewsByUser]);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p className="text-center"> {error}</p>;
 
   return (
     <div className="max-w-4xl p-4">
-      {/* Tour Cards */}
       <div className="grid gap-6">
         {reviews.map((tour) => (
           <div
@@ -57,7 +52,9 @@ export default function TourFeedbackAlt() {
                 </div>
                 <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-full shadow-sm">
                   <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                  <span className="text-xs font-semibold">{tour.rating}</span>
+                  <span className="text-xs font-semibold">
+                    {tour.averageRating}
+                  </span>
                 </div>
               </div>
 
@@ -65,8 +62,9 @@ export default function TourFeedbackAlt() {
                 <div className="sm:w-1/3 h-48 sm:h-auto relative rounded-xl overflow-hidden">
                   <Image
                     src={
-                      tour?.tourId?.galleryImages[0] ||
-                      "/placeholder.svg?height=300&width=300"
+                      tour?.tourId.galleryImages[0] ||
+                      ("/placeholder.svg?height=300&width=300" ||
+                        "/placeholder.svg")
                     }
                     alt={tour.tourId?.tour_name || "Tour Image"}
                     fill
@@ -78,11 +76,14 @@ export default function TourFeedbackAlt() {
                       <MapPin className="w-3.5 h-3.5 mr-1" />
                       {tour.tourId?.start_location}
                     </div>
-                    <div className="flex items-center text-white text-sm text-nowrap">
-                      <Link href={`/${id}/tour-detail/${tour.tourId?._id}#feedback`}>
-                        <MessageCircle className="w-3.5 h-3.5 mr-1 " />
-                      </Link>
-                    </div>
+                    <Link
+                      href={`/${id}/tour-detail/${tour.tourId?._id}#feedback`}
+                    >
+                      <div className="flex items-center text-white text-sm text-nowrap">
+                        <MessageCircle className="w-3.5 h-3.5 mr-1" />
+                        {tour.totalReviews}
+                      </div>
+                    </Link>
                   </div>
                 </div>
 
@@ -119,62 +120,52 @@ export default function TourFeedbackAlt() {
                     </div>
 
                     <p className="text-gray-600 text-sm mb-4">
-                      We hope you enjoyed your tour experience. Your feedback
-                      helps us improve our services and assists other travelers
-                      in making informed decisions.
+                      {tour.review} {tour.text}
                     </p>
                   </div>
 
                   <div className="mt-auto">
-                    <div className="bg-white p-4 rounded-xl border border-gray-100">
-                      <p className="text-sm font-medium text-gray-700 mb-3">
-                        Rate your experience:
-                      </p>
-
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <div key={star} className="relative group">
-                              <input
-                                type="radio"
-                                name={`rating-${tour.id}`}
-                                id={`rating-${tour.id}-${star}`}
-                                value={star}
-                                className="sr-only peer"
-                                defaultChecked={
-                                  star === Math.round(tour.rating)
-                                } // Highlights the average
-                              />
-                              <label
-                                htmlFor={`rating-${tour.id}-${star}`}
-                                className="cursor-pointer block p-1"
-                              >
-                                <Star
-                                  className={`w-7 h-7 
-          text-gray-200 
-          peer-checked:text-yellow-400 peer-checked:fill-yellow-400 
-          ${
-            star <= Math.round(tour.rating)
-              ? "text-yellow-400 fill-yellow-400"
-              : ""
-          } 
-          group-hover:text-yellow-400 group-hover:fill-yellow-400
-        `}
-                                />
-                              </label>
+                    {tour.rating ? (
+                      <div className="bg-green-50 p-4 rounded-xl border border-green-100">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="bg-green-100 p-2 rounded-full mr-3">
+                              <Check className="w-5 h-5 text-green-600" />
                             </div>
-                          ))}
-                        </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">
+                                Thank you for your feedback!
+                              </p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Your rating helps improve our services
+                              </p>
+                            </div>
+                          </div>
 
-                        <Link
-                          href={`/profile/${id}/feedbackpage/${feedbackId}?type=tour`}
-                        >
-                          <button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-medium transition-colors text-sm">
-                            Submit Feedback
-                          </button>
-                        </Link>
+                          <div className="flex">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`w-5 h-5 ${
+                                  star <= Math.round(tour.rating)
+                                    ? "text-yellow-400 fill-yellow-400"
+                                    : "text-gray-200"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <Link
+                        href={`/${id}/tour-detail/${tour.tourId?._id}/feedback`}
+                      >
+                        <Button className="w-full flex items-center justify-center gap-2">
+                          <MessageSquare className="w-4 h-4" />
+                          Leave Feedback
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
@@ -183,28 +174,29 @@ export default function TourFeedbackAlt() {
         ))}
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-center items-center mt-8">
-        <nav
-          className="inline-flex bg-white rounded-lg shadow-sm p-1"
-          aria-label="Pagination"
-        >
-          <button className="w-9 h-9 flex items-center justify-center rounded-md hover:bg-gray-50 transition-colors">
-            <ChevronLeft className="w-4 h-4" />
-            <span className="sr-only">Previous</span>
-          </button>
-          <button className="w-9 h-9 flex items-center justify-center rounded-md bg-primary text-white font-medium">
-            1
-          </button>
-          <button className="w-9 h-9 flex items-center justify-center rounded-md hover:bg-gray-50 transition-colors">
-            2
-          </button>
-          <button className="w-9 h-9 flex items-center justify-center rounded-md hover:bg-gray-50 transition-colors">
-            <ChevronRight className="w-4 h-4" />
-            <span className="sr-only">Next</span>
-          </button>
-        </nav>
-      </div>
+      {reviews.length > 5 && (
+        <div className="flex justify-center items-center mt-8">
+          <nav
+            className="inline-flex bg-white rounded-lg shadow-sm p-1"
+            aria-label="Pagination"
+          >
+            <button className="w-9 h-9 flex items-center justify-center rounded-md hover:bg-gray-50 transition-colors">
+              <ChevronLeft className="w-4 h-4" />
+              <span className="sr-only">Previous</span>
+            </button>
+            <button className="w-9 h-9 flex items-center justify-center rounded-md bg-primary text-white font-medium">
+              1
+            </button>
+            <button className="w-9 h-9 flex items-center justify-center rounded-md hover:bg-gray-50 transition-colors">
+              2
+            </button>
+            <button className="w-9 h-9 flex items-center justify-center rounded-md hover:bg-gray-50 transition-colors">
+              <ChevronRight className="w-4 h-4" />
+              <span className="sr-only">Next</span>
+            </button>
+          </nav>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,16 +9,13 @@ export default function PageTour() {
     <div>
       <Carousel />
       <SearchTour />
-      <div
-        className="flex justify-between w-[1200px] mx-auto
-       "
-      >
-        <div className="w-[25%]">
+      <div className="grid grid-cols-4 gap-4">
+        <div className="col-span-1">
           <SearchLocation />
           <FilterSidebar />
         </div>
 
-        <div>
+        <div className="col-span-3">
           <TourList />
         </div>
       </div>

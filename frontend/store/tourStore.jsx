@@ -77,4 +77,99 @@ export const useTourStore = create((set) => ({
       set({ error: error.message, isLoading: false });
     }
   },
+  //fetch all tour from the backend no id
+  fetchAllTours: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await fetch(`${API_URL}/tour/tours`); // Adjust API path if necessary
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to fetch tours");
+      }
+
+      set({ tours: data.tours, isLoading: false });
+    } catch (error) {
+      set({ error: error.message, isLoading: false });
+    }
+  },
+  // ✅ Filter tours by price range
+  filterToursByPrice: async ({ minPrice, maxPrice }) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const params = new URLSearchParams();
+
+      if (minPrice !== undefined && minPrice !== null)
+        params.append("minPrice", String(minPrice));
+      if (maxPrice !== undefined && maxPrice !== null)
+        params.append("maxPrice", String(maxPrice));
+
+      if (!API_URL) throw new Error("API_URL is not defined!");
+
+      const queryString = params.toString();
+      const url = `${API_URL}/tour/filter${
+        queryString ? `?${queryString}` : ""
+      }`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to filter tours");
+      }
+
+      set({ tours: data.tours, isLoading: false });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        isLoading: false,
+      });
+    }
+  },
+  // ✅ Filter tours by duration
+  filterToursByDuration: async (duration) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      if (!duration || isNaN(duration)) {
+        throw new Error("Invalid duration");
+      }
+
+      const response = await fetch(`${API_URL}/tour/day?duration=${duration}`);
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to filter tours by duration");
+      }
+
+      set({ tours: data.tours, isLoading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Unexpected error",
+        isLoading: false,
+      });
+    }
+  },
+
+  // Rating-related state and actions
+  ratingFilter: null, // Current rating filter
+  setRatingFilter: (rating) => set({ ratingFilter: rating }), // Set rating filter
+  setTours: (tours) => set({ tours }), // Set tours after fetch
+  fetchToursByRating: async (rating) => {
+    try {
+      const response = await fetch(`${API_URL}/tour/ratings?rating=${rating}`);
+      const data = await response.json();
+      if (data.success) {
+        set({ tours: data.tours });
+      } else {
+        set({ tours: [] }); // Clear if no tours are found
+      }
+    } catch (error) {
+      console.error("Error fetching tours:", error);
+    }
+  },
 }));

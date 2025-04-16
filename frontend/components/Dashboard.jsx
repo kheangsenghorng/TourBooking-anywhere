@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, usePathname, useRouter } from "next/navigation";
@@ -23,7 +24,7 @@ export default function Sidebar({ children }) {
   const { id } = useParams();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const { user, logout } = userStore();
+  const { user, logout, loading, error } = userStore();
   const router = useRouter();
   const toggleSidebar = () => setCollapsed(!collapsed);
 
@@ -42,6 +43,32 @@ export default function Sidebar({ children }) {
     { href: `/${id}/user`, icon: User, label: "User" },
     { href: `/${id}/feedback-admin`, icon: MessageSquare, label: "Feedback" },
   ];
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+
+      if (
+        (isMac && e.metaKey && e.key === "s") ||
+        (!isMac && e.ctrlKey && e.key === "s")
+      ) {
+        e.preventDefault(); // prevent default save action
+        router.back(); // or any page you want to navigate to
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [router, id]);
+  if (loading) {
+    <p>loading.....</p>;
+  }
+  if (error) {
+    <p>error..{error}</p>;
+  }
 
   return (
     <div className="flex min-h-screen">

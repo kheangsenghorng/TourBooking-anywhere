@@ -135,6 +135,10 @@ export default function TourManagement() {
 
   const statusOptions = ["all", "Available", "Ongoing", "Full", "Close"];
 
+  if (isLoading) {
+    
+  }
+
   return (
     <div className="space-y-6">
       <Card className="border-none shadow-xl bg-white dark:bg-gray-950 rounded-xl overflow-hidden">

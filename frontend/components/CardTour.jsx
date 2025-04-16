@@ -71,11 +71,11 @@ const CardTour = () => {
     }
   };
 
-  if (loading || loadingFavorite)
-    return <p className="text-center">Loading...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
-  if (errorFavorite)
-    return <p className="text-center text-red-500">{errorFavorite}</p>;
+  // if (loading || loadingFavorite)
+  //   return <p className="text-center">Loading...</p>;
+  // if (error) return <p className="text-center text-red-500">{error}</p>;
+  // if (errorFavorite)
+  //   return <p className="text-center text-red-500">{errorFavorite}</p>;
 
   return (
     <section>
@@ -122,10 +122,10 @@ const CardTour = () => {
 
               <div className="p-4">
                 <p className="mt-2 mb-0">
-                  {tour?.first_destination} <span className="mx-2">↔</span>{" "}
-                  {tour?.second_destination}
+                  {tour?.start_location} <span className="mx-2">↔</span>{" "}
+                  {tour?.first_destination}
                 </p>
-                <h5 className="font-bold text-xl mb-0">$350</h5>
+                <h5 className="font-bold text-xl mb-0">${tour?.price}</h5>
                 <p className="text-gray-600 mb-2 text-sm">
                   Period: 2 nights and 3 days
                 </p>
