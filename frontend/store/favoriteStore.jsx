@@ -4,6 +4,8 @@ const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const useFavoriteStore = create((set) => ({
   favorites: [],
+  totalReviews: 0,
+  averageRating: 0,
   loading: false,
   error: null,
 
@@ -13,9 +15,29 @@ export const useFavoriteStore = create((set) => ({
       const response = await fetch(`${API_URL}/favorites/favorite/${userId}`);
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
-      set({ favorites: data.tours, loading: false });
+
+      // Map tours with their corresponding review data
+      const toursWithReviews = data.tours.map((tour) => {
+        const tourReviews = data.reviewsByTour.find(
+          (r) => r.tourId === tour._id.toString()
+        );
+        return {
+          ...tour,
+          totalReviews: tourReviews?.totalReviews || 0,
+          averageRating: tourReviews?.averageRating || 0,
+        };
+      });
+
+      set({
+        favorites: toursWithReviews,
+
+        loading: false,
+      });
     } catch (error) {
-      set({ error: error.message, loading: false });
+      set({
+        error: error.message || "Something went wrong",
+        loading: false,
+      });
     }
   },
 

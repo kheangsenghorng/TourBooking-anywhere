@@ -161,10 +161,15 @@ export const getreviewsUser = async (req, res) => {
       tourIds.map(async (tourId) => {
         const allReviews = await Review.find({ tourId }).populate("userId");
 
+        const averageRating =
+          allReviews.reduce((acc, review) => acc + review.rating, 0) /
+          allReviews.length;
+
         return {
           tourId,
           reviews: allReviews,
           totalReviews: allReviews.length,
+          averageRating: averageRating.toFixed(1),
         };
       })
     );
@@ -181,7 +186,6 @@ export const getreviewsUser = async (req, res) => {
 
       return review;
     });
-    
 
     res.status(200).json({
       userReviews: updatedUserReviews,
@@ -197,24 +201,52 @@ export const getreviewsUser = async (req, res) => {
 // Get all reviews
 export const getAllReviews = async (req, res) => {
   try {
+    const baseUrl =
+      process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+
+    // Fetch all reviews with populated tour and user data
     const reviews = await Review.find().populate("tourId userId");
 
-    const totalReviews = reviews.length;
-    const averageRating =
-      totalReviews > 0
-        ? reviews.reduce((acc, review) => acc + review.rating, 0) / totalReviews
-        : 0;
+    const reviewsMap = {};
 
-    const ratingCounts = reviews.reduce((acc, review) => {
-      acc[review.rating] = (acc[review.rating] || 0) + 1;
-      return acc;
-    }, {});
+    // Group reviews by tour
+    for (const review of reviews) {
+      const tour = review.tourId;
+      const tid = tour._id.toString();
+
+      if (!reviewsMap[tid]) {
+        // Update gallery image URLs here
+        const updatedGalleryImages =
+          tour.galleryImages?.map((img) => `${baseUrl}/uploads/tours/${img}`) ||
+          [];
+
+        reviewsMap[tid] = {
+          tour: {
+            ...tour.toObject(), // convert Mongoose document to plain object
+            galleryImages: updatedGalleryImages,
+          },
+          reviews: [],
+          totalReviews: 0,
+          totalRating: 0,
+        };
+      }
+
+      reviewsMap[tid].reviews.push(review);
+      reviewsMap[tid].totalReviews += 1;
+      reviewsMap[tid].totalRating += review.rating;
+    }
+
+    // Format grouped response
+    const groupedReviews = Object.values(reviewsMap).map((group) => ({
+      tour: group.tour,
+      reviews: group.reviews,
+      totalReviews: group.totalReviews,
+      averageRating: (group.totalRating / group.totalReviews).toFixed(1),
+    }));
 
     res.status(200).json({
-      reviews,
-      totalReviews,
-      averageRating,
-      ratingCounts,
+      totalReviews: reviews.length,
+      groupedReviews,
     });
   } catch (error) {
     res.status(500).json({ message: "Error fetching reviews", error });

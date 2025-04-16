@@ -116,7 +116,7 @@ export default function FavoritesPage() {
                       <div className="relative h-64 md:h-full">
                         <Image
                           src={
-                            tour.galleryImages[0] ||
+                            tour.galleryImages?.[0] ??
                             "/placeholder.svg?height=300&width=300"
                           }
                           alt={tour.title || "Tour image"}
@@ -151,12 +151,12 @@ export default function FavoritesPage() {
                       >
                         {tour.tour_name || "Tour"}
                       </Badge>
-                      {tour.status && (
+                      {tour.specialStatus && (
                         <Badge
                           variant="secondary"
                           className="bg-rose-100 text-rose-700 hover:bg-rose-200"
                         >
-                          {tour.status}
+                          {tour.specialStatus}
                         </Badge>
                       )}
                     </div>
@@ -172,17 +172,21 @@ export default function FavoritesPage() {
                     </p>
 
                     <div className="flex items-center mb-4">
-                      {[...Array(5)].map((_, star) => (
+                      {[1, 2, 3, 4, 5].map((star) => (
                         <Star
                           key={star}
-                          className="h-4 w-4 fill-amber-400 text-amber-400"
+                          className={`w-5 h-5 ${
+                            star <= Math.round(tour.averageRating)
+                              ? "text-yellow-400 fill-yellow-400"
+                              : "text-gray-200"
+                          }`}
                         />
                       ))}
                       <span className="ml-2 font-medium">
-                        {tour.rating || "4.8"}
+                        {tour.averageRating || "4.8"}
                       </span>
                       <span className="ml-1 text-sm text-muted-foreground">
-                        ({tour.reviews || "124"} reviews)
+                        ({tour.totalReviews || "124"} reviews)
                       </span>
                     </div>
 

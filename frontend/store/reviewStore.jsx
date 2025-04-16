@@ -76,8 +76,31 @@ export const useReviewStore = create((set) => ({
     }
   },
 
+  // getReviewsByUser: async (userId) => {
+  //   set({ loading: true, error: null });
+
+  //   try {
+  //     const response = await axios.get(
+  //       `${API_URL}/reviews/${userId}/user/reviews`
+  //     );
+  //     const { userReviews, reviewsByTour } = response.data;
+
+  //     set({
+  //       reviews: userReviews,
+  //       reviewsByTour, // already includes totalReviews
+  //       totalUserReviews: userReviews.length,
+  //       loading: false,
+  //     });
+  //   } catch (error) {
+  //     set({
+  //       error: error.response?.data?.message || "Failed to fetch reviews",
+  //       loading: false,
+  //     });
+  //   }
+  // },
+
   getReviewsByUser: async (userId) => {
-    set({ loading: true, error: null });
+    set({ isLoading: true, error: null });
 
     try {
       const response = await axios.get(
@@ -85,10 +108,40 @@ export const useReviewStore = create((set) => ({
       );
       const { userReviews, reviewsByTour } = response.data;
 
+      // Merge totalReviews into each review
+      const reviewsWithTotal = userReviews.map((review) => {
+        const matchingTour = reviewsByTour.find(
+          (tour) => tour.tourId === review.tourId._id
+        );
+        return {
+          ...review,
+          totalReviews: matchingTour?.totalReviews || 0,
+          averageRating: matchingTour?.averageRating || 0,
+        };
+      });
+
       set({
-        reviews: userReviews,
-        reviewsByTour, // already includes totalReviews
+        reviews: reviewsWithTotal,
+        reviewsByTour,
         totalUserReviews: userReviews.length,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to fetch reviews",
+        isLoading: false,
+      });
+    }
+  },
+
+  fetchAllReview: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/reviews`); // Adjust if your endpoint is different
+      const { groupedReviews, totalReviews } = response.data;
+      set({
+        groupedReviews,
+        totalReviews,
         loading: false,
       });
     } catch (error) {

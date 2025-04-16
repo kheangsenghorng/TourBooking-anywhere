@@ -46,7 +46,7 @@ export default function ReviewCardAttachment() {
                 />
               </div>
               <div>
-                <div className="font-medium">
+                <div className="font-medium text-nowrap">
                   {review.copiedUser?.firstname || "Anonymous"}{" "}
                   {review.copiedUser?.lastname || "Anonymous"}
                 </div>
@@ -64,18 +64,18 @@ export default function ReviewCardAttachment() {
                   ))}
                 </div>
               </div>
-              <div className="ml-auto text-sm text-gray-500 ">
+              <div className="ml-auto text-sm text-gray-500">
                 {new Date(review.createdAt).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
                 })}
-                <span className="mx-1">•</span>
+                {/* <span className="mx-1">•</span>
                 {new Date(review.createdAt).toLocaleTimeString("en-US", {
                   hour: "2-digit",
                   minute: "2-digit",
                   hour12: true,
-                })}
+                })} */}
               </div>
             </div>
 

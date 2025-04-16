@@ -1,9 +1,14 @@
-" use cilent";
+"use client";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 const NavsideProfile = ({ children }) => {
   const { id } = useParams();
+  const pathname = usePathname();
+
+  // Helper function to check active route
+  const isActive = (href) => pathname === href;
+
   return (
     <div className="flex py-24">
       <div className="w-64 bg-white shadow-md">
@@ -13,7 +18,11 @@ const NavsideProfile = ({ children }) => {
         <nav className="mt-2">
           <Link
             href={`/profile/${id}/myprofile`}
-            className="flex items-center px-6 py-4 bg-green-600 text-white"
+            className={`flex items-center px-6 py-4 ${
+              isActive(`/profile/${id}/myprofile`)
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -29,9 +38,14 @@ const NavsideProfile = ({ children }) => {
             </svg>
             My Profile
           </Link>
+
           <Link
             href={`/profile/${id}/notication`}
-            className="flex items-center px-6 py-4 text-gray-700 hover:bg-gray-100"
+            className={`flex items-center px-6 py-4 ${
+              isActive(`/profile/${id}/notication`)
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -43,9 +57,14 @@ const NavsideProfile = ({ children }) => {
             </svg>
             Notification
           </Link>
+
           <Link
             href={`/profile/${id}/historypayment`}
-            className="flex items-center px-6 py-4 text-gray-700 hover:bg-gray-100"
+            className={`flex items-center px-6 py-4 ${
+              isActive(`/profile/${id}/historypayment`)
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -61,9 +80,14 @@ const NavsideProfile = ({ children }) => {
             </svg>
             History payment
           </Link>
+
           <Link
             href={`/profile/${id}/help-support`}
-            className="flex items-center px-6 py-4 text-gray-700 hover:bg-gray-100"
+            className={`flex items-center px-6 py-4 ${
+              isActive(`/profile/${id}/help-support`)
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -79,9 +103,14 @@ const NavsideProfile = ({ children }) => {
             </svg>
             Help & Support
           </Link>
+
           <Link
             href={`/profile/${id}/favorite`}
-            className="flex items-center px-6 py-4 text-gray-700 hover:bg-gray-100"
+            className={`flex items-center px-6 py-4 ${
+              isActive(`/profile/${id}/favorite`)
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -97,9 +126,14 @@ const NavsideProfile = ({ children }) => {
             </svg>
             Favorite
           </Link>
+
           <Link
             href={`/profile/${id}/feedback`}
-            className="flex items-center px-6 py-4 text-gray-700 hover:bg-gray-100"
+            className={`flex items-center px-6 py-4 ${
+              isActive(`/profile/${id}/feedback`)
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -116,14 +150,11 @@ const NavsideProfile = ({ children }) => {
             Feedback
           </Link>
         </nav>
-        {/* <div className="px-6 py-4 mt-6">
-          <button className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded">
-            Log Out
-          </button>
-        </div> */}
       </div>
+
       <div className="flex-1 p-6 bg-gray-50">{children}</div>
     </div>
   );
 };
+
 export default NavsideProfile;

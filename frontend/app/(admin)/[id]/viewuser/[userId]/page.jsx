@@ -44,7 +44,7 @@ export default function UserDetailsPage() {
       name: "City Discovery Tour",
       image: "/placeholder.svg",
       bookedDate: "November 20, 2024",
-      status: "Completed",  
+      status: "Completed",
       price: "$349",
       startDate: "December 15, 2024",
       endDate: "December 18, 2024",
@@ -67,7 +67,6 @@ export default function UserDetailsPage() {
     fetchAddress,
   ]);
 
-
   if (error) {
     return <div className="text-center py-10 text-red-500">{error}</div>;
   }
@@ -80,18 +79,20 @@ export default function UserDetailsPage() {
         <div className="md:col-span-3 bg-white rounded-lg shadow p-4">
           <div className="flex items-center space-x-4 mb-6">
             <Avatar className="h-24 w-24">
-              {profileImage ? (
-                <AvatarImage
-                  src={profileImage}
-                  alt={`${useById?.firstname} ${useById?.lastname}`}
-                />
-              ) : (
-                <AvatarFallback>
-                  {useById?.firstname?.charAt(0) || "U"}
-                  {useById?.lastname?.charAt(0) || "S"}
-                </AvatarFallback>
-              )}
+              <AvatarImage
+                src={
+                  profileImage || "https://www.gravatar.com/avatar/?d=mp&s=120"
+                }
+                alt={`${useById?.firstname || "User"} ${
+                  useById?.lastname || "" 
+                }`}
+              />
+              <AvatarFallback>
+                {useById?.firstname?.charAt(0) || "U"}
+                {useById?.lastname?.charAt(0) || "S"}
+              </AvatarFallback>
             </Avatar>
+
             <div>
               <h2 className="font-medium text-lg">
                 {useById?.firstname || "Unknown"} {useById?.lastname || "User"}
@@ -132,7 +133,8 @@ export default function UserDetailsPage() {
                         Full Name
                       </h3>
                       <p className="text-base">
-                        {useById?.firstname || "N/A"} {useById?.lastname || "N/A"}
+                        {useById?.firstname || "N/A"}{" "}
+                        {useById?.lastname || "N/A"}
                       </p>
                     </div>
                     <div>
@@ -147,7 +149,9 @@ export default function UserDetailsPage() {
                       <h3 className="text-sm font-medium text-muted-foreground">
                         Phone
                       </h3>
-                      <p className="text-base">{useById?.phonenumber || "N/A"}</p>
+                      <p className="text-base">
+                        {useById?.phonenumber || "N/A"}
+                      </p>
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground">

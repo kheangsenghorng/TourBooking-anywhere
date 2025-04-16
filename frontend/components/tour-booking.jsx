@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Star, MapPin, Clock, Bus, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import ReviewCardAttachment from "./review-card-attachment";
 import { useParams } from "next/navigation";
 import { useTourStore } from "@/store/tourStore";
 import { useReviewStore } from "../store/reviewStore";
+import { useRouter } from "next/navigation";
 
 // TourBooking Component
 export default function TourBooking() {
@@ -18,7 +20,13 @@ export default function TourBooking() {
 
   const { gallery, loading, error, fetchGallery, fetchTour, tour } =
     useTourStore();
-  const { fetchReviews, lengthuserRating, averageRating } = useReviewStore();
+  const {
+    fetchReviews,
+    lengthuserRating,
+    averageRating,
+    isLoading,
+    error: errorRevies,
+  } = useReviewStore();
 
   useEffect(() => {
     if (tourId) {
@@ -37,13 +45,61 @@ export default function TourBooking() {
     const end = new Date(endDate);
     return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
   };
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
-  if (!tour) return <div>No tour found</div>;
+
+  const router = useRouter();
+
+  if (loading) {
+    return (
+      <div className="text-center p-6">
+        <p className="mb-4">Loading...</p>
+        <button
+          onClick={() => router.back()}
+          className="text-blue-600 hover:underline flex items-center justify-center"
+        >
+          ← Go Back
+        </button>
+      </div>
+    );
+  }
+
+  if (error || errorRevies) {
+    return (
+      <div className="text-center p-6">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button
+          onClick={() => router.back()}
+          className="text-blue-600 hover:underline flex items-center justify-center"
+        >
+          ← Go Back
+        </button>
+      </div>
+    );
+  }
+
+  if (!tour) {
+    return (
+      <div className="text-center p-6 text-gray-500">
+        <p className="mb-4">No tour found.</p>
+        <button
+          onClick={() => router.back()}
+          className="text-blue-600 hover:underline flex items-center justify-center"
+        >
+          ← Go Back
+        </button>
+      </div>
+    );
+  }
+
   if (!gallery || gallery.length === 0) {
     return (
-      <div className="text-center text-gray-500">
-        No images available for this tour.
+      <div className="text-center p-6 text-gray-500">
+        <p className="mb-4">No images available for this tour.</p>
+        <button
+          onClick={() => router.back()}
+          className="text-blue-600 hover:underline flex items-center justify-center"
+        >
+          ← Go Back
+        </button>
       </div>
     );
   }
