@@ -1,19 +1,60 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useTourStore } from "@/store/tourStore";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { Heart, Star, Clock, Bus, Calendar } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { useParams } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Home() {
+  const parms = useParams();
   const { galleryImages, fetchGalleryImages, loading, error } = useTourStore();
   const [filter, setFilter] = useState("highest");
   const [currentPage, setCurrentPage] = useState(1);
+  const [favorites, setFavorites] = useState([]);
   const itemsPerPage = 5;
 
   useEffect(() => {
     fetchGalleryImages(); // Fetch gallery images when the component mounts
+
+    // Load favorites from localStorage or initialize empty array
+    const savedFavorites = localStorage.getItem("favorites");
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
   }, [fetchGalleryImages]);
+
+  // Function to handle favorite button click
+  const handleFavoriteClick = (tourId) => {
+    let newFavorites;
+
+    if (favorites.includes(tourId)) {
+      // Remove from favorites
+      newFavorites = favorites.filter((id) => id !== tourId);
+      toast.success("Tour removed from favorites!");
+    } else {
+      // Add to favorites
+      newFavorites = [...favorites, tourId];
+      toast.success("Tour added to favorites!");
+    }
+
+    // Update state and save to localStorage
+    setFavorites(newFavorites);
+    localStorage.setItem("favorites", JSON.stringify(newFavorites));
+  };
+
+  // Check if a tour is favorited
+  const isFavorite = (tourId) => {
+    return favorites.includes(tourId);
+  };
 
   if (loading) return <p className="text-center">Loading...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -61,60 +102,159 @@ export default function Home() {
       </div>
 
       {/* Render Tours */}
-      <div className="grid gap-6 px-4">
+      <div className="grid gap-6">
         {currentTours.map((tour) => (
-          <div
-            key={tour.tour_id}
-            className="relative bg-white rounded-lg shadow-md overflow-hidden max-w-4xl mx-auto"
+          <Card
+            key={tour.tour_id || tour._id}
+            className="overflow-hidden border-none shadow-md hover:shadow-lg transition-shadow w-full mx-auto"
           >
-            {/* Favorite Button */}
-            <button className="btn btn-light bg-white rounded-md btn-sm text-dark absolute top-0 right-0 p-2 m-3 shadow-md border">
-              <i className="fa-regular fa-heart"></i>
-            </button>
+            <CardContent className="p-0">
+              <div className="flex flex-col sm:flex-row">
+                <div className="relative w-full sm:w-48">
+                  <Link
+                    href={
+                      parms?.id
+                        ? `/${parms.id}/tour-detail/${tour._id}`
+                        : `/tour-detail/${tour._id}`
+                    }
+                  >
+                    <div className="h-full w-full relative sm:w-48">
+                      <Image
+                        src={
+                          tour.galleryImages?.[0] ||
+                          "/placeholder.svg?height=200&width=200" ||
+                          "/placeholder.svg" ||
+                          "/placeholder.svg"
+                        }
+                        alt={tour.tour_name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </Link>
+                </div>
 
-            <div className="flex">
-              <Link href={`/tour-detail/${tour._id}`}>
-                <img
-                  src={tour.galleryImages[0]}
-                  alt={tour.tour_name}
-                  className="w-48 h-48 object-cover"
-                />
-              </Link>
+                <div className="p-6 flex flex-col justify-between w-full relative">
+                  {/* Favorite Button */}
+                  <div className="absolute top-4 right-4">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleFavoriteClick(tour._id)}
+                      className="hover:bg-rose-50"
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${
+                          isFavorite(tour._id)
+                            ? "fill-rose-500 text-rose-500"
+                            : ""
+                        }`}
+                      />
+                    </Button>
+                  </div>
 
-              <div className="p-4 flex w-[650px] flex-col border transition justify-between">
-                <div>
-                  <h2 className="text-xl font-bold mb-4">{tour.tour_name}</h2>
-                  <p className="text-gray-500">{tour.description}</p>
-                  <div className="mt-2 text-yellow-500">
-                    {Array(Math.max(1, Math.floor(tour.rating || 0)))
-                      .fill("★")
-                      .join("")}
-                    <span className="ml-2 text-gray-600">
-                      {tour.rating
-                        ? `${tour.rating} (${tour.reviews} reviews)`
-                        : "No ratings yet"}
-                    </span>
+                  <div>
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      <Badge
+                        variant="secondary"
+                        className="bg-teal-100 text-teal-700 hover:bg-teal-200"
+                      >
+                        {tour.tour_name || "Tour"}
+                      </Badge>
+                      {tour.status && (
+                        <Badge
+                          variant="secondary"
+                          className={
+                            tour.status === "Sold out"
+                              ? "bg-rose-100 text-rose-700 hover:bg-rose-200"
+                              : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                          }
+                        >
+                          {tour.status}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <Link
+                      href={
+                        parms?.id
+                          ? `/${parms.id}/tour-detail/${tour._id}`
+                          : `/tour-detail/${tour._id}`
+                      }
+                    >
+                      <h2 className="text-xl font-semibold mb-2 hover:text-rose-600 transition-colors">
+                        {tour.tour_name}
+                      </h2>
+                    </Link>
+
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                      {tour.description}
+                    </p>
+
+                    <div className="flex items-center mb-4">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <Star
+                          key={index}
+                          className={`h-4 w-4 ${
+                            index < Math.floor(tour.rating || 0)
+                              ? "fill-amber-400 text-amber-400"
+                              : "fill-gray-200 text-gray-200"
+                          }`}
+                        />
+                      ))}
+                      <span className="ml-2 font-medium">
+                        {tour.rating || "0"}
+                      </span>
+                      <span className="ml-1 text-sm text-muted-foreground">
+                        {tour.reviews
+                          ? `(${tour.reviews} reviews)`
+                          : "(No reviews yet)"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Separator className="my-4" />
+
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
+                          <Clock className="h-4 w-4 text-rose-500" />
+                        </div>
+                        <span>
+                          {getDuration(tour.startDate, tour.endDate)} days
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
+                          <Bus className="h-4 w-4 text-rose-500" />
+                        </div>
+                        <span>Transport</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
+                          <Calendar className="h-4 w-4 text-rose-500" />
+                        </div>
+                        <span>
+                          {tour.status === "Sold out"
+                            ? "Unavailable"
+                            : "Available"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <div className="font-bold text-2xl text-rose-600">
+                        ${tour.price}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        /person
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center justify-between mt-4">
-                  <p className="text-sm text-gray-500">
-                    <i className="fa-regular fa-clock"></i>{" "}
-                    {getDuration(tour.startDate, tour.endDate)} days
-                  </p>
-                  <p
-                    className={`text-sm font-bold ${
-                      tour.status === "Sold out"
-                        ? "text-red-500"
-                        : "text-green-500"
-                    }`}
-                  >
-                    {tour.status}
-                  </p>
-                  <p className="text-lg font-bold">${tour.price} / person</p>
-                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
@@ -126,7 +266,7 @@ export default function Home() {
             onClick={() => setCurrentPage(index + 1)}
             className={`mx-2 px-4 py-2 rounded-md border ${
               currentPage === index + 1
-                ? "bg-blue-500 text-white"
+                ? "bg-rose-500 text-white"
                 : "bg-gray-100"
             }`}
           >

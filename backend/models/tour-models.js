@@ -19,8 +19,8 @@ const tourSchema = new mongoose.Schema(
     status: {
       type: String,
       required: true,
-      enum: ["Active", "Expire"], // Only allows 'Active' or 'Expire'
-      default: "Active",
+      enum: ["Ongoing", "Full","Close"], // Only allows one of these values
+      default: "Ongoing", // Default value if not provided
     },
     specialStatus: {
       type: String,

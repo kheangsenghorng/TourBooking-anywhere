@@ -24,18 +24,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export default function Edituser() {
   const params = useParams();
   const router = useRouter();
-  const { user, loading, error, fetchUserById, editUser } = userStore();
+  const { user, useById, loading, error, editUser, fetchUserByIdadmin } =
+    userStore();
   const {
     profileImage,
     setProfileImage,
@@ -70,16 +64,16 @@ export default function Edituser() {
   });
   // Initialize form data when user and address are loaded
   useEffect(() => {
-    if (user) {
+    if (useById) {
       setFormData((prevData) => ({
         ...prevData,
-        firstname: user.firstname || "",
-        lastname: user.lastname || "",
-        email: user.email || "",
-        phonenumber: user.phonenumber || "",
+        firstname: useById.firstname || "",
+        lastname: useById.lastname || "",
+        email: useById.email || "",
+        phonenumber: useById.phonenumber || "",
       }));
     }
-  }, [user]);
+  }, [useById]);
 
   useEffect(() => {
     if (address) {
@@ -97,7 +91,7 @@ export default function Edituser() {
 
   useEffect(() => {
     if (params.userId) {
-      fetchUserById(params.userId);
+      fetchUserByIdadmin(params.id, params.userId);
       fetchAddress(params.userId);
       if (typeof params.userId === "string" && params.userId.trim() !== "") {
         fetchProfileImage(params.userId);
@@ -105,7 +99,7 @@ export default function Edituser() {
         console.error("Invalid param.id:", params.userId);
       }
     }
-  }, [params.userId, fetchUserById, fetchProfileImage, fetchAddress]);
+  }, [params.userId, fetchUserByIdadmin, fetchProfileImage, fetchAddress]);
 
   // Handle select changes
   const handleAddressChange = (e) => {

@@ -49,6 +49,83 @@ export const uploadProfileImage = (req, res) => {
 
 //upload multiple files
 
+// export const uploadMultipleFiles = async (req, res) => {
+//   try {
+//     const { tourId, id } = req.params; // Extract tour ID and admin ID from URL
+//     const files = req.files; // Get uploaded files
+
+//     if (!files || files.length === 0) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "No files uploaded" });
+//     }
+
+//     // Check if the tour exists
+//     const tour = await Tour.findById(tourId);
+//     if (!tour) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Tour not found" });
+//     }
+
+//     // Append new files to the tour's existing gallery
+//     const uploadedFiles = files.map((file) => file.filename); // Store just the filenames (not full paths)
+
+//     // Add the new images to the gallery
+//     tour.galleryImages.push(...uploadedFiles);
+//     await tour.save(); // Save updated tour data
+
+//     // Return image URLs in the response, similar to how the user profile image is handled
+//     const galleryImageUrls = tour.galleryImages.map(
+//       (image) => `${req.protocol}://${req.get("host")}/uploads/tours/${image}`
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Files uploaded successfully",
+//       adminId: id,
+//       tourId: tour._id,
+//       totalUploaded: files.length,
+//       galleryImages: tour.galleryImages,
+//       galleryUrl: galleryImageUrls, // Include full URLs of the images
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+// // upload multiple files not by id tour
+// export const uploadMultipleFilesNot = async (req, res) => {
+//   try {
+//     const { id } = req.params; // Extract admin ID from URL
+//     const files = req.files; // Get uploaded files
+
+//     if (!files || files.length === 0) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "No files uploaded" });
+//     }
+
+//     // Store just the filenames (not full paths)
+//     const uploadedFiles = files.map((file) => file.filename);
+
+//     // Return image URLs in the response
+//     const galleryImageUrls = uploadedFiles.map(
+//       (image) => `${req.protocol}://${req.get("host")}/uploads/tours/${image}`
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Files uploaded successfully",
+//       adminId: id,
+//       totalUploaded: files.length,
+//       galleryImages: uploadedFiles,
+//       galleryUrl: galleryImageUrls, // Include full URLs of the images
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
 export const uploadMultipleFiles = async (req, res) => {
   try {
     const { tourId, id } = req.params; // Extract tour ID and admin ID from URL
@@ -68,14 +145,27 @@ export const uploadMultipleFiles = async (req, res) => {
         .json({ success: false, message: "Tour not found" });
     }
 
-    // Append new files to the tour's existing gallery
-    const uploadedFiles = files.map((file) => file.filename); // Store just the filenames (not full paths)
+    // Get existing gallery images
+    const existingImages = new Set(tour.galleryImages);
+
+    // Filter out duplicates
+    const newFiles = files.filter((file) => !existingImages.has(file.filename));
+
+    if (newFiles.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "All uploaded files already exist in the gallery",
+      });
+    }
+
+    // Append only new files to the tour's existing gallery
+    const uploadedFiles = newFiles.map((file) => file.filename);
 
     // Add the new images to the gallery
     tour.galleryImages.push(...uploadedFiles);
     await tour.save(); // Save updated tour data
 
-    // Return image URLs in the response, similar to how the user profile image is handled
+    // Return image URLs in the response
     const galleryImageUrls = tour.galleryImages.map(
       (image) => `${req.protocol}://${req.get("host")}/uploads/tours/${image}`
     );
@@ -85,15 +175,17 @@ export const uploadMultipleFiles = async (req, res) => {
       message: "Files uploaded successfully",
       adminId: id,
       tourId: tour._id,
-      totalUploaded: files.length,
+      totalUploaded: newFiles.length,
+      duplicatesSkipped: files.length - newFiles.length,
       galleryImages: tour.galleryImages,
-      galleryUrl: galleryImageUrls, // Include full URLs of the images
+      galleryUrl: galleryImageUrls,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-// upload multiple files not by id tour
+
+// For the non-tour version (if you want similar duplicate checking)
 export const uploadMultipleFilesNot = async (req, res) => {
   try {
     const { id } = req.params; // Extract admin ID from URL
@@ -105,7 +197,9 @@ export const uploadMultipleFilesNot = async (req, res) => {
         .json({ success: false, message: "No files uploaded" });
     }
 
-    // Store just the filenames (not full paths)
+    // If you want to check duplicates against some existing collection in this case,
+    // you would need to implement similar logic as above
+    // For now, just processing all files as this doesn't save to a tour
     const uploadedFiles = files.map((file) => file.filename);
 
     // Return image URLs in the response
@@ -119,12 +213,77 @@ export const uploadMultipleFilesNot = async (req, res) => {
       adminId: id,
       totalUploaded: files.length,
       galleryImages: uploadedFiles,
-      galleryUrl: galleryImageUrls, // Include full URLs of the images
+      galleryUrl: galleryImageUrls,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+// Upload multiple files without checking for duplicates
+
+// export const uploadMultipleFilesNot = async (req, res) => {
+//   try {
+//     const { id } = req.params; // Extract admin ID from URL
+//     const files = req.files; // Get uploaded files
+
+//     // Check if files were uploaded
+//     if (!files || files.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "No files uploaded"
+//       });
+//     }
+
+//     // Initialize an array to store filenames of uploaded files
+//     const uploadedFiles = [];
+
+//     // Check for duplicates
+//     const existingFiles = fs.readdirSync('./uploads/tours'); // Read the existing files in the directory
+
+//     const duplicateFiles = [];
+
+//     files.forEach(file => {
+//       if (existingFiles.includes(file.filename)) {
+//         // If file already exists, add it to duplicateFiles array
+//         duplicateFiles.push(file.filename);
+//       } else {
+//         // If no duplicate, add the file to uploadedFiles
+//         uploadedFiles.push(file.filename);
+//       }
+//     });
+
+//     // If there are any duplicate files, return an error message
+//     if (duplicateFiles.length > 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `The following files already exist: ${duplicateFiles.join(', ')}`,
+//         duplicateFiles, // Include the names of duplicate files
+//       });
+//     }
+
+//     // Create URLs for the successfully uploaded files
+//     const galleryImageUrls = uploadedFiles.map(
+//       (image) => `${req.protocol}://${req.get("host")}/uploads/tours/${image}`
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Files uploaded successfully",
+//       adminId: id,
+//       totalUploaded: uploadedFiles.length,
+//       galleryImages: uploadedFiles,
+//       galleryUrls: galleryImageUrls, // Full URLs for images
+//     });
+//   } catch (error) {
+//     // Generic error handling with a more informative message
+//     console.error(error); // Optional, log error for debugging
+//     res.status(500).json({
+//       success: false,
+//       message: "An error occurred while uploading the files.",
+//       error: error.message
+//     });
+//   }
+// };
 
 // Get all gallery images for a tour
 
@@ -285,13 +444,12 @@ export const getAllUsers = async (req, res) => {
 
     const baseUrl =
       process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
-      const usersWithImages = users.map((user) => ({
-        ...user._doc,
-        profile_image_url: user.profile_image
-          ? `${baseUrl}/uploads/profile/${user.profile_image}`
-          : null,
-      }));
-   
+    const usersWithImages = users.map((user) => ({
+      ...user._doc,
+      profile_image_url: user.profile_image
+        ? `${baseUrl}/uploads/profile/${user.profile_image}`
+        : null,
+    }));
 
     res.status(200).json(usersWithImages);
   } catch (error) {

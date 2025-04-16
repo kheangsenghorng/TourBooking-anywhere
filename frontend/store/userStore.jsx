@@ -1,10 +1,12 @@
 import { create } from "zustand";
 import axios from "axios";
 
+
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Use base URL, don't append `/auth`
 
 export const userStore = create((set) => ({
   user: null,
+  useById: null,
   loading: false,
   error: null,
   count: 0,
@@ -16,6 +18,18 @@ export const userStore = create((set) => ({
     try {
       const response = await axios.get(`${API_URL}/auth/users/${id}`); // Ensure correct endpoint
       set({ user: response.data.user, loading: false });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to fetch user",
+        loading: false,
+      });
+    }
+  },
+  fetchUserByIdadmin: async (id, userId) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/auth/${id}/${userId}/users`); // Ensure correct endpoint
+      set({ useById: response.data.useById, loading: false });
     } catch (error) {
       set({
         error: error.response?.data?.message || "Failed to fetch user",

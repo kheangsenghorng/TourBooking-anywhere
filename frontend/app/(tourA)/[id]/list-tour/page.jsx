@@ -10,7 +10,7 @@ export default function PageTour() {
       <Carousel />
       <SearchTour />
       <div
-        className="flex justify-between w-[1200px] mx-auto
+        className="flex justify-evenly
        "
       >
         <div className="w-[25%]">
@@ -18,9 +18,7 @@ export default function PageTour() {
           <FilterSidebar />
         </div>
 
-        <div>
-          <TourList />
-        </div>
+        <TourList />
       </div>
     </div>
   );

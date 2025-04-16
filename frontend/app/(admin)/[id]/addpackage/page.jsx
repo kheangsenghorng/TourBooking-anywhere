@@ -1,184 +1,499 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Search, ChevronLeft, ChevronRight, Trash2, Edit2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react";
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  Edit2,
+  Plus,
+  Star,
+  Calendar,
+  MapPin,
+  Users,
+  Filter,
+  Download,
+  ArrowUpDown,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { useParams } from "next/navigation";
+import { useTourStore } from "@/store/tourStore";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 export default function TourManagement() {
-  const params = useParams()
-  const [tours, setTours] = useState([
-    {
-      id: "#00001",
-      name: "Nacho Varga",
-      price: "$120",
-      date: "2020/02/09 - 25",
-      destination: "Phnom Penh",
-      participants: "20/20",
-      rating: 4.5,
-      status: "Full",
-    },
-    {
-      id: "#00002",
-      name: "Lalo Salamanca",
-      price: "$120",
-      date: "2020/02/09 - 25",
-      destination: "Phnom Penh - SiemReap",
-      participants: "10/20",
-      rating: 5.0,
-      status: "Ongoing",
-    },
-    {
-      id: "#00003",
-      name: "Pablo Escobar",
-      price: "$120",
-      date: "2020/02/09 - 25",
-      destination: "Phnom Penh - SiemReap - Kep",
-      participants: "15/15",
-      rating: 4.4,
-      status: "Full",
-    },
-    {
-      id: "#00004",
-      name: "Jesse Pinkman",
-      price: "$120",
-      date: "2020/02/09 - 25",
-      destination: "Phnom Penh - Kep",
-      participants: "#####",
-      rating: 1.2,
-      status: "Close",
-    },
-    {
-      id: "#00005",
-      name: "Jimmy McGill",
-      price: "$120",
-      date: "2020/02/09 - 25",
-      destination: "Phnom Penh - SiemReap",
-      participants: "12/13",
-      rating: 3.8,
-      status: "Ongoing",
-    },
-    {
-      id: "#00006",
-      name: "Gus Fring",
-      price: "$120",
-      date: "2020/02/09 - 25",
-      destination: "Phnom Penh - SiemReap - Kep",
-      participants: "15/20",
-      rating: 4.8,
-      status: "Ongoing",
-    },
-  ])
+  const params = useParams();
+  const { fetchTours, tours, isLoading, error } = useTourStore();
 
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchQuery, setSearchQuery] = useState("")
+  useEffect(() => {
+    fetchTours(params.id);
+  }, [fetchTours, params.id]);
 
-  const getStatusBadgeClass = (status) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState("tour_name");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Filter tours based on search query and status filter
+  const filteredTours = !isLoading
+    ? tours.filter((tour) => {
+        const matchesSearch =
+          (tour.tour_name &&
+            tour.tour_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (tour.tour_id &&
+            tour.tour_id.toLowerCase().includes(searchQuery.toLowerCase()));
+
+        const matchesStatus =
+          statusFilter === "all" || tour.status === statusFilter;
+
+        return matchesSearch && matchesStatus;
+      })
+    : [];
+
+  // Sort tours based on sort field and direction
+  const sortedTours = [...filteredTours].sort((a, b) => {
+    let aValue = a[sortField];
+    let bValue = b[sortField];
+
+    // Handle special cases
+    if (sortField === "price") {
+      aValue = Number.parseFloat(a.price) || 0;
+      bValue = Number.parseFloat(b.price) || 0;
+    }
+
+    if (sortDirection === "asc") {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(sortedTours.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedTours = sortedTours.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const getStatusBadgeVariant = (status) => {
     switch (status) {
       case "Full":
-        return "bg-red-100 text-red-800 hover:bg-red-100"
+        return "bg-rose-100 text-rose-800 border-rose-200 hover:bg-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800";
       case "Ongoing":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-100"
+        return "bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800";
       case "Close":
-        return "bg-rose-100 text-rose-800 hover:bg-rose-100"
+        return "bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700";
+      case "Available":
+        return "bg-sky-100 text-sky-800 border-sky-200 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800";
       default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-100"
+        return "bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700";
     }
-  }
+  };
+
+  const statusOptions = ["all", "Available", "Ongoing", "Full", "Close"];
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Tour Management</h1>
-          <div className="flex gap-4">
-            <Button className="bg-blue-600 hover:bg-blue-700">Create New Tour</Button>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+    <div className="space-y-6">
+      <Card className="border-none shadow-xl bg-white dark:bg-gray-950 rounded-xl overflow-hidden">
+        <CardHeader className="pb-0">
+          <div className="flex flex-col space-y-1.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-2xl font-bold">
+                  Tour Management
+                </CardTitle>
+                <CardDescription>
+                  Manage your tours, track bookings, and monitor performance
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button className="bg-teal-600 hover:bg-teal-700 text-white shadow-md transition-all hover:shadow-lg h-9">
+                  <Plus size={16} className="mr-2" />
+                  Create New Tour
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className=" w-full sm:w-auto">
               <Input
-                className="pl-10 w-64"
+                className="pl-10 w-full sm:w-80"
                 placeholder="Search by name or ID"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-          </div>
-        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">ID</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Tour Name</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Base Price</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Start/End Date</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Destination</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Participants</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Rating</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600">Status</th>
-                <th className="text-left py-3 px-4 font-medium text-sm text-gray-600"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {tours.map((tour) => (
-                <tr key={tour.id} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="py-4 px-4 text-sm">{tour.id}</td>
-                  <td className="py-4 px-4 text-sm">{tour.name}</td>
-                  <td className="py-4 px-4 text-sm">{tour.price}</td>
-                  <td className="py-4 px-4 text-sm">{tour.date}</td>
-                  <td className="py-4 px-4 text-sm">{tour.destination}</td>
-                  <td className="py-4 px-4 text-sm">{tour.participants}</td>
-                  <td className="py-4 px-4 text-sm">{tour.rating}</td>
-                  <td className="py-4 px-4 text-sm">
-                    <Badge className={getStatusBadgeClass(tour.status)}>{tour.status}</Badge>
-                  </td>
-                  <td className="py-4 px-4 text-sm">
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Trash2 size={18} className="text-gray-500" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Edit2 size={18} className="text-gray-500" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9">
+                    <Filter size={16} className="mr-2" />
+                    Status: {statusFilter === "all" ? "All" : statusFilter}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {statusOptions.map((status) => (
+                    <DropdownMenuItem
+                      key={status}
+                      onClick={() => setStatusFilter(status)}
+                      className={statusFilter === status ? "bg-muted" : ""}
+                    >
+                      {status === "all" ? "All" : status}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-full" />
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-destructive">
+              Error loading tours: {error}
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto rounded-lg border">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-muted/50">
+                      <th
+                        className="py-3 px-4 text-left font-medium text-xs text-muted-foreground cursor-pointer"
+                        onClick={() => handleSort("tour_id")}
+                      >
+                        <div className="flex items-center">
+                          ID
+                          {sortField === "tour_id" && (
+                            <ArrowUpDown size={14} className="ml-1" />
+                          )}
+                        </div>
+                      </th>
 
-        <div className="flex justify-between items-center mt-6">
-          <Button variant="outline" size="sm" className="flex items-center gap-1">
-            <ChevronLeft size={16} />
-            Prev. Date
-          </Button>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="bg-blue-50 text-blue-600 border-blue-200">
-              1
-            </Button>
-            <Button variant="outline" size="sm">
-              2
-            </Button>
-            <span className="text-gray-500">...</span>
-            <span className="text-gray-500">...</span>
-            <Button variant="outline" size="sm">
-              35
-            </Button>
-            <Button variant="outline" size="sm">
-              36
-            </Button>
-          </div>
-          <Button variant="outline" size="sm" className="flex items-center gap-1">
-            Next Date
-            <ChevronRight size={16} />
-          </Button>
-        </div>
-      </div>
+                      <th className="py-3 px-4 text-left font-medium text-xs text-muted-foreground">
+                        TOUR IMAGE
+                      </th>
+                      <th
+                        className="py-3 px-4 text-left font-medium text-xs text-muted-foreground cursor-pointer"
+                        onClick={() => handleSort("tour_name")}
+                      >
+                        <div className="flex items-center">
+                          TOUR NAME
+                          {sortField === "tour_name" && (
+                            <ArrowUpDown size={14} className="ml-1" />
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="py-3 px-4 text-left font-medium text-xs text-muted-foreground cursor-pointer"
+                        onClick={() => handleSort("price")}
+                      >
+                        <div className="flex items-center">
+                          BASE PRICE
+                          {sortField === "price" && (
+                            <ArrowUpDown size={14} className="ml-1" />
+                          )}
+                        </div>
+                      </th>
+                      <th className="py-3 px-4 text-left font-medium text-xs text-muted-foreground">
+                        DATES
+                      </th>
+                      <th className="py-3 px-4 text-left font-medium text-xs text-muted-foreground">
+                        DESTINATION
+                      </th>
+                      <th className="py-3 px-4 text-left font-medium text-xs text-muted-foreground">
+                        PARTICIPANTS
+                      </th>
+                      <th
+                        className="py-3 px-4 text-left font-medium text-xs text-muted-foreground cursor-pointer"
+                        onClick={() => handleSort("averageRating")}
+                      >
+                        <div className="flex items-center">
+                          RATING
+                          {sortField === "averageRating" && (
+                            <ArrowUpDown size={14} className="ml-1" />
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="py-3 px-4 text-left font-medium text-xs text-muted-foreground cursor-pointer"
+                        onClick={() => handleSort("status")}
+                      >
+                        <div className="flex items-center">
+                          STATUS
+                          {sortField === "status" && (
+                            <ArrowUpDown size={14} className="ml-1" />
+                          )}
+                        </div>
+                      </th>
+                      <th className="py-3 px-4 text-left font-medium text-xs text-muted-foreground">
+                        ACTIONS
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedTours.length > 0 ? (
+                      paginatedTours.map((tour) => (
+                        <tr
+                          key={tour._id}
+                          className="border-t hover:bg-muted/30 transition-colors"
+                        >
+                          <td className="py-3 px-4 text-sm font-medium text-nowrap">
+                            <Link href={`addpackage/bookingtour/${tour._id}`}>
+                              {tour?.tour_id || "N/A"}
+                            </Link>
+                          </td>
+
+                          <td className="py-3 px-4 text-sm">
+                            <div className="h-14 w-24 rounded-md overflow-hidden border">
+                              <img
+                                src={
+                                  tour.galleryImages[0] ||
+                                  "/placeholder.svg?height=56&width=96"
+                                }
+                                alt={tour.tour_name}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm font-medium">
+                            {tour.tour_name}
+                          </td>
+
+                          <td className="py-3 px-4 text-sm">
+                            <span className="font-medium">${tour.price}</span>
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            <div className="flex items-center">
+                              <Calendar
+                                size={14}
+                                className="mr-2 text-muted-foreground"
+                              />
+                              <div className="flex flex-col text-nowrap">
+                                <span>
+                                  {tour.startDate
+                                    .split("T")[0]
+                                    .replace(/-/g, "/")}{" "}
+                                  - {tour.endDate.split("T")[0].split("-")[2]}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm ">
+                            <div className="flex items-center">
+                              <MapPin
+                                size={14}
+                                className="mr-2 text-muted-foreground"
+                              />
+                              <div className="flex flex-col">
+                                <span>{tour.start_location}</span>
+                                <span className="text-muted-foreground">
+                                  {tour.first_destination}
+                                  {tour.second_destination &&
+                                    ` → ${tour.second_destination}`}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            <div className="flex items-center">
+                              <Users
+                                size={14}
+                                className="mr-2 text-muted-foreground"
+                              />
+                              <span className="inline-flex items-center justify-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+                                0/{tour.limit || "∞"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            <div className="flex items-center">
+                              <span className="mr-1">
+                                {tour.averageRating || "0"}
+                              </span>
+                              <Star
+                                size={14}
+                                className="fill-amber-400 text-amber-400"
+                              />
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            <Badge
+                              className={getStatusBadgeVariant(tour.status)}
+                            >
+                              {tour.status}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            <div className="flex gap-1">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                    >
+                                      <Edit2 size={16} />
+                                      <span className="sr-only">Edit</span>
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Edit tour</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-destructive hover:text-destructive"
+                                    >
+                                      <Trash2 size={16} />
+                                      <span className="sr-only">Delete</span>
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Delete tour</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={10}
+                          className="py-8 text-center text-muted-foreground"
+                        >
+                          {searchQuery
+                            ? "No tours match your search"
+                            : "No tours available"}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {filteredTours.length > 0 && (
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {startIndex + 1} to{" "}
+                    {Math.min(startIndex + itemsPerPage, filteredTours.length)}{" "}
+                    of {filteredTours.length} tours
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={handlePrevPage}
+                      disabled={currentPage === 1}
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                    >
+                      <ChevronLeft size={16} />
+                      <span className="sr-only">Previous page</span>
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <Button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            variant={
+                              page === currentPage ? "default" : "outline"
+                            }
+                            size="icon"
+                            className={`h-8 w-8 ${
+                              page === currentPage
+                                ? "bg-teal-600 hover:bg-teal-700"
+                                : ""
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        )
+                      )}
+                    </div>
+
+                    <Button
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                    >
+                      <ChevronRight size={16} />
+                      <span className="sr-only">Next page</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
-  )
+  );
 }
-

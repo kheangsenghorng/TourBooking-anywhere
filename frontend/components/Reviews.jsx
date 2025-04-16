@@ -1,48 +1,29 @@
-import React from "react";
+import React, { useEffect } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useReviewStore } from "@/store/reviewStore";
 
 const Reviews = () => {
-  const reviews = [
-    {
-      name: "Lalo Salamanca",
-      date: "Mar 12 2022",
-      rating: 4,
-      review:
-        "I recently stayed at Tree house Hotel, and it was a pleasant experience overall. I’d recommend Blissful Stay Resort for its comfort and ....",
-      avatar: "/image/22.jpg",
-    },
-    {
-      name: "Gus Fring",
-      date: "Mar 12 2023",
-      rating: 3,
-      review:
-        "I recently stayed at Tree house Hotel, and it was a pleasant experience overall. I’d recommend Blissful Stay Resort for its comfort and ....",
-      avatar: "/image/21.jpg",
-    },
-    {
-      name: "Werner Ziegler",
-      date: "Mar 19 2024",
-      rating: 4,
-      review:
-        "I recently stayed at Tree house Hotel, and it was a pleasant experience overall. I’d recommend Blissful Stay Resort for its comfort and ....",
-      avatar: "/image/20.jpg",
-    },
-    {
-      name: "Nacho",
-      date: "Mar 12 2024",
-      rating: 4,
-      review:
-        "I recently stayed at Tree house Hotel, and it was a pleasant experience overall. I’d recommend Blissful Stay Resort for its comfort and ....",
-      avatar: "/image/2.png",
-    },
-  ];
+  const { tourId } = useParams();
+  const {
+    reviews,
+    fetchAllReviews,
+    isLoading,
+    error,
+    lengthuserRating,
+    averageRating,
+    ratingCounts,
+  } = useReviewStore();
 
-  const ratings = [
-    { stars: 5, count: 8765, percentage: "88%" },
-    { stars: 4, count: 382, percentage: "8%" },
-    { stars: 3, count: 144, percentage: "3%" },
-    { stars: 2, count: 82, percentage: "2%" },
-    { stars: 1, count: 62, percentage: "1%" },
-  ];
+  useEffect(() => {
+    if (tourId) {
+      fetchAllReviews(tourId);
+    }
+  }, [tourId, fetchAllReviews]);
+
+  if (isLoading) return <div>Loading reviews...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
+  if (!reviews.length) return <div>No reviews yet</div>;
 
   const renderStars = (count) =>
     Array(5)
@@ -62,38 +43,40 @@ const Reviews = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       {/* Title and Rating */}
-      <div className="text-center mb-6 flex ">
-        <h2 className="text-2xl font-bold">Reviews</h2>
-        <div className="flex items-center justify-center text-green-500 text-2xl font-bold space-x-2 ps-4">
-          <span>4.9</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="#22C55E"
-            viewBox="0 0 24 24"
-            className="w-6 h-6"
-          >
-            <path d="M12 2.5l3.09 6.26L22 9.74l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.61 2 9.74l6.91-1.02L12 2.5z" />
-          </svg>
-          <span className="text-gray-500 text-lg">(1210 reviews)</span>
+      <div className="text-center mb-6 flex items-center">
+        <Link href="#Reviews" id="Reviews">
+          <h2 className="text-2xl font-bold">Reviews</h2>
+        </Link>
+
+        <div className="flex items-center text-green-500 text-2xl font-bold space-x-2 ps-4">
+          <span>{averageRating?.toFixed(1)}</span>
+          {renderStars(Math.round(averageRating))}
+          <span className="text-gray-500 text-lg">
+            ({lengthuserRating} reviews)
+          </span>
         </div>
       </div>
 
       {/* Star Rating Breakdown */}
       <div className="mb-8">
-        {ratings.map((rating, index) => (
-          <div key={index} className="flex items-center space-x-4 mb-2">
-            <div className="flex items-center">{renderStars(rating.stars)}</div>
-            <div className="w-[280px]">
-              <div className="bg-gray-200 h-1 rounded-full relative">
-                <div
-                  className="bg-green-500 h-1 rounded-full"
-                  style={{ width: rating.percentage }}
-                ></div>
+        {[5, 4, 3, 2, 1].map((star) => {
+          const count = ratingCounts?.[star] || 0;
+          const percentage = (count / lengthuserRating) * 100;
+          return (
+            <div key={star} className="flex items-center space-x-4 mb-2">
+              <div className="flex items-center">{renderStars(star)}</div>
+              <div className="w-[280px]">
+                <div className="bg-gray-200 h-1 rounded-full relative">
+                  <div
+                    className="bg-green-500 h-1 rounded-full"
+                    style={{ width: `${percentage}%` }}
+                  ></div>
+                </div>
               </div>
+              <span className="text-sm text-gray-500">{count}</span>
             </div>
-            <span className="text-sm text-gray-500">{rating.count}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Review Cards */}
@@ -101,17 +84,30 @@ const Reviews = () => {
         {reviews.map((review, index) => (
           <div key={index} className="bg-white p-4 rounded-lg flex space-x-4">
             <img
-              src={review.avatar}
-              alt={review.name}
+              src={review.copiedUser?.profile_image || "/placeholder.svg"}
+              alt={review.copiedUser?.firstname || "Reviewer"}
               className="w-16 h-16 rounded-full border border-gray-300 shadow-lg object-cover"
             />
             <div>
-              <h3 className="font-bold">{review.name}</h3>
-              <p className="text-gray-400 text-sm">{review.date}</p>
+              <h3 className="font-bold">
+                {review.copiedUser?.firstname} {review.copiedUser?.lastname}
+              </h3>
+              <p className="text-gray-400 text-sm">
+                {new Date(review.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </p>
               <div className="flex space-x-1 my-2">
                 {renderStars(review.rating)}
               </div>
-              <p className="text-gray-600 text-sm">{review.review}</p>
+              <p className="text-gray-600 text-sm line-clamp-2">
+                {review.review}
+              </p>
+              <p className="text-gray-600 text-sm line-clamp-2">
+                {review.text}
+              </p>
             </div>
           </div>
         ))}
@@ -120,7 +116,7 @@ const Reviews = () => {
       {/* Show All Reviews Button */}
       <div className="mt-6">
         <button className="px-4 py-2 text-black border-2 rounded-md hover:bg-green-500 hover:text-white transition">
-          Show All 100 Reviews
+          Show All {lengthuserRating} Reviews
         </button>
       </div>
     </div>

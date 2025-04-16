@@ -6,6 +6,8 @@ export const useTourStore = create((set) => ({
   galleryImages: [],
   gallery: [],
   countTour: [],
+  tours: [],
+  isLoading: false,
   tour: null,
   loading: false,
   error: null,
@@ -57,6 +59,22 @@ export const useTourStore = create((set) => ({
       }
     } catch (error) {
       set({ error: "Failed to fetch gallery", loading: false });
+    }
+  },
+  // Fetch all tours from the backend
+  fetchTours: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await fetch(`${API_URL}/tour/${id}/tours`); // Adjust API path if necessary
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to fetch tours");
+      }
+
+      set({ tours: data.tours, isLoading: false });
+    } catch (error) {
+      set({ error: error.message, isLoading: false });
     }
   },
 }));

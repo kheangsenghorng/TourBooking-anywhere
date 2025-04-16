@@ -8,8 +8,8 @@ export default function Home() {
   return (
     <div>
       <SearchTour />
-      <CardTour />
       <Banner />
+      <CardTour />
     </div>
   );
 }

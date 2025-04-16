@@ -6,8 +6,11 @@ import {
   ArrowLeft,
   ChevronDown,
   Trash2,
-  Hotel,
   Users,
+  Star,
+  Clock,
+  Bus,
+  Calendar,
 } from "lucide-react";
 import { useFavoriteStore } from "@/store/favoriteStore";
 import { useParams } from "next/navigation";
@@ -15,12 +18,16 @@ import { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 export default function FavoritesPage() {
   const params = useParams();
   const { favorites, loading, error, fetchFavorites, removeFavorite } =
     useFavoriteStore();
-  const [favorited, setFavorited] = useState(false);
+  const [favorited, setFavorited] = useState(true);
 
   useEffect(() => {
     if (params.id) {
@@ -30,9 +37,7 @@ export default function FavoritesPage() {
 
   const handleClick = (tourId) => {
     removeFavorite(params.id, tourId);
-
-    setFavorited(false); // Set favorited to false since the item is removed
-    // Remove the favorite
+    setFavorited(false);
     toast.success("Tour removed from favorites!");
   };
 
@@ -44,147 +49,198 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="p-4">
-      <div className="mb-4">
-        <button aria-label="Go back" className="mb-4">
-          <ArrowLeft className="h-6 w-6" />
-        </button>
+    <div className="p-4 max-w-5xl mx-auto">
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Go back"
+          className="mb-4"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
         <div className="flex items-center justify-between border-b pb-3">
           <div className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-red-500 fill-red-500" />
-            <h1 className="text-xl font-semibold">Favorite</h1>
+            <Heart className="h-5 w-5 text-rose-500 fill-rose-500" />
+            <h1 className="text-2xl font-semibold">My Favorites</h1>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm">Sort</span>
-            <ChevronDown className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1"
+            >
+              <span className="text-sm">Sort by</span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
 
       <div className="flex items-center justify-between mb-6">
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-muted-foreground">
           {favorites.length} favorites
         </div>
         <div className="flex items-center gap-3">
-          <button className="text-sm flex items-center gap-1">
-            <span>Select</span>
-          </button>
-          <button className="text-sm flex items-center gap-1">
-            <span>All</span>
-          </button>
-          <button className="text-sm flex items-center gap-1 text-gray-500">
-            <Trash2 className="h-4 w-4" />
+          <Button variant="ghost" size="sm">
+            Select
+          </Button>
+          <Button variant="ghost" size="sm">
+            All
+          </Button>
+          <Button variant="ghost" size="sm" className="text-rose-500">
+            <Trash2 className="h-4 w-4 mr-1" />
             <span>Delete</span>
-          </button>
+          </Button>
         </div>
       </div>
 
-      <div className="max-w-3xl">
+      <div>
         <div className="flex gap-3 mb-6">
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-full flex items-center gap-2">
-            <Users className="h-4 w-4" />
+          <Button variant="outline" className="rounded-full">
+            <Users className="h-4 w-4 mr-2" />
             <span>Tour</span>
-          </button>
+          </Button>
         </div>
 
-        {favorites.map((tour, index) => (
-          <div
-            key={index}
-            className="mb-4 border border-gray-200 rounded-lg overflow-hidden"
-          >
-            <div className="flex">
-              <div className="w-1/3 relative">
-                <Link href={`/tour-detail/${tour._id}`}>
-                  <Image
-                    src={
-                      tour.galleryImages[0] ||
-                      "/placeholder.svg?height=200&width=200"
-                    }
-                    alt={tour.title || "Tour image"}
-                    width={200}
-                    height={200}
-                    className="h-full w-full object-cover"
-                  />
-                </Link>
-              </div>
-              <div className="w-2/3 p-4 relative">
-                <div className="absolute top-4 right-4">
-                  <Heart
-                    onClick={() => handleClick(tour._id)}
-                    className={`h-6 w-6 rounded transition duration-300  ${
-                      favorited
-                        ? "fill-gray-300 text-gray-300"
-                        : " fill-red-500 text-red-500"
-                    }`}
-                  />
-                </div>
+        <div className="grid gap-6">
+          {favorites.map((tour, index) => (
+            <Card
+              key={index}
+              className="overflow-hidden border-none shadow-md hover:shadow-lg transition-shadow"
+            >
+              <CardContent className="p-0">
+                <div className="flex flex-col md:flex-row">
+                  <div className="w-full md:w-1/3 relative">
+                    <Link href={`/tour-detail/${tour._id}`}>
+                      <div className="relative h-64 md:h-full">
+                        <Image
+                          src={
+                            tour.galleryImages[0] ||
+                            "/placeholder.svg?height=300&width=300"
+                          }
+                          alt={tour.title || "Tour image"}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    </Link>
+                  </div>
+                  <div className="w-full md:w-2/3 p-6 relative">
+                    <div className="absolute top-6 right-6">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleClick(tour._id)}
+                        className="hover:bg-rose-50"
+                      >
+                        <Heart
+                          className={`h-6 w-6 ${
+                            favorited
+                              ? "fill-red-500 text-red-500"
+                              : "fill-gray-300 text-gray-300 hover:fill-gray-400 hover:text-gray-400"
+                          }`}
+                        />
+                      </Button>
+                    </div>
 
-                <div className="mb-1">
-                  <span className="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded-full">
-                    {tour.tour_name || "Tour"}
-                  </span>
-                  {tour.status && (
-                    <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full ml-2">
-                      {tour.status}
-                    </span>
-                  )}
-                </div>
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      <Badge
+                        variant="secondary"
+                        className="bg-teal-100 text-teal-700 hover:bg-teal-200"
+                      >
+                        {tour.tour_name || "Tour"}
+                      </Badge>
+                      {tour.status && (
+                        <Badge
+                          variant="secondary"
+                          className="bg-rose-100 text-rose-700 hover:bg-rose-200"
+                        >
+                          {tour.status}
+                        </Badge>
+                      )}
+                    </div>
 
-                <p className="text-sm text-gray-600 mb-2">{tour.description}</p>
+                    <Link href={`/tour-detail/${tour._id}`}>
+                      <h2 className="text-xl font-semibold mb-2 hover:text-rose-600 transition-colors">
+                        {tour.title || "Amazing Tour Experience"}
+                      </h2>
+                    </Link>
 
-                <div className="flex items-center mb-2">
-                  {[...Array(5)].map((_, star) => (
-                    <span key={star} className="text-yellow-400">
-                      ★
-                    </span>
-                  ))}
-                  <span className="ml-2 font-medium">{tour.rating}</span>
-                  <span className="ml-1 text-sm text-gray-500">
-                    {tour.reviews} reviews
-                  </span>
-                </div>
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                      {tour.description}
+                    </p>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <span className="w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center text-xs">
-                        ⏱
+                    <div className="flex items-center mb-4">
+                      {[...Array(5)].map((_, star) => (
+                        <Star
+                          key={star}
+                          className="h-4 w-4 fill-amber-400 text-amber-400"
+                        />
+                      ))}
+                      <span className="ml-2 font-medium">
+                        {tour.rating || "4.8"}
                       </span>
-                      <span>
-                        {getDuration(tour.startDate, tour.endDate) || "2 Weeks"}{" "}
-                        days
+                      <span className="ml-1 text-sm text-muted-foreground">
+                        ({tour.reviews || "124"} reviews)
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <span className="w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center text-xs">
-                        🚌
-                      </span>
-                      <span>Transport</span>
+
+                    <Separator className="my-4" />
+
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex flex-wrap gap-4">
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
+                            <Clock className="h-4 w-4 text-rose-500" />
+                          </div>
+                          <span>
+                            {getDuration(tour.startDate, tour.endDate) || "14"}{" "}
+                            days
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
+                            <Bus className="h-4 w-4 text-rose-500" />
+                          </div>
+                          <span>Transport</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
+                            <Calendar className="h-4 w-4 text-rose-500" />
+                          </div>
+                          <span>Available</span>
+                        </div>
+                      </div>
+                      <div className="flex items-baseline gap-1">
+                        <div className="font-bold text-2xl text-rose-600">
+                          ${tour.price || "1,299"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          /person
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right flex justify-center items-center">
-                    <div className="font-bold text-lg">${tour.price}</div>
-                    <div className="text-xs text-gray-500">/person</div>
-                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         <div className="flex justify-center items-center gap-2 mt-8">
-          <button className="w-8 h-8 flex items-center justify-center border rounded-md">
-            ←
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-700 rounded-md">
+          <Button variant="outline" size="icon">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <Button variant="secondary" size="icon">
             1
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center border rounded-md">
+          </Button>
+          <Button variant="outline" size="icon">
             2
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center border rounded-md">
-            →
-          </button>
+          </Button>
+          <Button variant="outline" size="icon">
+            <ArrowLeft className="h-4 w-4 rotate-180" />
+          </Button>
         </div>
       </div>
 
