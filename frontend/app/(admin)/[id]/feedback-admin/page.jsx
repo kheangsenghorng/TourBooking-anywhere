@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useParams } from "next/navigation";  
+import { useParams } from "next/navigation";
 import { useTourStore } from "@/store/tourStore";
 import {
   Card,
@@ -71,7 +71,9 @@ export default function TourManagement() {
         const matchesStatus =
           statusFilter === "all" || tour.status === statusFilter;
 
-        return matchesSearch && matchesStatus;
+        const hasAverageRating = tour.averageRating && tour.averageRating > 0;
+
+        return matchesSearch && matchesStatus && hasAverageRating;
       })
     : [];
 
@@ -143,7 +145,7 @@ export default function TourManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-2xl font-bold">
-                  Tour Management
+                  Feedback Tour
                 </CardTitle>
                 <CardDescription>
                   Manage your tours, track bookings, and monitor performance
@@ -312,7 +314,7 @@ export default function TourManagement() {
                               />
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm font-medium">
+                          <td className="py-3 px-4 text-sm font-medium text-nowrap">
                             {tour.tour_name}
                           </td>
 

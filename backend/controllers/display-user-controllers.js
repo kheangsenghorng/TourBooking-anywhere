@@ -71,24 +71,17 @@ export const getbyIdadmin = async (req, res) => {
         success: false,
         message: "User not found.",
       });
-
     }
     res.status(200).json({
       success: true,
       message: "User retrieved successfully.",
       useById,
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({
       success: false,
       message: "An error occurred while fetching user.",
     });
   }
-  
- 
-
-  
-
 };

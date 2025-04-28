@@ -136,7 +136,6 @@ export default function TourManagement() {
   const statusOptions = ["all", "Available", "Ongoing", "Full", "Close"];
 
   if (isLoading) {
-    
   }
 
   return (
@@ -154,10 +153,12 @@ export default function TourManagement() {
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
-                <Button className="bg-teal-600 hover:bg-teal-700 text-white shadow-md transition-all hover:shadow-lg h-9">
-                  <Plus size={16} className="mr-2" />
-                  Create New Tour
-                </Button>
+                <Link href={`addpackage/create`}>
+                  <Button className="bg-teal-600 hover:bg-teal-700 text-white shadow-md transition-all hover:shadow-lg h-9">
+                    <Plus size={16} className="mr-2" />
+                    Create New Tour
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -314,7 +315,7 @@ export default function TourManagement() {
                               />
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm font-medium">
+                          <td className="py-3 px-4 text-sm font-medium text-nowrap">
                             {tour.tour_name}
                           </td>
 
@@ -387,14 +388,16 @@ export default function TourManagement() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8"
-                                    >
-                                      <Edit2 size={16} />
-                                      <span className="sr-only">Edit</span>
-                                    </Button>
+                                    <Link href={`addpackage/edit/${tour._id}`} >
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                      >
+                                        <Edit2 size={16} />
+                                        <span className="sr-only">Edit</span>
+                                      </Button>
+                                    </Link>
                                   </TooltipTrigger>
                                   <TooltipContent>
                                     <p>Edit tour</p>

@@ -95,10 +95,12 @@ export default function Home() {
       : [...tours].sort((a, b) => a.price - b.price);
 
   const indexOfLastItem = currentPage * itemsPerPage;
-  const currentTours = sortedTours.slice(
-    indexOfLastItem - itemsPerPage,
-    indexOfLastItem
-  );
+
+  const currentTours = sortedTours
+    .filter((tour) => tour.status?.toLowerCase() !== "full")
+    .filter((tour) => tour.specialStatus?.toLowerCase() !== "sold out")
+    .slice(indexOfLastItem - itemsPerPage, indexOfLastItem);
+
   const totalPages = Math.ceil(sortedTours.length / itemsPerPage);
 
   if (loading) return <p className="text-center">Loading...</p>;
@@ -146,7 +148,7 @@ export default function Home() {
                           ? `${tour.galleryImages?.[0]}`
                           : "/placeholder.svg?height=200&width=200"
                       }
-                      alt={`Image of ${tour.name} showing the main view`}
+                      alt={`Image of ${tour.tour_name} showing the main view`}
                       fill
                       className="object-cover"
                     />
@@ -189,6 +191,17 @@ export default function Home() {
                           {tour.status}
                         </Badge>
                       )}
+                      {tour.specialStatus && (
+                        <Badge
+                          className={
+                            tour.specialStatus === "Sold Out"
+                              ? "bg-rose-100 text-rose-700"
+                              : "bg-emerald-100 text-emerald-700"
+                          }
+                        >
+                          {tour.specialStatus}
+                        </Badge>
+                      )}
                     </div>
 
                     <Link
@@ -204,7 +217,7 @@ export default function Home() {
                     </Link>
 
                     <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {tour.description}
+                      {tour.overview}
                     </p>
 
                     <div className="flex items-center mb-4">

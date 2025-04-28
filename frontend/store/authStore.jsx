@@ -33,7 +33,7 @@ export const useAuthStore = create((set, get) => ({
       set({ error: error.message, isLoading: false });
     }
   },
-  
+
   fetchUserCounts: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -211,6 +211,7 @@ export const useAuthStore = create((set, get) => ({
       const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
