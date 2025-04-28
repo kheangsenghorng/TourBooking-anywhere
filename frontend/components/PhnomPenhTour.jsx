@@ -1,6 +1,7 @@
 "use client";
 import { useReviewStore } from "@/store/reviewStore";
 import { useTourStore } from "@/store/tourStore";
+import { useItineraryStore } from "@/store/itinerariesStore";
 import { Star } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -9,6 +10,11 @@ import { useEffect } from "react";
 export default function PhnomPenhTour() {
   const { tourId } = useParams();
   const { tour, loading, error, fetchTour } = useTourStore();
+  const {
+    fetchItinerariesByTourId,
+    itineraries,
+    error: itinerariesError,
+  } = useItineraryStore();
   const {
     reviews,
     fetchAllReviews,
@@ -22,6 +28,7 @@ export default function PhnomPenhTour() {
   useEffect(() => {
     if (tourId) {
       fetchTour(tourId);
+      fetchItinerariesByTourId(tourId);
     }
   }, [tourId]);
 
@@ -82,93 +89,41 @@ export default function PhnomPenhTour() {
               Itinerary
             </h2>
           </Link>
+          {itinerariesError && (
+            <p className="text-red-500">{itinerariesError}</p>
+          )}
+
+          {itineraries.length === 0 && !itinerariesError && (
+            <p className="text-gray-500">No itineraries available.</p>
+          )}
           <div className="border-l-2 border-gray-300 ml-4">
-            {/* Day 01 */}
-            <div className="flex items-start mb-8 relative">
-              <div className="w-6 h-6 bg-green-600 text-white flex items-center justify-center rounded-full absolute -left-3">
-                1
-              </div>
-              <div className="ml-8 relative">
-                <p className="text-sm text-gray-500">21 Dec 25</p>
-                <h3 className="text-xl font-semibold text-black">
-                  Arrival and City Orientation
-                </h3>
-                <p className="text-gray-600">
-                  Explore Wat Phnom, the Royal Palace, and the Silver Pagoda,
-                  then enjoy an evening stroll along the Riverside.
-                </p>
-              </div>
-            </div>
+            {itineraries.map((item, index) => {
+              const formattedDate = item?.date
+                ? new Date(item.date).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "2-digit",
+                  })
+                : "";
 
-            {/* Day 02 */}
-            <div className="flex items-start mb-8 relative">
-              <div className="w-6 h-6 bg-green-600 text-white flex items-center justify-center rounded-full absolute -left-3">
-                2
-              </div>
-              <div className="ml-8 relative">
-                <p className="text-sm text-gray-500">22 Dec 25</p>
-                <h3 className="text-xl font-semibold text-black">
-                  Historical and Cultural Insights
-                </h3>
-                <p className="text-gray-600">
-                  Visit Tuol Sleng Genocide Museum and Choeung Ek Killing Fields
-                  for a somber look at Cambodia's history, followed by shopping
-                  at the Russian Market.
-                </p>
-              </div>
-            </div>
-
-            {/* Day 03 */}
-            <div className="flex items-start mb-8 relative">
-              <div className="w-6 h-6 bg-green-600 text-white flex items-center justify-center rounded-full absolute -left-3">
-                3
-              </div>
-              <div className="ml-8 relative">
-                <p className="text-sm text-gray-500">23 Dec 25</p>
-                <h3 className="text-xl font-semibold text-black">
-                  Mekong River Adventure
-                </h3>
-                <p className="text-gray-600">
-                  Take a day trip to Koh Dach (Silk Island) to experience
-                  village life, silk weaving, and a relaxing Mekong sunset
-                  cruise.
-                </p>
-              </div>
-            </div>
-
-            {/* Day 04 */}
-            <div className="flex items-start mb-8 relative">
-              <div className="w-6 h-6 bg-green-600 text-white flex items-center justify-center rounded-full absolute -left-3">
-                4
-              </div>
-              <div className="ml-8 relative">
-                <p className="text-sm text-gray-500">24 Dec 25</p>
-                <h3 className="text-xl font-semibold text-black">
-                  Architectural and Artistic Exploration
-                </h3>
-                <p className="text-gray-600">
-                  Discover Phnom Penh’s iconic landmarks, shop at Central
-                  Market, and enjoy street art or a cultural performance.
-                </p>
-              </div>
-            </div>
-
-            {/* Day 05 */}
-            <div className="flex items-start mb-8 relative">
-              <div className="w-6 h-6 bg-green-600 text-white flex items-center justify-center rounded-full absolute -left-3">
-                5
-              </div>
-              <div className="ml-8 relative">
-                <p className="text-sm text-gray-500">25 Dec 25</p>
-                <h3 className="text-xl font-semibold text-black">
-                  Day Trip to Oudong
-                </h3>
-                <p className="text-gray-600">
-                  Climb Oudong Mountain for stunning views and visit nearby
-                  pagodas and meditation centers.
-                </p>
-              </div>
-            </div>
+              return (
+                <div
+                  key={item._id || index}
+                  className="flex items-start mb-8 relative"
+                >
+                  <div className="w-6 h-6 bg-green-600 text-white flex items-center justify-center rounded-full absolute -left-3">
+                    {index + 1}
+                  </div>
+                  <div className="ml-8 relative">
+                    <p className="text-sm text-gray-500">{formattedDate}</p>
+                    <h3 className="text-xl font-semibold text-black">
+                      {item.name}
+                    </h3>
+                    <p className="text-gray-600">{item.description}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -11,20 +11,20 @@ const tourSchema = new mongoose.Schema(
     second_destination: { type: String, required: false }, // Second destination (optional)
     startDate: { type: Date, required: true }, // Start date for the tour
     endDate: { type: Date, required: true }, // End date for the tour
-    type: {
-      type: String,
-      required: true,
-      enum: ["One Way", "Round Trip"], // Only allows one of these values
-    },
+    // type: {
+    //   type: String,
+    //   required: true,
+    //   enum: ["One Way", "Round Trip"], // Only allows one of these values
+    // },
     status: {
       type: String,
-      required: true,
-      enum: ["Ongoing", "Full","Close"], // Only allows one of these values
+      enum: ["Ongoing", "Full", "Close"], // Only allows one of these values
       default: "Ongoing", // Default value if not provided
     },
     specialStatus: {
       type: String,
       enum: ["Sold Out", "Special Offer"], // Optional status
+      default:"Special Offer", // Default value if not provided
     },
     overview: { type: String, required: false }, // Tour overview (optional)
     category: {

@@ -12,6 +12,8 @@ import {
   uploadMultipleFiles,
   getGallery,
   getGallerys,
+  uploadMultipleFilesNot,
+  deleteGallery,
 } from "../controllers/file-controllers.js";
 import { singleUpload, uploadMultiple } from "../middlewares/upload.js";
 
@@ -28,6 +30,10 @@ filerouter.post(
   uploadMultiple,
   uploadMultipleFiles
 );
+//upload multiple files by user
+filerouter.post("/admin/:id/upload", uploadMultiple, uploadMultipleFilesNot);
+
+filerouter.delete("/:tourId/:fileUrl", deleteGallery);
 
 filerouter.get("/gallery", getGallerys);
 filerouter.get("/galleryid/:tourId", getGallery);

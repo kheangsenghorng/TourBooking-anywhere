@@ -208,6 +208,9 @@ export default function TourBooking() {
                     />
                   ))}
                   <span className="ml-1 text-gray-600">
+                    {Number(averageRating.toFixed(1))}
+                  </span>
+                  <span className="ml-1 text-gray-600">
                     ({lengthuserRating} reviews)
                   </span>
                 </div>

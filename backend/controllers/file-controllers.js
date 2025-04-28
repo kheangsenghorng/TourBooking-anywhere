@@ -188,21 +188,17 @@ export const uploadMultipleFiles = async (req, res) => {
 // For the non-tour version (if you want similar duplicate checking)
 export const uploadMultipleFilesNot = async (req, res) => {
   try {
-    const { id } = req.params; // Extract admin ID from URL
-    const files = req.files; // Get uploaded files
+    const { id } = req.params; // Admin ID
+    const files = req.files;
 
     if (!files || files.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No files uploaded" });
+      return res.status(400).json({
+        success: false,
+        message: "No files uploaded",
+      });
     }
 
-    // If you want to check duplicates against some existing collection in this case,
-    // you would need to implement similar logic as above
-    // For now, just processing all files as this doesn't save to a tour
     const uploadedFiles = files.map((file) => file.filename);
-
-    // Return image URLs in the response
     const galleryImageUrls = uploadedFiles.map(
       (image) => `${req.protocol}://${req.get("host")}/uploads/tours/${image}`
     );
@@ -211,7 +207,7 @@ export const uploadMultipleFilesNot = async (req, res) => {
       success: true,
       message: "Files uploaded successfully",
       adminId: id,
-      totalUploaded: files.length,
+      totalUploaded: uploadedFiles.length,
       galleryImages: uploadedFiles,
       galleryUrl: galleryImageUrls,
     });
@@ -219,6 +215,7 @@ export const uploadMultipleFilesNot = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 // Upload multiple files without checking for duplicates
 
 // export const uploadMultipleFilesNot = async (req, res) => {
@@ -618,6 +615,46 @@ export const getGallerys = async (req, res) => {
       success: true,
       count,
       allGalleryImages: allGalleryImages,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteGallery = async (req, res) => {
+  try {
+    const { tourId, fileName } = req.params; // Extract tourId and fileName from the URL parameters
+
+    // Find the tour by its ID and check if the galleryImages array contains the file name
+    const tour = await Tour.findOne({
+      _id: tourId, // Match the tour by tourId
+      galleryImages: { $in: [fileName] }, // Check if the fileName is in the galleryImages array
+    });
+
+    if (!tour) {
+      return res.status(404).json({
+        success: false,
+        message: "Tour not found or image not associated with any tour",
+      });
+    }
+
+    // Remove the image from the galleryImages array
+    tour.galleryImages = tour.galleryImages.filter(
+      (image) => image !== fileName
+    );
+
+    // Save the updated tour document
+    await tour.save();
+
+    // Optionally, delete the image file from the file system (assuming the files are stored locally)
+    const imagePath = `./uploads/tours/${fileName}`;
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath); // Delete the image file from the file system
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Image deleted successfully from the tour",
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

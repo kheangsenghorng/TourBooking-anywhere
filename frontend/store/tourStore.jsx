@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import axios from "axios";
 //Url backenc
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -11,6 +12,9 @@ export const useTourStore = create((set) => ({
   tour: null,
   loading: false,
   error: null,
+  isChecking: false,
+  exists: null,
+  itineraries: [],
 
   fetchGalleryImages: async () => {
     set({ loading: true, error: null });
@@ -172,4 +176,86 @@ export const useTourStore = create((set) => ({
       console.error("Error fetching tours:", error);
     }
   },
+
+  checkTourId: async (tour_id) => {
+    if (!tour_id) return set({ exists: null });
+
+    set({ isChecking: true, error: null });
+
+    try {
+      const res = await axios.get(`${API_URL}/tour/check-tour-id`, {
+        params: { tour_id },
+      });
+      set({ exists: res.data.exists, isChecking: false });
+    } catch (error) {
+      set({
+        error: error.response?.data?.error || "Failed to check",
+        isChecking: false,
+      });
+    }
+  },
+
+  createTour: async (formData, id) => {
+    set({ loading: true, error: null });
+
+    try {
+      const res = await axios.post(`${API_URL}/tour/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (res.data.success) {
+        set((state) => ({
+          tours: [...state.tours, res.data.tour],
+          loading: false,
+        }));
+      } else {
+        set({
+          loading: false,
+          error: res.data.message || "Create tour failed",
+        });
+      }
+    } catch (error) {
+      set({
+        loading: false,
+        error: error?.response?.data?.message || "Create tour error",
+      });
+      console.error(
+        "Create tour error:",
+        error?.response?.data || error.message
+      );
+    }
+  },
+
+  // stores/tourStore.jsx
+
+  updateTour: async (tourId, updatedData) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await axios.put(
+        `${API_URL}/tour/edit/${tourId}`,
+        updatedData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      console.log("Update tour response:", res.data);
+
+      set({
+        tour: res.data.tour,
+        itineraries: res.data.itineraries, // Must match backend
+        loading: false,
+      });
+    } catch (err) {
+      console.error("Error updating tour:", err);
+      set({
+        error: err.response?.data?.message || "Something went wrong",
+        loading: false,
+      });
+    }
+  },
+
+  clearTour: () => set({ tour: null, itineraries: [] }),
 }));

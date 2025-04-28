@@ -163,7 +163,7 @@ export default function FavoritesPage() {
 
                     <Link href={`/tour-detail/${tour._id}`}>
                       <h2 className="text-xl font-semibold mb-2 hover:text-rose-600 transition-colors">
-                        {tour.title || "Amazing Tour Experience"}
+                        {tour.tour_name || "Amazing Tour Experience"}
                       </h2>
                     </Link>
 
