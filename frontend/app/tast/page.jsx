@@ -5,7 +5,7 @@ import axios from "axios";
 
 const UploadComponent = () => {
   const adminId = "67de72f231d88e554449c81b";
-  const tourId = "67f9714fb74f6b5fda15fa25  ";
+  const tourId = "680c6745e535c9fb3eb8cd11";
   const [files, setFiles] = useState([]);
   const [message, setMessage] = useState("");
   const [uploadedImages, setUploadedImages] = useState([]);

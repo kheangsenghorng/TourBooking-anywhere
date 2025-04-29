@@ -6,6 +6,7 @@ import { FaTrash } from "react-icons/fa";
 import { useTourStore } from "@/store/tourStore";
 import { useParams } from "next/navigation";
 
+
 const getToday = () => {
   const t = new Date();
   const yyyy = t.getFullYear();
@@ -16,13 +17,16 @@ const getToday = () => {
 
 export default function CreateTourPage() {
   const params = useParams();
-  const { createTour, exists, checkTourId, isChecking } = useTourStore();
+  const { fetchTours, tours, createTour, exists, checkTourId, isChecking } =
+    useTourStore();
+
   const fileInputRef = useRef(null);
 
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [input, setInput] = useState("");
+  const [filterTourId, setFilterTourId] = useState("");
 
   const [formState, setFormState] = useState({
     tour_id: "",
@@ -45,9 +49,10 @@ export default function CreateTourPage() {
     {
       name: "", // Initialize with empty string
       description: "", // Initialize with empty string
-      date: "", // Initialize with empty string or a default value
-      time: "", // Initialize with empty string
-      expanded: false, // Initialize as needed
+      date: "", // Initialize with empty string or default value
+      startTime: "",
+      endTime: "", // Initialize with empty string
+      expanded: true, // Assume this field is for expanding the itinerary in UI
     },
   ]);
 
@@ -56,6 +61,7 @@ export default function CreateTourPage() {
       if (formState.tour_id) {
         checkTourId(formState.tour_id);
       }
+      fetchTours(params.id);
     }, 500);
     return () => clearTimeout(timeout);
   }, [formState.tour_id]);
@@ -111,15 +117,33 @@ export default function CreateTourPage() {
         name: "", // Initialize with empty string
         description: "", // Initialize with empty string
         date: "", // Initialize with empty string or default value
-        time: "", // Initialize with empty string
+        startTime: "",
+        endTime: "", // Initialize with empty string
         expanded: true, // Assume this field is for expanding the itinerary in UI
       },
     ]);
+  };
+  const filteredTours = tours?.filter((tour) =>
+    tour.tour_id.toLowerCase().includes(formState.tour_id.toLowerCase())
+  );
+
+  const handleSelectTourId = (selectedTourId) => {
+    // Directly set the tour_id into formState
+    setFormState((prevState) => ({
+      ...prevState,
+      tour_id: selectedTourId,
+      tour_name: filteredTours.find((tour) => tour.tour_id === selectedTourId)
+        ?.tour_name, // Set the tour_name based on the selected tour_id
+    }));
   };
 
   const validateForm = () => {
     if (!formState.tour_name) {
       setError("Tour name is required");
+      return false;
+    }
+    if (!images) {
+      setError("Tour images are required");
       return false;
     }
     if (!formState.tour_id) {
@@ -236,6 +260,34 @@ export default function CreateTourPage() {
 
       {/* Tour ID and Name */}
       <div className="grid grid-cols-2 gap-3">
+        {/* <div>
+          <label className="block text-md font-medium mb-1">Tour ID *</label>
+          <input
+            type="text"
+            name="tour_id"
+            value={formState.tour_id}
+            onChange={handleFormChange}
+            placeholder="Tour ID (e.g., THO-000010)"
+            required
+            className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
+          />
+          {/* Feedback messages */}
+        {/* {isChecking && (
+            <p className="text-blue-500 text-sm mt-1">Checking...</p>
+          )}
+
+          {!isChecking && exists === true && (
+            <p className="text-red-500 text-sm mt-1">
+              This Tour ID is already taken.
+            </p>
+          )}
+
+          {!isChecking && exists === false && formState.tour_id && (
+            <p className="text-green-500 text-sm mt-1">
+              This Tour ID is available.
+            </p>
+          )}
+        </div> */}
         <div>
           <label className="block text-md font-medium mb-1">Tour ID *</label>
           <input
@@ -247,6 +299,25 @@ export default function CreateTourPage() {
             required
             className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
           />
+          {/* Filtered Tours Preview */}
+          {/* Matching Tours Dropdown */}
+          {formState.tour_id && filteredTours?.length > 0 && (
+            <div className="mt-2 border rounded-md p-3 bg-white shadow-sm">
+              <p className="text-sm font-semibold mb-2">Matching Tours:</p>
+              <ul className="text-sm space-y-1">
+                {filteredTours.map((tour) => (
+                  <li
+                    key={tour._id}
+                    onClick={() => handleSelectTourId(tour.tour_id)}
+                    className="text-gray-700 cursor-pointer hover:text-blue-500"
+                  >
+                    {tour.tour_id} -{tour.tour_name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Feedback messages */}
           {isChecking && (
             <p className="text-blue-500 text-sm mt-1">Checking...</p>
@@ -264,6 +335,7 @@ export default function CreateTourPage() {
             </p>
           )}
         </div>
+
         <div>
           <label className="block text-md font-medium mb-1">Tour Name *</label>
           <input
@@ -550,20 +622,42 @@ export default function CreateTourPage() {
                     className="w-full border px-2 py-3 rounded-md text-sm bg-blue-100 border-[#EAEEF4]"
                   />
                 </div>
-                <div>
-                  {/* // In your render method */}
-                  <label className="block text-sm font-medium mb-1">
-                    Time *
-                  </label>
-                  <input
-                    type="time"
-                    value={item.time || ""} // Use an empty string if item.time is undefined
-                    onChange={(e) =>
-                      handleItineraryChange(index, "time", e.target.value)
-                    }
-                    required
-                    className="w-full border px-2 py-3 rounded-md text-sm bg-blue-100 border-[#EAEEF4]"
-                  />
+                <div className="flex gap-4">
+                  {/* Start Time */}
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1">
+                      Start Time *
+                    </label>
+                    <input
+                      type="time"
+                      value={item.startTime || ""}
+                      onChange={(e) =>
+                        handleItineraryChange(
+                          index,
+                          "startTime",
+                          e.target.value
+                        )
+                      }
+                      required
+                      className="w-full border px-2 py-3 rounded-md text-sm bg-blue-100 border-[#EAEEF4]"
+                    />
+                  </div>
+
+                  {/* End Time */}
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1">
+                      End Time *
+                    </label>
+                    <input
+                      type="time"
+                      value={item.endTime || ""}
+                      onChange={(e) =>
+                        handleItineraryChange(index, "endTime", e.target.value)
+                      }
+                      required
+                      className="w-full border px-2 py-3 rounded-md text-sm bg-blue-100 border-[#EAEEF4]"
+                    />
+                  </div>
                 </div>
               </div>
             )}

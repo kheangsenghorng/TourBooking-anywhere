@@ -33,7 +33,7 @@ filerouter.post(
 //upload multiple files by user
 filerouter.post("/admin/:id/upload", uploadMultiple, uploadMultipleFilesNot);
 
-filerouter.delete("/:tourId/:fileUrl", deleteGallery);
+filerouter.delete("/:tourId/:fileName", deleteGallery);
 
 filerouter.get("/gallery", getGallerys);
 filerouter.get("/galleryid/:tourId", getGallery);

@@ -4,7 +4,7 @@ import { Itinerary } from "../models/itinerary-models.js"; // Import Itinerary m
 // Display all tours
 import { Review } from "../models/review-models.js"; // Import Review model
 import { formatTour, getReviewsForTour } from "../utils/formatTour.js";
-
+import fs from "fs";
 import { processUploadedFiles } from "../utils/processUploadedFile.js";
 import { createItineraryEntry } from "../services/itineraryService.js";
 
@@ -507,5 +507,80 @@ export const updateTour = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const deleteTour = async (req, res) => {
+  try {
+    const { tourId, fileName } = req.params; // Extract tourId and optional fileName from the URL parameters
+
+    // Find the tour by its ID
+    const tour = await Tour.findById(tourId);
+
+    if (!tour) {
+      return res.status(404).json({
+        success: false,
+        message: "Tour not found",
+      });
+    }
+
+    // If fileName is provided, delete that specific image
+    if (fileName) {
+      if (tour.galleryImages.includes(fileName)) {
+        // Remove the image from the gallery
+        tour.galleryImages = tour.galleryImages.filter(
+          (image) => image !== fileName
+        );
+
+        // Optionally delete the image file from the file system
+        const imagePath = `./uploads/tours/${fileName}`;
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath); // Delete the image file from the file system
+        }
+
+        await tour.save();
+        return res.status(200).json({
+          success: true,
+          message: "Image deleted successfully from the tour",
+        });
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: "Image not found in tour gallery",
+        });
+      }
+    }
+
+    // If no fileName is provided, delete all images in the gallery
+    for (const image of tour.galleryImages) {
+      const imagePath = `./uploads/tours/${image}`;
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath); // Delete each image file from the file system
+      }
+    }
+
+    // Clear the galleryImages array
+    tour.galleryImages = [];
+
+    // Save the tour with the empty gallery
+    await tour.save();
+
+    // Delete all itineraries associated with the tour
+    await Itinerary.deleteMany({ tour: tour._id });
+
+    // Delete the tour from the database
+    await Tour.deleteOne({ _id: tour._id });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Tour, its gallery images, and associated itineraries deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

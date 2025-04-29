@@ -127,7 +127,7 @@ const BookingForm = () => {
         )}
       </div>
 
-      {/* Room Type */}
+      {/* Room Type
       <div className="mb-6">
         <label className="block font-semibold mb-2">Room Type*</label>
         <div className="border rounded-lg">
@@ -177,7 +177,7 @@ const BookingForm = () => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Summary */}
       <div className="mb-6">

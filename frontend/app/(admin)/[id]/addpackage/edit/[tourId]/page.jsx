@@ -42,6 +42,7 @@ export default function EditTourPage() {
   });
 
   const {
+    createTour,
     updateTour,
     exists,
     checkTourId,
@@ -54,17 +55,57 @@ export default function EditTourPage() {
   } = useTourStore();
 
   const { fetchItinerariesByTourId, itineraries } = useItineraryStore();
-  const { galleryImages, deleteImage } = useGalleryStore();
+  const { galleryImages, deleteImage, uploadFiles } = useGalleryStore();
 
-  const handleDelete = (fileName) => {
-    deleteImage(params.tourId, fileName);
-  };
+  const [gallerys, setGallery] = useState([]); // Initialize with an empty array, or any default data
 
-  const [images, setImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [itineraryList, setItineraryList] = useState([]);
+
+  const handleDelete = async (fileName) => {
+    try {
+      await deleteImage(params.tourId, fileName);
+      // After successful deletion, update the gallery state
+      fetchGallery(params.tourId); // Refresh the gallery from the server
+      //  setMessage("Image deleted successfully");
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      // setMessage("Failed to delete image");
+    }
+  };
+
+  const getFilename = (url) => {
+    return url.split("/").pop(); // Take only the last part after '/'
+  };
+
+  const handleImageUpload = (e) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    if (files.length + newImages.length + gallery.length > 10) {
+      setError("Maximum 10 images allowed");
+      return;
+    }
+    setNewImages((prev) => [...prev, ...files]);
+    setError(null);
+  };
+
+  const handleRemoveNewImage = (index) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
+  };
+  const handleRemoveExistingImage = async (index) => {
+    const item = gallery[index];
+    if (!item) return;
+
+    const fileName = getFilename(item.url || item);
+    try {
+      await handleDelete(fileName);
+      // No need to manually update UI here since fetchGallery will trigger a re-render
+    } catch (error) {
+      console.error("Error removing image:", error);
+    }
+  };
 
   // Validate unique tour_id
   useEffect(() => {
@@ -86,26 +127,26 @@ export default function EditTourPage() {
   };
   const handleAddClick = () => fileInputRef.current?.click();
 
-  const handleImageUpload = (e) => {
-    if (!e.target.files) return;
-    const files = Array.from(e.target.files);
-    if (files.length + newImages.length + gallery.length > 10) {
-      setError("Maximum 10 images allowed");
-      return;
-    }
-    setNewImages((prev) => [...prev, ...files]);
-    setError(null);
-  };
+  // const handleImageUpload = (e) => {
+  //   if (!e.target.files) return;
+  //   const files = Array.from(e.target.files);
+  //   if (files.length + newImages.length + gallery.length > 10) {
+  //     setError("Maximum 10 images allowed");
+  //     return;
+  //   }
+  //   setNewImages((prev) => [...prev, ...files]);
+  //   setError(null);
+  // };
 
-  const handleRemoveNewImage = (index) => {
-    setNewImages((prev) => prev.filter((_, i) => i !== index));
-  };
+  // const handleRemoveNewImage = (index) => {
+  //   setNewImages((prev) => prev.filter((_, i) => i !== index));
+  // };
 
-  const handleRemoveExistingImage = (index) => {
-    console.log("Removing existing image at index:", index);
+  // const handleRemoveExistingImage = (index) => {
+  //   console.log("Removing existing image at index:", index);
 
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
+  //   setImages((prev) => prev.filter((_, i) => i !== index));
+  // };
 
   const toggleExpand = (index) => {
     setItineraryList((prev) =>
@@ -124,7 +165,14 @@ export default function EditTourPage() {
   const addNewItinerary = () => {
     setItineraryList((prev) => [
       ...prev,
-      { name: "", description: "", date: "", time: "", expanded: true },
+      {
+        name: "",
+        description: "",
+        date: "",
+        startTime: "",
+        endTime: "",
+        expanded: true,
+      },
     ]);
   };
 
@@ -134,23 +182,24 @@ export default function EditTourPage() {
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
+      if (newImages.length > 0) {
+        const imageFormData = new FormData();
+        newImages.forEach((image) => imageFormData.append("files", image));
+        await uploadFiles(params.id, params.tourId, imageFormData);
+      }
 
+      const formData = new FormData();
       Object.entries(formState).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           formData.append(key, value);
         }
       });
-
-      newImages.forEach((image) => {
-        formData.append("files", image);
-      });
-
       formData.append("itineraries", JSON.stringify(itineraryList));
 
-      const updatedTour = await updateTour(params.tourId, formData);
+      await updateTour(params.tourId, formData);
 
       alert("Tour updated successfully!");
+      //router.push("/admin/tours"); // Optional: Redirect after update
     } catch (err) {
       console.error("Error updating tour:", err);
       setError(err.message || "Failed to update tour");
@@ -203,7 +252,8 @@ export default function EditTourPage() {
           date: item.date
             ? new Date(item.date).toISOString().split("T")[0]
             : getToday(), // Ensure the itinerary date is either the fetched date or today's date
-          time: item.time || "",
+          startTime: item.startTime || "",
+          endTime: item.endTime || "",
           expanded: false,
         }))
       );
@@ -223,6 +273,7 @@ export default function EditTourPage() {
       )}
 
       {/* Tour Images */}
+
       <div>
         <label className="block text-sm font-medium mb-1">
           Tour Images (Max 10)
@@ -231,15 +282,16 @@ export default function EditTourPage() {
           <button
             type="button"
             onClick={handleAddClick}
-            disabled={images.length + newImages.length >= 10}
+            disabled={gallery.length + newImages.length >= 10}
             className={`text-sm text-gray-800 font-medium px-5 py-2 rounded-md border-2 ${
-              images.length + newImages.length >= 10
+              gallery.length + newImages.length >= 10
                 ? "bg-gray-200 border-gray-300 cursor-not-allowed"
                 : "bg-[#F6FAFD] border-[#EAEEF4]"
             }`}
           >
             ADD
           </button>
+
           <input
             type="file"
             multiple
@@ -247,10 +299,10 @@ export default function EditTourPage() {
             ref={fileInputRef}
             onChange={handleImageUpload}
             className="hidden"
-            disabled={images.length + newImages.length >= 10}
+            disabled={gallery.length + newImages.length >= 10}
           />
 
-          {/* Existing images */}
+          {/* Existing images (already uploaded) */}
           {gallery.map((img, idx) => (
             <div key={`existing-${idx}`} className="relative flex-shrink-0">
               <img
@@ -259,8 +311,11 @@ export default function EditTourPage() {
                 className="h-16 w-28 object-cover rounded-md"
               />
               <button
-                type="button"
-                onClick={() => handleDelete(img)}
+                type="button" // This prevents form submission
+                onClick={(e) => {
+                  e.preventDefault(); // Prevents the page reload
+                  handleRemoveExistingImage(idx); // Call the delete function
+                }}
                 className="absolute top-[-4px] right-[-4px] bg-black rounded-full shadow text-red-500"
               >
                 <IoCloseCircleSharp className="cursor-pointer text-base" />
@@ -268,17 +323,17 @@ export default function EditTourPage() {
             </div>
           ))}
 
-          {/* New images */}
+          {/* New images (selected but not uploaded yet) */}
           {newImages.map((img, idx) => (
             <div key={`new-${idx}`} className="relative flex-shrink-0">
               <img
                 src={URL.createObjectURL(img)}
-                alt={`preview-${idx}`}
+                alt={`preview-new-${idx}`}
                 className="h-16 w-28 object-cover rounded-md"
               />
               <button
                 type="button"
-                onClick={() => handleDelete(img)}
+                onClick={() => handleRemoveNewImage(idx)}
                 className="absolute top-[-4px] right-[-4px] bg-black rounded-full shadow text-red-500"
               >
                 <IoCloseCircleSharp className="cursor-pointer text-base" />
@@ -598,19 +653,42 @@ export default function EditTourPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Time *
-                  </label>
-                  <input
-                    type="time"
-                    value={item.time}
-                    onChange={(e) =>
-                      handleItineraryChange(index, "time", e.target.value)
-                    }
-                    required
-                    className="w-full border px-2 py-3 rounded-md text-sm bg-blue-100 border-[#EAEEF4]"
-                  />
+                <div className="flex gap-4">
+                  {/* Start Time */}
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1">
+                      Start Time *
+                    </label>
+                    <input
+                      type="time"
+                      value={item.startTime || ""}
+                      onChange={(e) =>
+                        handleItineraryChange(
+                          index,
+                          "startTime",
+                          e.target.value
+                        )
+                      }
+                      required
+                      className="w-full border px-2 py-3 rounded-md text-sm bg-blue-100 border-[#EAEEF4]"
+                    />
+                  </div>
+
+                  {/* End Time */}
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1">
+                      End Time *
+                    </label>
+                    <input
+                      type="time"
+                      value={item.endTime || ""}
+                      onChange={(e) =>
+                        handleItineraryChange(index, "endTime", e.target.value)
+                      }
+                      required
+                      className="w-full border px-2 py-3 rounded-md text-sm bg-blue-100 border-[#EAEEF4]"
+                    />
+                  </div>
                 </div>
               </div>
             )}
