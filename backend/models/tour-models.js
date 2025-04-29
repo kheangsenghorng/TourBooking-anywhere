@@ -7,7 +7,7 @@ const tourSchema = new mongoose.Schema(
     description: { type: String, required: true }, // Description of the tour
     price: { type: Number, required: true }, // Price of the tour
     start_location: { type: String, required: true }, // Starting location for the tour
-    first_destination: { type: String, required: true }, // First destination
+    first_destination: { type: String, required: false }, // First destination
     second_destination: { type: String, required: false }, // Second destination (optional)
     startDate: { type: Date, required: true }, // Start date for the tour
     endDate: { type: Date, required: true }, // End date for the tour

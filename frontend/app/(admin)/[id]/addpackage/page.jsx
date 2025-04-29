@@ -44,14 +44,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { useGalleryStore } from "@/store/useGalleryStore";
 
 export default function TourManagement() {
   const params = useParams();
   const { fetchTours, tours, isLoading, error } = useTourStore();
+  const { deleteTour, loading, error: tourError } = useGalleryStore();
 
   useEffect(() => {
-    fetchTours(params.id);
-  }, [fetchTours, params.id]);
+    if (params?.id) {
+      fetchTours(params.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -117,6 +122,12 @@ export default function TourManagement() {
       setSortDirection("asc");
     }
   };
+  const handleDeleteTour = async (tourId) => {
+    if (window.confirm("Are you sure you want to delete this tour?")) {
+      await deleteTour(tourId);
+      fetchTours(params.id);
+    }
+  };
 
   const getStatusBadgeVariant = (status) => {
     switch (status) {
@@ -135,8 +146,8 @@ export default function TourManagement() {
 
   const statusOptions = ["all", "Available", "Ongoing", "Full", "Close"];
 
-  if (isLoading) {
-  }
+  if (loading) return <p>Loading tours...</p>;
+  if (tourError) return <p>Error: {tourError}</p>;
 
   return (
     <div className="space-y-6">
@@ -201,11 +212,9 @@ export default function TourManagement() {
           </div>
 
           {isLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-full" />
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full" />
-              ))}
+            <div className="flex justify-center items-center h-screen">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+              <p className="mt-4 text-lg">Loading your Tour...</p>
             </div>
           ) : error ? (
             <div className="text-center py-8 text-destructive">
@@ -388,7 +397,7 @@ export default function TourManagement() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Link href={`addpackage/edit/${tour._id}`} >
+                                    <Link href={`addpackage/edit/${tour._id}`}>
                                       <Button
                                         variant="ghost"
                                         size="icon"
@@ -405,6 +414,7 @@ export default function TourManagement() {
                                 </Tooltip>
                               </TooltipProvider>
 
+                              {/* Tooltip for delete tour button */}
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -412,6 +422,7 @@ export default function TourManagement() {
                                       variant="ghost"
                                       size="icon"
                                       className="h-8 w-8 text-destructive hover:text-destructive"
+                                      onClick={() => handleDeleteTour(tour._id)} // Add the onClick handler
                                     >
                                       <Trash2 size={16} />
                                       <span className="sr-only">Delete</span>

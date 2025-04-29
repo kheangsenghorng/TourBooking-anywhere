@@ -2,6 +2,7 @@ import express from "express";
 import {
   checkTourId,
   createTour,
+  deleteTour,
   duration,
   FiltersTour,
   getAllTours,
@@ -11,7 +12,6 @@ import {
 } from "../controllers/tour-booking-controllers.js";
 import { uploadMultiple } from "../middlewares/upload.js";
 import { verifyAdmin } from "../middlewares/adminVerify.js";
-
 
 const router = express.Router();
 
@@ -31,5 +31,8 @@ router.get("/ratings", ratings);
 router.get("/max", TourmaxParticipants);
 
 router.get("/check-tour-id", checkTourId);
+
+// DELETE request to delete a tour, an image, or both
+router.delete("/:tourId/images/:fileName?", deleteTour);
 
 export default router;
