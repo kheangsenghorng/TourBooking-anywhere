@@ -6,4 +6,4 @@
 .env.production
 
 # Ignore uploads
-uploads/tours
+# uploads/tours
