@@ -6,6 +6,7 @@ import path from "path";
 import { User } from "../models/user-models.js";
 import Tour from "../models/tour-models.js";
 import { singleUpload } from "../middlewares/upload.js";
+import { Itinerary } from "../models/itinerary-models.js";
 
 export const handleUpqload = asyncHandler(async (req, res) => {
   //'send past in db
@@ -46,85 +47,6 @@ export const uploadProfileImage = (req, res) => {
     }
   });
 };
-
-//upload multiple files
-
-// export const uploadMultipleFiles = async (req, res) => {
-//   try {
-//     const { tourId, id } = req.params; // Extract tour ID and admin ID from URL
-//     const files = req.files; // Get uploaded files
-
-//     if (!files || files.length === 0) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "No files uploaded" });
-//     }
-
-//     // Check if the tour exists
-//     const tour = await Tour.findById(tourId);
-//     if (!tour) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Tour not found" });
-//     }
-
-//     // Append new files to the tour's existing gallery
-//     const uploadedFiles = files.map((file) => file.filename); // Store just the filenames (not full paths)
-
-//     // Add the new images to the gallery
-//     tour.galleryImages.push(...uploadedFiles);
-//     await tour.save(); // Save updated tour data
-
-//     // Return image URLs in the response, similar to how the user profile image is handled
-//     const galleryImageUrls = tour.galleryImages.map(
-//       (image) => `${req.protocol}://${req.get("host")}/uploads/tours/${image}`
-//     );
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Files uploaded successfully",
-//       adminId: id,
-//       tourId: tour._id,
-//       totalUploaded: files.length,
-//       galleryImages: tour.galleryImages,
-//       galleryUrl: galleryImageUrls, // Include full URLs of the images
-//     });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-// // upload multiple files not by id tour
-// export const uploadMultipleFilesNot = async (req, res) => {
-//   try {
-//     const { id } = req.params; // Extract admin ID from URL
-//     const files = req.files; // Get uploaded files
-
-//     if (!files || files.length === 0) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "No files uploaded" });
-//     }
-
-//     // Store just the filenames (not full paths)
-//     const uploadedFiles = files.map((file) => file.filename);
-
-//     // Return image URLs in the response
-//     const galleryImageUrls = uploadedFiles.map(
-//       (image) => `${req.protocol}://${req.get("host")}/uploads/tours/${image}`
-//     );
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Files uploaded successfully",
-//       adminId: id,
-//       totalUploaded: files.length,
-//       galleryImages: uploadedFiles,
-//       galleryUrl: galleryImageUrls, // Include full URLs of the images
-//     });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
 
 export const uploadMultipleFiles = async (req, res) => {
   try {
@@ -561,7 +483,11 @@ export const getGallery = async (req, res) => {
   try {
     const { tourId } = req.params;
 
-    const tour = await Tour.findById(tourId);
+    const tour = await Tour.findById(tourId)
+      .populate("start_location")
+      .populate("first_destination")
+      .populate("second_destination")
+      .populate("category");
 
     if (!tour) {
       return res
@@ -578,10 +504,12 @@ export const getGallery = async (req, res) => {
         (image) => `${baseUrl}/uploads/tours/${image}`
       ),
     };
+    const itineraries = await Itinerary.find({ tour: tourId });
 
     return res.status(200).json({
       success: true,
       tour: copiedTour,
+      itineraries,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -591,7 +519,10 @@ export const getGallery = async (req, res) => {
 export const getGallerys = async (req, res) => {
   try {
     // Fetch all tours from the database
-    const tours = await Tour.find();
+    const tours = await Tour.find()
+      .populate("start_location")
+      .populate("first_destination")
+      .populate("second_destination");
 
     if (!tours || tours.length === 0) {
       return res

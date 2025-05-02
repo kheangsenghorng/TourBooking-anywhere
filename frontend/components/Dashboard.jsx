@@ -16,6 +16,7 @@ import {
   PlusSquare,
   User,
 } from "lucide-react";
+import { FiMapPin } from "react-icons/fi";
 
 import { userStore } from "@/store/userStore";
 import { AppNavbar } from "@/components/app-navbar";
@@ -39,6 +40,7 @@ export default function Sidebar({ children }) {
   const menuItems = [
     { href: `/${id}/dashboard`, icon: BarChart2, label: "Dashboard" },
     { href: `/${id}/category`, icon: Grid, label: "Category" },
+    { href: `/${id}/location`, icon: FiMapPin, label: "Location" },
     { href: `/${id}/addpackage`, icon: PlusSquare, label: "Add Package" },
     { href: `/${id}/user`, icon: User, label: "User" },
     { href: `/${id}/feedback-admin`, icon: MessageSquare, label: "Feedback" },

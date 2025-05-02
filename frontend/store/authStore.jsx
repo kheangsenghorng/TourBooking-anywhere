@@ -15,6 +15,7 @@ export const useAuthStore = create((set, get) => ({
   users: [],
   userCount: 0, // Initialize with 0
   subAdminCount: 0, //
+  token: null,
 
   // Use `get` to access the current state
 
@@ -213,21 +214,30 @@ export const useAuthStore = create((set, get) => ({
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
-        throw new Error("Invalid credentials");
+        throw new Error("Invalid credentials"); 
       }
 
       const data = await response.json();
-      console.log(data);
 
-      // Ensure the user object has a role field
+      if (data.token) {
+        localStorage.setItem("token", data.token); // Save token after receiving it
+      }
+
       if (data.user && data.user.role) {
-        set({ isAuthenticated: true, user: data.user, isCheckingAuth: false });
-        return data.user; // Return the user object with role
+        set({
+          isAuthenticated: true,
+          user: data.user,
+          token: data.token,
+          isCheckingAuth: false,
+        });
+
+        return data.user; // Return user info
       } else {
         throw new Error("Login failed: Role not found");
       }
@@ -236,11 +246,13 @@ export const useAuthStore = create((set, get) => ({
         isCheckingAuth: false,
         isAuthenticated: false,
         user: null,
+        token: null,
         error: error.message,
       });
-      throw error; // Re-throw the error to handle it in the component
+      throw error; // Let the caller handle the error
     }
   },
+
   // Fetch user profile
   fetchProfile: async () => {
     set({ isLoading: true, error: null });

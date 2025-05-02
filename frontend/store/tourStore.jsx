@@ -10,6 +10,7 @@ export const useTourStore = create((set) => ({
   tours: [],
   isLoading: false,
   tour: null,
+  itineraries: [],
   loading: false,
   error: null,
   isChecking: false,
@@ -57,14 +58,20 @@ export const useTourStore = create((set) => ({
       const data = await response.json();
 
       if (data.success) {
-        set({ tour: data.tour, loading: false });
+        set({
+          tour: data.tour,
+          itineraries: data.itineraries, // Fixed typo: tineraries -> itineraries
+          loading: false,
+        });
       } else {
-        set({ error: data.message, loading: false });
+        set({ error: data.message || "Failed to fetch tour", loading: false });
       }
     } catch (error) {
+      console.error("Error fetching tour:", error);
       set({ error: "Failed to fetch gallery", loading: false });
     }
   },
+
   // Fetch all tours from the backend
   fetchTours: async (id) => {
     set({ isLoading: true, error: null });
@@ -216,6 +223,7 @@ export const useTourStore = create((set) => ({
           error: res.data.message || "Create tour failed",
         });
       }
+      console.log("Create tour response:", res.data);
     } catch (error) {
       set({
         loading: false,

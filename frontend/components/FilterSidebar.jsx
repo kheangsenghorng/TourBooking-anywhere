@@ -150,7 +150,7 @@ const FilterSidebar = () => {
       </div>
 
       {/* Tour Availability */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <h3 className="font-semibold mb-2">Tour Availability</h3>
         <select
           value={tourAvailability}
@@ -161,10 +161,10 @@ const FilterSidebar = () => {
           <option value="fullyBooked">Fully booked</option>
           <option value="available">Available</option>
         </select>
-      </div>
+      </div> */}
 
       {/* Travel Type Filter */}
-      <div>
+      {/* <div>
         <h3 className="font-semibold mb-2">Travel Type Filter</h3>
         {["all", "roundTrip", "multiDestination"].map((type) => (
           <label key={type} className="flex items-center mb-2">
@@ -180,7 +180,7 @@ const FilterSidebar = () => {
               .replace(/^./, (str) => str.toUpperCase())}
           </label>
         ))}
-      </div>
+      </div> */}
     </div>
   );
 };

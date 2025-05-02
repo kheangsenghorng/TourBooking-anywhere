@@ -12,6 +12,7 @@ import {
 } from "../controllers/tour-booking-controllers.js";
 import { uploadMultiple } from "../middlewares/upload.js";
 import { verifyAdmin } from "../middlewares/adminVerify.js";
+import { verifyToken } from "../middlewares/verifyToken.js";
 
 const router = express.Router();
 

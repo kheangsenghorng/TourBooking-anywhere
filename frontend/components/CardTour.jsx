@@ -66,6 +66,8 @@ const CardTour = () => {
   // Always display the first 4 tours
   const displayedTours = galleryImages.slice(0, 4);
 
+  
+
   const handleClick = async (tourId) => {
     if (!id) {
       router.push(`/login`); // Redirect if not logged in
@@ -148,8 +150,8 @@ const CardTour = () => {
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-2">
                   <p className="text-sm text-gray-600">
-                    {tour?.start_location} <span className="mx-1">↔</span>{" "}
-                    {tour?.first_destination}
+                    {tour?.start_location?.name} <span className="mx-1">↔</span>{" "}
+                    {tour?.first_destination?.name}
                   </p>
                   <p className="font-bold text-lg">${tour?.price}</p>
                 </div>
