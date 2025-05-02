@@ -169,6 +169,7 @@ export const verifyEmail = async (req, res) => {
     user.isVerified = true;
     user.verificationToken = undefined;
     user.verificationTokenExpiresAt = undefined;
+    user.status = "approved"; // Set status to approved after verification
     await user.save();
 
     await sendWelcomeEmail(user.email, user.firstname);
@@ -221,6 +222,7 @@ export const login = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Email not verified" });
     }
+    // Check user status
 
     // Generate JWT token
     const token = generateJWTToken(res, user._id, user.role);

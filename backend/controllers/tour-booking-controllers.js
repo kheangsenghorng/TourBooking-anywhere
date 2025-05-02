@@ -7,11 +7,13 @@ import { formatTour, getReviewsForTour } from "../utils/formatTour.js";
 import fs from "fs";
 import { processUploadedFiles } from "../utils/processUploadedFile.js";
 import { createItineraryEntry } from "../services/itineraryService.js";
+import Location from "../models/loaction-models.js";
+import { Category } from "../models/category-models.js";
 
+// Create a new tour
 export const createTour = async (req, res) => {
   try {
     const {
-      tour_id,
       tour_name,
       description,
       price,
@@ -23,24 +25,30 @@ export const createTour = async (req, res) => {
       status,
       overview,
       category,
-      location,
       limit,
       itineraries,
     } = req.body;
 
     const { success, uploadedFiles, message } = processUploadedFiles(req);
-
     if (!success) {
       return res.status(400).json({ success: false, message });
     }
 
-    // Check if the tour_id already exists
-    const existingTour = await Tour.findOne({ tour_id });
-    if (existingTour) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Tour ID already exists" });
+    // Auto-generate tour_id with prefix "TTHH"
+    const lastTour = await Tour.findOne({ tour_id: { $regex: /^TTHH\d+$/ } })
+      .sort({ tour_id: -1 })
+      .select("tour_id");
+
+    let newNumericId = 1;
+
+    if (lastTour && lastTour.tour_id) {
+      const match = lastTour.tour_id.match(/^TTHH(\d+)$/);
+      if (match && match[1]) {
+        newNumericId = parseInt(match[1]) + 1;
+      }
     }
+
+    const tour_id = `TTHH${newNumericId}`;
 
     // Find an admin user
     const admin = await User.findOne({ role: "admin" });
@@ -48,6 +56,23 @@ export const createTour = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Admin not found. Cannot create a tour without an admin.",
+      });
+    }
+
+    // Validate start location
+    const startLocation = await Location.findById(start_location);
+    if (!startLocation) {
+      return res.status(404).json({
+        success: false,
+        message: "Start location not found",
+      });
+    }
+
+    const categories = await Category.findById(category);
+    if (!categories) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
       });
     }
 
@@ -65,14 +90,14 @@ export const createTour = async (req, res) => {
       status,
       overview,
       category,
-      location,
       limit,
-      galleryImages: uploadedFiles, // filenames only
+      galleryImages: uploadedFiles,
       admin: admin._id,
     });
 
     await newTour.save();
 
+    // Handle itineraries
     let parsedItineraries = [];
     if (typeof itineraries === "string") {
       parsedItineraries = JSON.parse(itineraries);
@@ -80,7 +105,6 @@ export const createTour = async (req, res) => {
       parsedItineraries = itineraries;
     }
 
-    // Create itineraries and link them to the tour
     if (Array.isArray(parsedItineraries) && parsedItineraries.length > 0) {
       for (const itinerary of parsedItineraries) {
         await createItineraryEntry({ ...itinerary, tour: newTour._id });
@@ -96,31 +120,33 @@ export const createTour = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
+// Display all tours
 export const getAllTours = async (req, res) => {
   try {
     const now = new Date();
 
-    // Step 1: Update expired tours to "full"
+    // Check if current time is exactly 00:00:00
+
     const result = await Tour.updateMany(
-      { startDate: { $lt: now }, status: { $ne: "Full" } },
-      { $set: { status: "Full" } }
+      {
+        startDate: { $lte: now },
+        status: { $nin: ["Close", "Full"] },
+      },
+      { $set: { status: "Close" } }
     );
 
     const baseUrl =
       process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
 
-    // Step 2: Fetch all tours
-    const tours = await Tour.find().populate("admin", "name email");
+    // Step 2: Fetch all tours with populated fields
+    const tours = await Tour.find()
+      .populate("admin", "name email")
+      .populate("start_location")
+      .populate("first_destination")
+      .populate("second_destination")
+      .populate("category");
 
-    if (!tours || tours.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No tours found",
-      });
-    }
-
-    // Step 3: Format tours with gallery images and review stats
+    // Step 3: Enhance each tour with image URLs and review stats
     const updatedTours = await Promise.all(
       tours.map(async (tour) => {
         const reviews = await Review.find({ tourId: tour._id });
@@ -157,8 +183,7 @@ export const getAllTours = async (req, res) => {
     });
   }
 };
-
-//Filters tours min Price and max Price 00
+// Display a single tour
 export const FiltersTour = async (req, res) => {
   try {
     const baseUrl =
@@ -417,11 +442,10 @@ export const checkTourId = async (req, res) => {
 };
 
 export const updateTour = async (req, res) => {
-  const { tourId } = req.params; // tourId is coming from the URL parameter
+  const { tourId } = req.params;
 
   try {
     const {
-      tour_id, // Assuming tour_id is being passed from the body for updating the value
       tour_name,
       description,
       price,
@@ -432,84 +456,118 @@ export const updateTour = async (req, res) => {
       endDate,
       status,
       overview,
-      category,
-      location,
+      category, // category name or slug
       limit,
       itineraries,
     } = req.body;
 
-    // Check if tourId is a valid ObjectId (if you're using ObjectId for tourId)
-
-    // Find the tour by tourId
-    const existingTour = await Tour.findOne({ _id: tourId }); // Use _id for MongoDB default field or `tourId` based on your schema
-
+    const existingTour = await Tour.findById(tourId);
     if (!existingTour) {
       return res
         .status(404)
         .json({ success: false, message: "Tour not found" });
     }
 
-    // let uploadedFiles = [];
+    // Step 1: Collect only non-empty location inputs
+    const locationInputs = [
+      start_location,
+      first_destination,
+      second_destination,
+    ].filter(Boolean);
 
-    // Handle file uploads if any are provided
+    // Step 2: Fetch matching locations from DB
+    const foundLocations = await Location.find({
+      $or: [
+        { name: { $in: locationInputs } },
+        {
+          _id: {
+            $in: locationInputs.filter((val) => /^[a-f\d]{24}$/i.test(val)),
+          },
+        },
+      ],
+    });
 
-    // Update the tour fields
-    existingTour.tour_id = tour_id || existingTour.tour_id;
-    existingTour.tour_name = tour_name || existingTour.tour_name;
-    existingTour.description = description || existingTour.description;
-    existingTour.price = price || existingTour.price;
-    existingTour.start_location = start_location || existingTour.start_location;
-    existingTour.first_destination =
-      first_destination || existingTour.first_destination;
-    existingTour.second_destination =
-      second_destination || existingTour.second_destination;
-    existingTour.startDate = startDate || existingTour.startDate;
-    existingTour.endDate = endDate || existingTour.endDate;
-    existingTour.status = status || existingTour.status;
-    existingTour.overview = overview || existingTour.overview;
-    existingTour.category = category || existingTour.category;
-    existingTour.location = location || existingTour.location;
-    existingTour.limit = limit || existingTour.limit;
-    // existingTour.galleryImages =
-    //   uploadedFiles.length > 0 ? uploadedFiles : existingTour.galleryImages;
+    // Step 3: Create a lookup map
+    const locationMap = {};
+    foundLocations.forEach((loc) => {
+      locationMap[loc._id.toString()] = loc._id;
+      locationMap[loc.name] = loc._id;
+    });
 
-    // Save the updated tour
-    await existingTour.save();
-
-    // Parse and handle itineraries
-    let parsedItineraries = [];
-    if (typeof itineraries === "string") {
-      parsedItineraries = JSON.parse(itineraries);
-    } else {
-      parsedItineraries = itineraries;
-    }
-
-    // Remove old itineraries and add new ones
-    if (Array.isArray(parsedItineraries) && parsedItineraries.length > 0) {
-      await Itinerary.deleteMany({ tour: existingTour._id });
-      for (const itinerary of parsedItineraries) {
-        await createItineraryEntry({ ...itinerary, tour: existingTour._id });
+    // ✅ Resolve category ID by name or slug
+    let categoryId = existingTour.category;
+    if (category) {
+      const foundCategory = await Category.findOne({
+        $or: [{ name: category }, { slug: category }],
+      });
+      if (foundCategory) {
+        categoryId = foundCategory._id;
       }
     }
 
-    const itinerariesFine = await Itinerary.find({ tour: existingTour._id });
-    const parsedItinerarie = itinerariesFine.map((itinerary) => ({
-      ...itinerary.toObject(),
-      tour: existingTour._id,
-    }));
-    // Send the response
+    // ✅ Update tour fields
+    if (tour_name !== undefined) existingTour.tour_name = tour_name;
+    if (description !== undefined) existingTour.description = description;
+    if (price !== undefined) existingTour.price = price;
+
+    // Step 4: Conditionally update fields
+    if (start_location) {
+      existingTour.start_location =
+        locationMap[start_location] || start_location;
+    }
+
+    if (first_destination) {
+      existingTour.first_destination =
+        locationMap[first_destination] || first_destination;
+    }
+
+    if (second_destination) {
+      existingTour.second_destination =
+        locationMap[second_destination] || second_destination;
+    }
+
+    if (startDate !== undefined) existingTour.startDate = startDate;
+    if (endDate !== undefined) existingTour.endDate = endDate;
+    if (status !== undefined) existingTour.status = status;
+    if (overview !== undefined) existingTour.overview = overview;
+    if (limit !== undefined) existingTour.limit = limit;
+    if (categoryId) existingTour.category = categoryId;
+
+    await existingTour.save();
+
+    // ✅ Update itineraries if provided
+    let parsedItineraries = [];
+    if (itineraries) {
+      parsedItineraries =
+        typeof itineraries === "string" ? JSON.parse(itineraries) : itineraries;
+
+      if (Array.isArray(parsedItineraries) && parsedItineraries.length > 0) {
+        await Itinerary.deleteMany({ tour: existingTour._id });
+        for (const itinerary of parsedItineraries) {
+          await createItineraryEntry({ ...itinerary, tour: existingTour._id });
+        }
+      }
+    }
+
+    const populatedTour = await Tour.findById(existingTour._id)
+      .populate("start_location", "name")
+      .populate("first_destination", "name")
+      .populate("second_destination", "name")
+      .populate("category", "name slug");
+
+    const updatedItineraries = await Itinerary.find({ tour: existingTour._id });
 
     res.status(200).json({
       success: true,
       message: "Tour updated successfully",
-      tour: existingTour,
-      parsedItinerarie,
+      tour: populatedTour,
+      parsedItinerarie: updatedItineraries,
     });
   } catch (error) {
+    console.error("Update Tour Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 
 export const deleteTour = async (req, res) => {
   try {

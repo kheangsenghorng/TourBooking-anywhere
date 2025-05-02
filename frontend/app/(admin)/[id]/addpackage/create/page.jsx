@@ -5,7 +5,9 @@ import { IoCloseCircleSharp } from "react-icons/io5";
 import { FaTrash } from "react-icons/fa";
 import { useTourStore } from "@/store/tourStore";
 import { useParams } from "next/navigation";
-
+import { useLocationStore } from "@/store/useLocationStore";
+import { useCategoryStore } from "@/store/categoryStore";
+import { useRouter } from "next/navigation";
 
 const getToday = () => {
   const t = new Date();
@@ -17,6 +19,7 @@ const getToday = () => {
 
 export default function CreateTourPage() {
   const params = useParams();
+  const router = useRouter();
   const { fetchTours, tours, createTour, exists, checkTourId, isChecking } =
     useTourStore();
 
@@ -25,43 +28,85 @@ export default function CreateTourPage() {
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [input, setInput] = useState("");
-  const [filterTourId, setFilterTourId] = useState("");
+  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [showSuggestions, setShowSuggestions] = useState({
+    start_location: false,
+    first_destination: false,
+    second_destination: false,
+    category: false,
+  });
+  const [activeField, setActiveField] = useState(null);
+  const [categoryId, setCategoryId] = useState("");
+
+  const {
+    locations,
+    fetchLocations,
+    loading: locationsLoading,
+    error: locationError,
+  } = useLocationStore();
+  const {
+    categories,
+    error: categoryError,
+    loading: categoriesLoading,
+    createCategory,
+    fetchCategories,
+    updateCategory,
+    deleteCategory,
+  } = useCategoryStore();
 
   const [formState, setFormState] = useState({
-    tour_id: "",
     tour_name: "",
     description: "",
     price: "",
+    startDate: "",
+    endDate: "",
+    overview: "",
+    category: "",
+    limit: "",
     start_location: "",
     first_destination: "",
     second_destination: "",
-    startDate: "",
-    endDate: "",
-    status: "",
-    overview: "",
-    category: "66107b6f9f06c25112345678",
-    location: "66107b6f9f06c25112345679",
-    limit: "",
+  });
+
+  const [locationIds, setLocationIds] = useState({
+    start_location: "",
+    first_destination: "",
+    second_destination: "",
   });
 
   const [itineraries, setItineraries] = useState([
     {
-      name: "", // Initialize with empty string
-      description: "", // Initialize with empty string
-      date: "", // Initialize with empty string or default value
+      name: "",
+      description: "",
+      date: "",
       startTime: "",
-      endTime: "", // Initialize with empty string
-      expanded: true, // Assume this field is for expanding the itinerary in UI
+      endTime: "",
+      expanded: true,
     },
   ]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await Promise.all([
+          fetchLocations(),
+          fetchCategories(),
+          fetchTours(params.id),
+        ]);
+      } catch (err) {
+        setError(err.message || "Failed to load data");
+      } finally {
+        setIsPageLoading(false);
+      }
+    };
+    loadData();
+  }, [params.id]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (formState.tour_id) {
         checkTourId(formState.tour_id);
       }
-      fetchTours(params.id);
     }, 500);
     return () => clearTimeout(timeout);
   }, [formState.tour_id]);
@@ -102,39 +147,76 @@ export default function CreateTourPage() {
     );
   };
 
-  // Handle changes to individual itinerary fields
   const handleItineraryChange = (index, field, value) => {
     setItineraries((prev) =>
       prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
     );
   };
 
-  // Add a new itinerary with initialized fields
+  const filteredLocations = locations.filter((loc) =>
+    loc.name.toLowerCase().includes(formState[activeField]?.toLowerCase() || "")
+  );
+
+  const handleSelectCategory = (category) => {
+    setFormState((prev) => ({
+      ...prev,
+      category: category.name, // For display
+    }));
+    setCategoryId(category._id); // Store the ID for submission
+    setShowSuggestions((prev) => ({ ...prev, category: false }));
+    setActiveField(null);
+  };
+
+  const filteredCategories = categories.filter((cat) =>
+    cat.name.toLowerCase().includes(formState.category?.toLowerCase() || "")
+  );
+
+  const handleSelectLocation = (location) => {
+    setFormState((prev) => ({
+      ...prev,
+      [activeField]: location.name,
+    }));
+
+    setLocationIds((prev) => ({
+      ...prev,
+      [activeField]: location._id,
+    }));
+
+    setShowSuggestions((prev) => ({
+      ...prev,
+      [activeField]: false,
+    }));
+  };
+
+  const handleInputFocus = (fieldName) => {
+    setActiveField(fieldName);
+    setShowSuggestions((prev) => ({
+      ...prev,
+      [fieldName]: true,
+    }));
+  };
+
+  const handleInputBlur = (fieldName) => {
+    setTimeout(() => {
+      setShowSuggestions((prev) => ({
+        ...prev,
+        [fieldName]: false,
+      }));
+    }, 200);
+  };
+
   const addNewItinerary = () => {
     setItineraries((prev) => [
       ...prev,
       {
-        name: "", // Initialize with empty string
-        description: "", // Initialize with empty string
-        date: "", // Initialize with empty string or default value
+        name: "",
+        description: "",
+        date: "",
         startTime: "",
-        endTime: "", // Initialize with empty string
-        expanded: true, // Assume this field is for expanding the itinerary in UI
+        endTime: "",
+        expanded: true,
       },
     ]);
-  };
-  const filteredTours = tours?.filter((tour) =>
-    tour.tour_id.toLowerCase().includes(formState.tour_id.toLowerCase())
-  );
-
-  const handleSelectTourId = (selectedTourId) => {
-    // Directly set the tour_id into formState
-    setFormState((prevState) => ({
-      ...prevState,
-      tour_id: selectedTourId,
-      tour_name: filteredTours.find((tour) => tour.tour_id === selectedTourId)
-        ?.tour_name, // Set the tour_name based on the selected tour_id
-    }));
   };
 
   const validateForm = () => {
@@ -142,12 +224,16 @@ export default function CreateTourPage() {
       setError("Tour name is required");
       return false;
     }
-    if (!images) {
+    if (images.length === 0) {
       setError("Tour images are required");
       return false;
     }
-    if (!formState.tour_id) {
-      setError("Tour ID is required");
+    if (!locationIds.start_location) {
+      setError("Start location is required");
+      return false;
+    }
+    if (!categoryId) {
+      setError("categorie is required");
       return false;
     }
     if (!formState.startDate || !formState.endDate) {
@@ -174,6 +260,7 @@ export default function CreateTourPage() {
       setError("All itineraries must have a name and date");
       return false;
     }
+
     return true;
   };
 
@@ -186,26 +273,70 @@ export default function CreateTourPage() {
     const formData = new FormData();
 
     Object.entries(formState).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
+      // Skip location fields (we'll handle them separately with their IDs)
+      if (
+        ["start_location", "first_destination", "second_destination"].includes(
+          key
+        )
+      ) {
+        return;
+      }
+
+      // Skip category field (we'll handle it separately with its ID)
+      if (key === "category") {
+        return;
+      }
+
+      // Add all other fields that have values
+      if (value !== undefined && value !== null && value !== "") {
         formData.append(key, value);
       }
     });
+
+    if (locationIds.start_location) {
+      formData.append("start_location", locationIds.start_location);
+    }
+
+    if (locationIds.first_destination) {
+      formData.append("first_destination", locationIds.first_destination);
+    }
+
+    if (locationIds.second_destination) {
+      formData.append("second_destination", locationIds.second_destination);
+    }
+
+    if (categoryId) {
+      formData.append("category", categoryId);
+    }
 
     images.forEach((image) => formData.append("files", image));
     formData.append("itineraries", JSON.stringify(itineraries));
 
     setIsLoading(true);
-
-    await createTour(formData, params.id);
-    console.log(params.id);
+    try {
+      await createTour(formData, params.id);
+      router.push(`/${params.id}/addpackage`);
+    } catch (err) {
+      setError(err.message || "Failed to create tour");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (isPageLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-green-500"></div>
+        <p className="mt-4 text-lg">Loading your create...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 bg-white rounded-xl shadow-md space-y-6 text-[#092C4C]">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Create Tour</h2>
       </div>
-
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           {error}
@@ -258,96 +389,18 @@ export default function CreateTourPage() {
         </div>
       </div>
 
-      {/* Tour ID and Name */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* <div>
-          <label className="block text-md font-medium mb-1">Tour ID *</label>
-          <input
-            type="text"
-            name="tour_id"
-            value={formState.tour_id}
-            onChange={handleFormChange}
-            placeholder="Tour ID (e.g., THO-000010)"
-            required
-            className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
-          />
-          {/* Feedback messages */}
-        {/* {isChecking && (
-            <p className="text-blue-500 text-sm mt-1">Checking...</p>
-          )}
-
-          {!isChecking && exists === true && (
-            <p className="text-red-500 text-sm mt-1">
-              This Tour ID is already taken.
-            </p>
-          )}
-
-          {!isChecking && exists === false && formState.tour_id && (
-            <p className="text-green-500 text-sm mt-1">
-              This Tour ID is available.
-            </p>
-          )}
-        </div> */}
-        <div>
-          <label className="block text-md font-medium mb-1">Tour ID *</label>
-          <input
-            type="text"
-            name="tour_id"
-            value={formState.tour_id}
-            onChange={handleFormChange}
-            placeholder="Tour ID (e.g., THO-000010)"
-            required
-            className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
-          />
-          {/* Filtered Tours Preview */}
-          {/* Matching Tours Dropdown */}
-          {formState.tour_id && filteredTours?.length > 0 && (
-            <div className="mt-2 border rounded-md p-3 bg-white shadow-sm">
-              <p className="text-sm font-semibold mb-2">Matching Tours:</p>
-              <ul className="text-sm space-y-1">
-                {filteredTours.map((tour) => (
-                  <li
-                    key={tour._id}
-                    onClick={() => handleSelectTourId(tour.tour_id)}
-                    className="text-gray-700 cursor-pointer hover:text-blue-500"
-                  >
-                    {tour.tour_id} -{tour.tour_name}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Feedback messages */}
-          {isChecking && (
-            <p className="text-blue-500 text-sm mt-1">Checking...</p>
-          )}
-
-          {!isChecking && exists === true && (
-            <p className="text-red-500 text-sm mt-1">
-              This Tour ID is already taken.
-            </p>
-          )}
-
-          {!isChecking && exists === false && formState.tour_id && (
-            <p className="text-green-500 text-sm mt-1">
-              This Tour ID is available.
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-md font-medium mb-1">Tour Name *</label>
-          <input
-            type="text"
-            name="tour_name"
-            value={formState.tour_name}
-            onChange={handleFormChange}
-            placeholder="Tour Name"
-            required
-            className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
-          />
-        </div>
+      {/* Tour Name */}
+      <div>
+        <label className="block text-md font-medium mb-1">Tour Name *</label>
+        <input
+          type="text"
+          name="tour_name"
+          value={formState.tour_name}
+          onChange={handleFormChange}
+          placeholder="Tour Name"
+          required
+          className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
+        />
       </div>
 
       {/* Dates */}
@@ -371,7 +424,7 @@ export default function CreateTourPage() {
             name="endDate"
             value={formState.endDate}
             onChange={handleFormChange}
-            min={formState.startDate}
+            min={formState.startDate || getToday()}
             required
             className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
           />
@@ -380,7 +433,8 @@ export default function CreateTourPage() {
 
       {/* Locations */}
       <div className="grid grid-cols-3 gap-3">
-        <div>
+        {/* Start Location */}
+        <div className="relative">
           <label className="block text-md font-medium mb-1">
             Start Location *
           </label>
@@ -389,26 +443,64 @@ export default function CreateTourPage() {
             name="start_location"
             value={formState.start_location}
             onChange={handleFormChange}
+            onFocus={() => handleInputFocus("start_location")}
+            onBlur={() => handleInputBlur("start_location")}
             placeholder="Starting location"
             required
             className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
           />
+          {showSuggestions.start_location && filteredLocations.length > 0 && (
+            <div className="absolute z-10 mt-1 w-full border rounded-md bg-white shadow-md max-h-48 overflow-auto">
+              <ul className="text-sm divide-y divide-gray-100">
+                {filteredLocations.map((location) => (
+                  <li
+                    key={location._id}
+                    onClick={() => handleSelectLocation(location)}
+                    className="px-3 py-2 text-gray-700 cursor-pointer hover:bg-gray-100"
+                  >
+                    {location.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-        <div>
+
+        {/* First Destination */}
+        <div className="relative">
           <label className="block text-md font-medium mb-1">
-            First Destination *
+            First Destination
           </label>
           <input
             type="text"
             name="first_destination"
             value={formState.first_destination}
             onChange={handleFormChange}
+            onFocus={() => handleInputFocus("first_destination")}
+            onBlur={() => handleInputBlur("first_destination")}
             placeholder="First destination"
-            required
             className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
           />
+          {showSuggestions.first_destination &&
+            filteredLocations.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full border rounded-md bg-white shadow-md max-h-48 overflow-auto">
+                <ul className="text-sm divide-y divide-gray-100">
+                  {filteredLocations.map((location) => (
+                    <li
+                      key={location._id}
+                      onClick={() => handleSelectLocation(location)}
+                      className="px-3 py-2 text-gray-700 cursor-pointer hover:bg-gray-100"
+                    >
+                      {location.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
         </div>
-        <div>
+
+        {/* Second Destination */}
+        <div className="relative">
           <label className="block text-md font-medium mb-1">
             Second Destination
           </label>
@@ -417,9 +509,27 @@ export default function CreateTourPage() {
             name="second_destination"
             value={formState.second_destination}
             onChange={handleFormChange}
+            onFocus={() => handleInputFocus("second_destination")}
+            onBlur={() => handleInputBlur("second_destination")}
             placeholder="Second destination"
             className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
           />
+          {showSuggestions.second_destination &&
+            filteredLocations.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full border rounded-md bg-white shadow-md max-h-48 overflow-auto">
+                <ul className="text-sm divide-y divide-gray-100">
+                  {filteredLocations.map((location) => (
+                    <li
+                      key={location._id}
+                      onClick={() => handleSelectLocation(location)}
+                      className="px-3 py-2 text-gray-700 cursor-pointer hover:bg-gray-100"
+                    >
+                      {location.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
         </div>
       </div>
 
@@ -456,64 +566,34 @@ export default function CreateTourPage() {
         </div>
       </div>
 
-      {/* Special Status */}
-      {/* <div>
-        <label className="block text-md font-medium mb-1">Special Status</label>
-        <select
-          name="specialStatus"
-          value={formState.specialStatus}
+      {/* Category */}
+      <div className="relative">
+        <label className="block text-md font-medium mb-1">Category</label>
+        <input
+          type="text"
+          name="category"
+          value={formState.category}
           onChange={handleFormChange}
+          onFocus={() => handleInputFocus("category")}
+          onBlur={() => handleInputBlur("category")}
+          placeholder="Category"
           className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
-        >
-          <option value="">None</option>
-          <option value="Special Offer">Special Offer</option>
-          <option value="Sold Out">Sold Out</option>
-        </select>
-      </div> */}
-
-      {/* Status (required) */}
-      <div>
-        <label className="block text-md font-medium mb-1">Status</label>
-        <select
-          name="status"
-          value={formState.status}
-          onChange={handleFormChange}
-          className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
-          required
-        >
-          <option value="" disabled>
-            Select status
-          </option>
-          <option value="Ongoing">Ongoing</option>
-          <option value="Full">Full</option>
-          <option value="Close">Close</option>
-        </select>
-      </div>
-
-      {/* Category and Location IDs */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-md font-medium mb-1">Category ID</label>
-          <input
-            type="text"
-            name="category"
-            value={formState.category}
-            onChange={handleFormChange}
-            placeholder="Category ID"
-            className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
-          />
-        </div>
-        <div>
-          <label className="block text-md font-medium mb-1">Location ID</label>
-          <input
-            type="text"
-            name="location"
-            value={formState.location}
-            onChange={handleFormChange}
-            placeholder="Location ID"
-            className="w-full border-2 px-2 py-3 rounded-md text-sm bg-[#F6FAFD] border-[#EAEEF4]"
-          />
-        </div>
+        />
+        {showSuggestions.category && filteredCategories.length > 0 && (
+          <div className="absolute z-10 mt-1 w-full border rounded-md bg-white shadow-md max-h-48 overflow-auto">
+            <ul className="text-sm divide-y divide-gray-100">
+              {filteredCategories.map((category) => (
+                <li
+                  key={category._id}
+                  onClick={() => handleSelectCategory(category)}
+                  className="px-3 py-2 text-gray-700 cursor-pointer hover:bg-gray-100"
+                >
+                  {category.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Description and Overview */}
@@ -528,7 +608,6 @@ export default function CreateTourPage() {
           placeholder="Short description..."
         ></textarea>
       </div>
-
       <div>
         <label className="block text-md font-medium mb-1">Overview *</label>
         <textarea
@@ -623,7 +702,6 @@ export default function CreateTourPage() {
                   />
                 </div>
                 <div className="flex gap-4">
-                  {/* Start Time */}
                   <div className="flex-1">
                     <label className="block text-sm font-medium mb-1">
                       Start Time *
@@ -642,8 +720,6 @@ export default function CreateTourPage() {
                       className="w-full border px-2 py-3 rounded-md text-sm bg-blue-100 border-[#EAEEF4]"
                     />
                   </div>
-
-                  {/* End Time */}
                   <div className="flex-1">
                     <label className="block text-sm font-medium mb-1">
                       End Time *

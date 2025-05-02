@@ -322,7 +322,7 @@ export default function ProfilePage() {
               </div>
             </section>
 
-            <section className="bg-white rounded-lg shadow-md p-6 mb-6">
+            {/* <section className="bg-white rounded-lg shadow-md p-6 mb-6">
               <h2 className="text-xl font-bold mb-6">Address</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -391,7 +391,7 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
-            </section>
+            </section> */}
 
             <div className="flex justify-end gap-4 mt-6">
               <Button

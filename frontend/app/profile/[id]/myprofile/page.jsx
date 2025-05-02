@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 const Page = () => {
   const params = useParams();
   const router = useRouter();
@@ -126,10 +125,9 @@ const Page = () => {
       />
 
       <h1 className="text-2xl font-bold mb-8">My Profile</h1>
-
       <div className="flex items-center mb-8">
-        <div className="flex">
-          <Avatar className="h-24 w-24">
+        <div className="flex relative">
+          <Avatar className="h-24 w-24 relative">
             {profileImage ? (
               <AvatarImage src={profileImage} alt="User profile image" />
             ) : (
@@ -138,11 +136,18 @@ const Page = () => {
                 {user.lastname?.charAt(0) || "S"}
               </AvatarFallback>
             )}
+
+            {/* ✅ Verified badge on profileImage */}
+            {user?.isVerified && (
+              <span className="absolute -bottom-1 -right-1 bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full text-xs shadow-md">
+                ✔
+              </span>
+            )}
           </Avatar>
+
           <main className="flex flex-col justify-center ml-4">
             <h2 className="mt-4 text-xl font-semibold uppercase">
-              {user?.firstname || "N/A"}
-              <span> {user?.lastname || "N/A"}</span>
+              {user?.firstname || "N/A"} <span>{user?.lastname || "N/A"}</span>
             </h2>
             <p className="text-gray-600">
               {user?.email || "No email available"}
@@ -200,7 +205,7 @@ const Page = () => {
         </div>
       </div>
 
-      {/* Address */}
+      {/* Address
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h3 className="text-lg font-semibold mb-4">Address</h3>
         {addressLoading && <p>Loading address...</p>}
@@ -248,7 +253,7 @@ const Page = () => {
         ) : (
           !addressLoading && <p>No address found</p>
         )}
-      </div>
+      </div> */}
     </div>
   );
 };

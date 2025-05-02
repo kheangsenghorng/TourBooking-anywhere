@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Search,
   ChevronLeft,
@@ -56,8 +56,7 @@ export default function TourManagement() {
       fetchTours(params.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
-
+  }, [params.id, fetchTours]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState("tour_name");
@@ -146,9 +145,6 @@ export default function TourManagement() {
 
   const statusOptions = ["all", "Available", "Ongoing", "Full", "Close"];
 
-  if (loading) return <p>Loading tours...</p>;
-  if (tourError) return <p>Error: {tourError}</p>;
-
   return (
     <div className="space-y-6">
       <Card className="border-none shadow-xl bg-white dark:bg-gray-950 rounded-xl overflow-hidden">
@@ -213,7 +209,7 @@ export default function TourManagement() {
 
           {isLoading ? (
             <div className="flex justify-center items-center h-screen">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-green-500"></div>
               <p className="mt-4 text-lg">Loading your Tour...</p>
             </div>
           ) : error ? (
@@ -268,6 +264,9 @@ export default function TourManagement() {
                       </th>
                       <th className="py-3 px-4 text-left font-medium text-xs text-muted-foreground">
                         DESTINATION
+                      </th>
+                      <th className="py-3 px-4 text-left font-medium text-xs text-muted-foreground">
+                        CATEGORY
                       </th>
                       <th className="py-3 px-4 text-left font-medium text-xs text-muted-foreground">
                         PARTICIPANTS
@@ -347,22 +346,28 @@ export default function TourManagement() {
                               </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm ">
+                          <td className="py-3 px-4 text-sm">
                             <div className="flex items-center">
                               <MapPin
                                 size={14}
                                 className="mr-2 text-muted-foreground"
                               />
-                              <div className="flex flex-col">
-                                <span>{tour.start_location}</span>
+                              <div className="flex flex-col text-nowrap">
+                                <span>{tour?.start_location?.name}</span>
                                 <span className="text-muted-foreground">
-                                  {tour.first_destination}
-                                  {tour.second_destination &&
-                                    ` → ${tour.second_destination}`}
+                                  {tour?.first_destination?.name}
+                                  {tour?.second_destination?.name &&
+                                    ` → ${tour.second_destination?.name}`}
                                 </span>
                               </div>
                             </div>
                           </td>
+                          <td className="py-3 px-4 text-sm">
+                            <span className="font-medium">
+                              {tour.category?.name}
+                            </span>
+                          </td>
+
                           <td className="py-3 px-4 text-sm">
                             <div className="flex items-center">
                               <Users

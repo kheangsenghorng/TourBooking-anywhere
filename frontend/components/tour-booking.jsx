@@ -6,7 +6,7 @@ import { Star, MapPin, Clock, Bus, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import TourItinerary from "@/components/tour-itinerary";
+import TourItinerary from "@/components/touritinerares";
 import ReviewCardAttachment from "./review-card-attachment";
 import { useParams } from "next/navigation";
 import { useTourStore } from "@/store/tourStore";
@@ -48,19 +48,19 @@ export default function TourBooking() {
 
   const router = useRouter();
 
-  if (loading) {
-    return (
-      <div className="text-center p-6">
-        <p className="mb-4">Loading...</p>
-        <button
-          onClick={() => router.back()}
-          className="text-blue-600 hover:underline flex items-center justify-center"
-        >
-          ← Go Back
-        </button>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="text-center p-6">
+  //       <p className="mb-4">Loading...</p>
+  //       <button
+  //         onClick={() => router.back()}
+  //         className="text-blue-600 hover:underline flex items-center justify-center"
+  //       >
+  //         ← Go Back
+  //       </button>
+  //     </div>
+  //   );
+  // }
 
   if (error || errorRevies) {
     return (
@@ -90,7 +90,7 @@ export default function TourBooking() {
     );
   }
 
-  if (!gallery || gallery.length === 0) {
+  if (!gallery || !gallery.length === 0) {
     return (
       <div className="text-center p-6 text-gray-500">
         <p className="mb-4">No images available for this tour.</p>
@@ -192,7 +192,11 @@ export default function TourBooking() {
               <div className="flex items-center gap-2 mb-3">
                 <MapPin size={18} className="text-gray-500" />
                 <span className="text-gray-600">
-                  {tour?.start_location || "Location"}
+                  {tour.start_location?.name || "N/A"}
+                  {tour.first_destination?.name &&
+                    ` → ${tour.first_destination.name}`}
+                  {tour.second_destination?.name &&
+                    ` → ${tour.second_destination.name}`}
                 </span>
                 <span className="mx-1 text-gray-400">|</span>
                 <div className="flex items-center">

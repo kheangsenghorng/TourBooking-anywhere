@@ -72,6 +72,15 @@ const UserPage = () => {
     startIndex,
     startIndex + usersPerPage
   );
+  // ✅ Green spinner loading screen
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-4 border-t-green-500 border-gray-200"></div>
+        <p className="mt-6 text-lg text-gray-600">Loading your profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -200,20 +209,30 @@ const UserPage = () => {
                   >
                     <td className="px-4 py-3">#{startIndex + i + 1000}</td>
                     <td className="px-4 py-3">
-                      <Link href={`/${params.id}/viewuser/${user._id}`}>
-                        <div className="w-10 h-10 rounded-full overflow-hidden">
-                          <Image
-                            src={
-                              user.profile_image_url ||
-                              "https://www.gravatar.com/avatar/?d=mp&s=120"
-                            }
-                            alt="Profile"
-                            width={40}
-                            height={40}
-                            className="object-cover"
-                          />
-                        </div>
-                      </Link>
+                      <div className="relative w-10 h-10">
+                        {/* ✅ Verified Badge */}
+                        {user?.isVerified && (
+                          <span className="absolute bottom-0 right-0 bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full shadow-md z-10">
+                            ✔
+                          </span>
+                        )}
+
+                        {/* ✅ Profile Image inside Link */}
+                        <Link href={`/${params.id}/viewuser/${user._id}`}>
+                          <div className="w-10 h-10 rounded-full overflow-hidden">
+                            <Image
+                              src={
+                                user.profile_image_url ||
+                                "https://www.gravatar.com/avatar/?d=mp&s=120"
+                              }
+                              alt="Profile"
+                              width={40}
+                              height={40}
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                        </Link>
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <Link

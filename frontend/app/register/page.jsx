@@ -16,6 +16,9 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const { signup, isLoading, error } = useAuthStore();
   const router = useRouter();
@@ -30,6 +33,10 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setPasswordError("Check passwords again ");
+      return;
+    }
     await signup(firstname, lastname, phonenumber, email, password);
     router.push("/verify-email");
   };
@@ -52,7 +59,7 @@ const Register = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* First Name */}
             <div className="space-y-2">
-              <Label htmlFor="firstname">First Name</Label>
+              <Label htmlFor="firstname">First Name *</Label>
               <div className="relative">
                 <User className="absolute w-4 h-4 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <Input
@@ -69,7 +76,7 @@ const Register = () => {
 
             {/* Last Name */}
             <div className="space-y-2">
-              <Label htmlFor="lastname">Last Name</Label>
+              <Label htmlFor="lastname">Last Name *</Label>
               <div className="relative">
                 <User className="absolute w-4 h-4 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <Input
@@ -87,7 +94,7 @@ const Register = () => {
 
           {/* Phone Number */}
           <div className="space-y-2">
-            <Label htmlFor="phonenumber">Phone Number</Label>
+            <Label htmlFor="phonenumber">Phone Number *</Label>
             <div className="relative">
               <Phone className="absolute w-4 h-4 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Input
@@ -104,7 +111,7 @@ const Register = () => {
 
           {/* Email Input */}
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email *</Label>
             <div className="relative">
               <Mail className="absolute w-4 h-4 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Input
@@ -121,7 +128,7 @@ const Register = () => {
 
           {/* Password Input */}
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Password *</Label>
             <div className="relative">
               <Lock className="absolute w-4 h-4 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Input
@@ -144,10 +151,45 @@ const Register = () => {
             </div>
           </div>
 
+          {/* Confirm Password Input */}
+          <div className="space-y-2">
+            <Label htmlFor="confirm-password">Confirm Password *</Label>
+            <div className="relative">
+              <Lock className="absolute w-4 h-4 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                id="confirm-password"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="pl-10 pr-10"
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                aria-label={
+                  showConfirmPassword ? "Hide password" : "Show password"
+                }
+              >
+                {showConfirmPassword ? <EyeOff /> : <Eye />}
+              </button>
+            </div>
+          </div>
+
+          {/* Password mismatch error message */}
+          {passwordError && (
+            <p className="text-sm text-red-500">{passwordError}</p>
+          )}
+
           {/* Remember Me */}
           <div className="flex justify-between text-sm">
             <label className="flex items-center">
-              <input type="checkbox" className="form-checkbox text-blue-500 mr-2" />
+              <input
+                type="checkbox"
+                className="form-checkbox text-blue-500 mr-2"
+              />
               Remember me
             </label>
             <a href="/forgot-password" className="text-blue-500 underline">
@@ -157,7 +199,11 @@ const Register = () => {
 
           {/* Submit Button */}
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+            disabled={isLoading}
+          >
             {isLoading ? "Loading..." : "Register"}
           </Button>
         </form>
@@ -171,11 +217,17 @@ const Register = () => {
 
         {/* Social Login - Responsive */}
         <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
-          <Button className="flex-1 bg-gray-200 shadow-sm text-black flex items-center justify-center space-x-1 hover:bg-gray-300" onClick={handleGoogleLogin}>
+          <Button
+            className="flex-1 bg-gray-200 shadow-sm text-black flex items-center justify-center space-x-1 hover:bg-gray-300"
+            onClick={handleGoogleLogin}
+          >
             <img src="/google.png" alt="Google" className="w-5 h-5" />
             <span>Google</span>
           </Button>
-          <Button className="flex-1 bg-gray-200 shadow-sm text-black flex items-center justify-center space-x-1 hover:bg-gray-300" onClick={handleFacebookLogin}>
+          <Button
+            className="flex-1 bg-gray-200 shadow-sm text-black flex items-center justify-center space-x-1 hover:bg-gray-300"
+            onClick={handleFacebookLogin}
+          >
             <img src="/facebook.png" alt="Facebook" className="w-8 h-8" />
             <span>Facebook</span>
           </Button>

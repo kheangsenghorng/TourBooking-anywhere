@@ -94,14 +94,25 @@ export default function Home() {
       ? [...tours].sort((a, b) => b.price - a.price)
       : [...tours].sort((a, b) => a.price - b.price);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-
-  const currentTours = sortedTours
+  const newTours = sortedTours.filter((tour) => tour.isNew); // Filter new tours (add your condition)
+  const nonNewTours = sortedTours
+    .filter((tour) => !tour.isNew) // Exclude new tours
     .filter((tour) => tour.status?.toLowerCase() !== "full")
-    .filter((tour) => tour.specialStatus?.toLowerCase() !== "sold out")
-    .slice(indexOfLastItem - itemsPerPage, indexOfLastItem);
+    .filter((tour) => tour.status?.toLowerCase() !== "close")
+    .filter((tour) => tour.specialStatus?.toLowerCase() !== "sold out");
 
-  const totalPages = Math.ceil(sortedTours.length / itemsPerPage);
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const paginatedTours = nonNewTours.slice(
+    indexOfLastItem - itemsPerPage,
+    indexOfLastItem
+  );
+
+  // Combine new tours with paginated non-new tours
+  const currentTours = [...newTours, ...paginatedTours]; // Display new tours first
+
+  // Calculate total pages for non-new tours only (pagination shouldn't count new tours)
+  const totalPages = Math.ceil(nonNewTours.length / itemsPerPage);
 
   if (loading) return <p className="text-center">Loading...</p>;
   if (error)
@@ -212,7 +223,11 @@ export default function Home() {
                       }
                     >
                       <h2 className="text-xl font-semibold mb-2 hover:text-rose-600">
-                        {tour.tour_name}
+                        {tour.first_destination?.name
+                          ? tour.start_location?.name
+                            ? `${tour.start_location.name} ↔ ${tour.first_destination.name}`
+                            : tour.first_destination.name
+                          : tour.start_location?.name}
                       </h2>
                     </Link>
 

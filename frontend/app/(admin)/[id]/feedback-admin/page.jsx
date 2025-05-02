@@ -151,12 +151,12 @@ export default function TourManagement() {
                   Manage your tours, track bookings, and monitor performance
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <Button className="bg-teal-600 hover:bg-teal-700 text-white shadow-md transition-all hover:shadow-lg h-9">
                   <Plus size={16} className="mr-2" />
                   Create New Tour
                 </Button>
-              </div>
+              </div> */}
             </div>
           </div>
         </CardHeader>
@@ -258,6 +258,9 @@ export default function TourManagement() {
                         DESTINATION
                       </th>
                       <th className="py-3 px-4 text-left font-medium text-xs text-muted-foreground">
+                        CATEGORY
+                      </th>
+                      <th className="py-3 px-4 text-left font-medium text-xs text-muted-foreground">
                         PARTICIPANTS
                       </th>
                       <th
@@ -344,15 +347,23 @@ export default function TourManagement() {
                                 className="mr-2 text-muted-foreground"
                               />
                               <div className="flex flex-col">
-                                <span>{tour.start_location}</span>
-                                <span className="text-muted-foreground">
-                                  {tour.first_destination}
-                                  {tour.second_destination &&
-                                    ` → ${tour.second_destination}`}
+                                <span>{tour.start_location.name || "N/A"}</span>
+                                <span className="text-muted-foreground text-nowrap">
+                                  {tour.start_location?.name || "N/A"}
+                                  {tour.first_destination?.name &&
+                                    ` → ${tour.first_destination.name}`}
+                                  {tour.second_destination?.name &&
+                                    ` → ${tour.second_destination.name}`}
                                 </span>
                               </div>
                             </div>
                           </td>
+                          <td className="py-3 px-4 text-sm">
+                            <span className="font-medium text-nowrap">
+                              {tour.category?.name}
+                            </span>
+                          </td>
+
                           <td className="py-3 px-4 text-sm">
                             <div className="flex items-center">
                               <Users

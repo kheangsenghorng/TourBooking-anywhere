@@ -36,7 +36,7 @@
     "store/authStore.jsx",
     "app/login/page.jsx",
     "app/page.jsx"
-, "components/payment-options.jsx", "components/tour-itinerary.tsx"  ],
+, "components/payment-options.jsx", "components/touritinerares.jsx"  ],
   "exclude": [
     "node_modules"
   ]
