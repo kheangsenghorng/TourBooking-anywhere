@@ -22,12 +22,36 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  Snowflake,
+  Flame,
+  Utensils,
+  PawPrint,
+  Dumbbell,
+  Plane,
+  Sparkles,
+  Droplet,
+  BedDouble,
+} from "lucide-react";
 
 export default function FavoritesPage() {
   const params = useParams();
   const { favorites, loading, error, fetchFavorites, removeFavorite } =
     useFavoriteStore();
   const [favorited, setFavorited] = useState(true);
+
+  const accommodationIcons = {
+    ac: <Snowflake className="h-4 w-4 text-blue-500" />,
+    heating: <Flame className="h-4 w-4 text-orange-500" />,
+    dishwasher: <Utensils className="h-4 w-4 text-green-500" />,
+    petsAllowed: <PawPrint className="h-4 w-4 text-pink-500" />,
+    fitnessCenter: <Dumbbell className="h-4 w-4 text-purple-500" />,
+    airportTransfer: <Plane className="h-4 w-4 text-gray-600" />,
+    Transfer: <Bus className="h-4 w-4 text-rose-500" />,
+    Spa: <Sparkles className="h-4 w-4 text-amber-500" />,
+    Pool: <Droplet className="h-4 w-4 text-sky-500" />,
+    Roomtype: <BedDouble className="h-4 w-4 text-rose-500" />,
+  };
 
   useEffect(() => {
     if (params.id) {
@@ -46,6 +70,12 @@ export default function FavoritesPage() {
     const start = new Date(startDate);
     const end = new Date(endDate);
     return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+  };
+
+  const getAccommodationFeatures = (binaryString) => {
+    return Object.keys(accommodationIcons)
+      .filter((_, index) => binaryString?.[index] === "1")
+      .map((key) => key);
   };
 
   return (
@@ -204,10 +234,32 @@ export default function FavoritesPage() {
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                          <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
+                          {/* <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
                             <Bus className="h-4 w-4 text-rose-500" />
                           </div>
-                          <span>Transport</span>
+                          <span>Transport</span> */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {getAccommodationFeatures(tour.accommodation)
+                              ?.length > 0 ? (
+                              getAccommodationFeatures(tour.accommodation)
+                                .slice(0, 3)
+                                .map((feature) => (
+                                  <div
+                                    key={feature}
+                                    className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs text-gray-700"
+                                  >
+                                    {accommodationIcons[feature]}
+                                    <span className="capitalize">
+                                      {feature}
+                                    </span>
+                                  </div>
+                                ))
+                            ) : (
+                              <span className="text-gray-500 text-sm">
+                                No accommodation info
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">

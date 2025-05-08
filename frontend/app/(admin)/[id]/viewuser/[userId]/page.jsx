@@ -84,7 +84,7 @@ export default function UserDetailsPage() {
                   profileImage || "https://www.gravatar.com/avatar/?d=mp&s=120"
                 }
                 alt={`${useById?.firstname || "User"} ${
-                  useById?.lastname || "" 
+                  useById?.lastname || ""
                 }`}
               />
               <AvatarFallback>
@@ -153,43 +153,7 @@ export default function UserDetailsPage() {
                         {useById?.phonenumber || "N/A"}
                       </p>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">
-                        Street
-                      </h3>
-                      <p className="text-base">{address?.street || "N/A"}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">
-                        Address
-                      </h3>
-                      <p className="text-base">
-                        {address?.country || "N/A"}
-                        {address?.state && `, ${address.state}`}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">
-                        City
-                      </h3>
-                      <p className="text-base">{address?.city || "N/A"}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">
-                        Home Number
-                      </h3>
-                      <p className="text-base">
-                        {address?.homenumber || "N/A"}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">
-                        Zip Code
-                      </h3>
-                      <p className="text-base">{address?.zip || "N/A"}</p>
-                    </div>
                   </div>
-
                   <div className="pt-4">
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">
                       Travel Preferences

@@ -74,7 +74,7 @@ export default function TourFeedbackAlt() {
                   <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                     <div className="flex items-center text-white text-sm">
                       <MapPin className="w-3.5 h-3.5 mr-1" />
-                      {tour.tourId?.start_location}
+                      {tour.tourId?.start_location.name}
                     </div>
                     <Link
                       href={`/${id}/tour-detail/${tour.tourId?._id}#feedback`}

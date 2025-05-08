@@ -11,6 +11,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import {
+  Snowflake,
+  Flame,
+  Utensils,
+  PawPrint,
+  Dumbbell,
+  Plane,
+  Sparkles,
+  Droplet,
+  BedDouble,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 // Store imports - you'll need to create these stores
 import { useTourStore } from "@/store/tourStore";
@@ -34,6 +47,19 @@ export default function Home() {
   const [filter, setFilter] = useState("highest");
   const [currentPage, setCurrentPage] = useState(1);
   const [favorites, setFavorites] = useState({});
+  const [showAll, setShowAll] = useState(false);
+
+  const accommodationIcons = {
+    ac: <Snowflake className="h-4 w-4 text-blue-500" />,
+    heating: <Flame className="h-4 w-4 text-orange-500" />,
+    dishwasher: <Utensils className="h-4 w-4 text-green-500" />,
+    petsAllowed: <PawPrint className="h-4 w-4 text-pink-500" />,
+    fitnessCenter: <Dumbbell className="h-4 w-4 text-purple-500" />,
+    airportTransfer: <Plane className="h-4 w-4 text-gray-600" />,
+    Transfer: <Bus className="h-4 w-4 text-rose-500" />,
+    Spa: <Sparkles className="h-4 w-4 text-amber-500" />,
+    Pool: <Droplet className="h-4 w-4 text-sky-500" />,
+  };
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -94,6 +120,11 @@ export default function Home() {
       ? [...tours].sort((a, b) => b.price - a.price)
       : [...tours].sort((a, b) => a.price - b.price);
 
+  const getAccommodationFeatures = (binaryString) => {
+    return Object.keys(accommodationIcons)
+      .filter((_, index) => binaryString?.[index] === "1")
+      .map((key) => key);
+  };
   const newTours = sortedTours.filter((tour) => tour.isNew); // Filter new tours (add your condition)
   const nonNewTours = sortedTours
     .filter((tour) => !tour.isNew) // Exclude new tours
@@ -115,24 +146,32 @@ export default function Home() {
   const totalPages = Math.ceil(nonNewTours.length / itemsPerPage);
 
   if (loading) return <p className="text-center">Loading...</p>;
-  if (error)
-    return <p className="text-center text-red-500">{error || errorFavorite}</p>;
+  // if (error)
+  //   return <p className="text-center text-red-500">{error || errorFavorite}</p>;
+  // if (errorFavorite)
+  //   return <p className="text-center text-red-500">{ errorFavorite}</p>;
 
   return (
     <div className="p-6">
       {/* Filter Controls */}
-      <div className="flex justify-center border w-[400px] mx-auto rounded-full my-5">
-        {["highest", "lowest"].map((option) => (
-          <button
-            key={option}
-            onClick={() => setFilter(option)}
-            className={`px-6 py-2 w-full rounded-full border hover:bg-gray-100 ${
-              filter === option ? "bg-gray-200" : ""
-            }`}
-          >
-            {option === "highest" ? "Highest Price" : "Lowest Price"}
-          </button>
-        ))}
+      <div className="flex justify-center w-[400px] mx-auto my-5">
+        <div className="flex w-full bg-gray-100 rounded-full p-1">
+          {["highest", "lowest"].map((option) => (
+            <button
+              key={option}
+              onClick={() => setFilter(option)}
+              className={`flex-1 text-sm font-medium rounded-full px-4 py-2 transition-all duration-200 ${
+                filter === option
+                  ? "bg-white shadow text-gray-900"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {option === "highest"
+                ? "From Highest to Lowest"
+                : "From Lowest to Highest"}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Tour List */}
@@ -268,8 +307,55 @@ export default function Home() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Bus className="h-4 w-4 text-rose-500" />
-                        <span>Transport</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* display accommodation slice 0 to 4 icon */}
+                          {getAccommodationFeatures(tour.accommodation)
+                            ?.length > 0 ? (
+                            // Slice to show 3 or 4 initially
+                            getAccommodationFeatures(tour.accommodation)
+                              .slice(
+                                0,
+                                showAll
+                                  ? getAccommodationFeatures(tour.accommodation)
+                                      .length
+                                  : 2
+                              ) // Show 3 initially
+                              .map((feature) => (
+                                <div
+                                  key={feature}
+                                  className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs text-gray-700"
+                                >
+                                  {accommodationIcons[feature]}
+                                  <span className="capitalize">{feature}</span>
+                                </div>
+                              ))
+                          ) : (
+                            <span className="text-gray-500 text-sm">
+                              No accommodation info
+                            </span>
+                          )}
+
+                          {/* Show More / Show Less Button */}
+                          {/* {getAccommodationFeatures(tour.accommodation)
+                            ?.length > 3 && (
+                            <button
+                              onClick={() => setShowAll((prev) => !prev)}
+                              className="mt-2 text-sm text-blue-500 flex items-center gap-1"
+                            >
+                              {showAll ? (
+                                <>
+                                  <ChevronUp className="h-4 w-4" />
+                                  Show Less
+                                </>
+                              ) : (
+                                <>
+                                  <ChevronDown className="h-4 w-4" />
+                                  Show More
+                                </>
+                              )}
+                            </button>
+                          )} */}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-rose-500" />

@@ -5,6 +5,7 @@ import {
   deleteTour,
   duration,
   FiltersTour,
+  filterToursByLocationAndDate,
   getAllTours,
   ratings,
   TourmaxParticipants,
@@ -13,6 +14,10 @@ import {
 import { uploadMultiple } from "../middlewares/upload.js";
 import { verifyAdmin } from "../middlewares/adminVerify.js";
 import { verifyToken } from "../middlewares/verifyToken.js";
+import {
+  getToursByAccommodation,
+  updateAccommodationById,
+} from "../controllers/accommodation.js";
 
 const router = express.Router();
 
@@ -32,6 +37,13 @@ router.get("/ratings", ratings);
 router.get("/max", TourmaxParticipants);
 
 router.get("/check-tour-id", checkTourId);
+
+// Filter tours by location and date range (NEW)
+router.get("/filter/location-date", filterToursByLocationAndDate);
+
+router.put("/tours/:tourId/accommodation", updateAccommodationById);
+
+router.get("/by-accommodation", getToursByAccommodation);
 
 // DELETE request to delete a tour, an image, or both
 router.delete("/:tourId/images/:fileName?", deleteTour);

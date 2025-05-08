@@ -166,6 +166,39 @@ export const useTourStore = create((set) => ({
     }
   },
 
+  filterParams: {
+    location: "",
+    startDate: null,
+    endDate: null,
+  },
+
+  setFilterParams: (params) => {
+    set((state) => ({
+      filterParams: { ...state.filterParams, ...params },
+    }));
+  },
+
+  fetchFilteredTours: async () => {
+    set({ loading: true, error: null });
+
+    try {
+      const { location, startDate, endDate } =
+        useTourStore.getState().filterParams;
+
+      const response = await axios.get(`${API_URL}/tour/filter/location-date`, {
+        params: { location, startDate, endDate },
+      });
+
+      set({ tours: response.data.tours, loading: false });
+    } catch (error) {
+      console.error("Failed to fetch filtered tours:", error);
+      set({
+        error: error.response?.data?.message || "Something went wrong",
+        loading: false,
+      });
+    }
+  },
+
   // Rating-related state and actions
   ratingFilter: null, // Current rating filter
   setRatingFilter: (rating) => set({ ratingFilter: rating }), // Set rating filter
@@ -260,6 +293,48 @@ export const useTourStore = create((set) => ({
       console.error("Error updating tour:", err);
       set({
         error: err.response?.data?.message || "Something went wrong",
+        loading: false,
+      });
+    }
+  },
+
+  accommodation: Array(8).fill("0"), // default: 8 zeros
+
+  setAccommodation: (index, value) =>
+    set((state) => {
+      const updated = [...state.accommodation];
+      updated[index] = value;
+      return { accommodation: updated };
+    }),
+
+  updateAccommodationOnServer: async (tourId) => {
+    try {
+      const { accommodation } = useTourStore.getState();
+
+      const response = await axios.put(
+        `${API_URL}/tour/tours/${tourId}/accommodation`,
+        {
+          accommodation,
+        }
+      );
+
+      console.log("Updated successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Update failed:", error.response?.data || error.message);
+      throw error;
+    }
+  },
+  fetchToursByAccommodation: async (accommodation) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axios.get(
+       `${API_URL}/tour/by-accommodation?accommodation=${accommodation}`
+      );
+      set({ tours: response.data, loading: false });
+    } catch (err) {
+      set({
+        error: err.response?.data?.message || "Failed to fetch tours",
         loading: false,
       });
     }

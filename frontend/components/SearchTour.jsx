@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { CalendarIcon, Search } from "lucide-react";
 import { format } from "date-fns";
-
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useTourStore } from "@/store/tourStore"; // Ensure you're importing the correct store
 
 const provinces = [
   "Phnom Penh",
@@ -49,11 +49,30 @@ const provinces = [
 
 export default function SearchTour() {
   const [destination, setDestination] = useState("");
-  const [startDate, setStartDate] = useState();
-  const [endDate, setEndDate] = useState();
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [loading, setLoading] = useState(false); // 👈 added
+  const [error, setError] = useState(null); // 👈 added
+  // Access Zustand store functions
+  const { setFilterParams, fetchFilteredTours } = useTourStore();
 
-  const handleSearch = () => {
-    console.log("Searching for:", destination, startDate, endDate);
+  const handleSearch = async () => {
+    setLoading(true);
+    setError(null);
+
+    setFilterParams({
+      location: destination,
+      startDate: startDate ? format(startDate, "yyyy-MM-dd") : null,
+      endDate: endDate ? format(endDate, "yyyy-MM-dd") : null,
+    });
+
+    try {
+      await fetchFilteredTours();
+    } catch (err) {
+      setError("Failed to fetch tours. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -147,11 +166,19 @@ export default function SearchTour() {
       {/* Search Button */}
       <Button
         onClick={handleSearch}
-        className="h-12 w-12 rounded-full bg-green-500 p-0 hover:bg-green-600"
+        disabled={loading}
+        className="relative h-12 w-12 rounded-full bg-green-500 p-0 hover:bg-green-600"
       >
-        <Search className="h-5 w-5" />
+        {loading ? (
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+        ) : (
+          <Search className="h-5 w-5" />
+        )}
         <span className="sr-only">Search</span>
       </Button>
+
+      {/* Error Message */}
+      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
     </div>
   );
 }

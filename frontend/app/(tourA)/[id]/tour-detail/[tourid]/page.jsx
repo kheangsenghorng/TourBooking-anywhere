@@ -21,7 +21,7 @@ export default function PageTour() {
           <Reviews tourId={tourId} />
         </div>
         <div>
-          <BookingForm />
+          <BookingForm tourId={tourId} />
         </div>
       </div>
     </div>
