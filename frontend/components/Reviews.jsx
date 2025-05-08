@@ -21,7 +21,6 @@ const Reviews = () => {
     }
   }, [tourId, fetchAllReviews]);
 
-  console.log(tourId);
 
   if (isLoading) return <div>Loading reviews...</div>;
   if (error) return <div className="text-red-500">{error}</div>;

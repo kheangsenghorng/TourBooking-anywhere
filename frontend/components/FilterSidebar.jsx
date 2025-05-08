@@ -1,19 +1,23 @@
 "use client";
+
 import { useTourStore } from "@/store/tourStore";
 import React, { useEffect, useState } from "react";
 
 const FilterSidebar = () => {
   const [participants, setParticipants] = useState(13);
-  const [priceRange, setPriceRange] = useState({ min: 200, max: 1000 });
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+
   const [accommodation, setAccommodation] = useState({
-    acHeating: true,
-    dishwasher: false,
-    petsAllowed: false,
-    fitnessCenter: false,
-    airportTransfer: false,
-    Spa: false,
-    Pool: false,
-    Roomtype: false,
+    ac: 0,
+    heating: 0,
+    dishwasher: 0,
+    petsAllowed: 0,
+    fitnessCenter: 0,
+    airportTransfer: 0,
+    transfer: 0,
+    Spa: 0,
+    Pool: 0,
+    Roomtype: 0,
   });
 
   const [tourAvailability, setTourAvailability] = useState("all");
@@ -26,24 +30,42 @@ const FilterSidebar = () => {
     setRatingFilter,
     isLoading,
     error,
+    tours,
+    fetchToursByAccommodation,
+    loading,
   } = useTourStore();
 
-  // Filter tours using the values from priceRange state
-  const handleFilter = () => {
-    filterToursByPrice({
-      minPrice: Number(priceRange.min),
-      maxPrice: Number(priceRange.max),
-    });
+  // 🔧 Converts accommodation object to binary string like "10101010"
+  const convertToBinaryString = (acc) => {
+    return Object.values(acc)
+      .map((val) => (val ? "1" : "0"))
+      .slice(0, 8)
+      .join("")
+      .padEnd(8, "0");
+  };
+
+  const handlePriceChange = (type, value) => {
+    const updatedRange = { ...priceRange, [type]: value };
+    setPriceRange(updatedRange);
+
+    const min = Number(updatedRange.min);
+    const max = Number(updatedRange.max);
+    if (!isNaN(min) && !isNaN(max)) {
+      filterToursByPrice({ minPrice: min, maxPrice: max });
+    }
   };
 
   const handleAccommodationChange = (e) => {
-    setAccommodation({ ...accommodation, [e.target.name]: e.target.checked });
+    setAccommodation({
+      ...accommodation,
+      [e.target.name]: e.target.checked ? 1 : 0,
+    });
   };
 
   const handleRatingChange = (e) => {
     const rating = parseFloat(e.target.value);
-    setRatingFilter(rating); // Set the rating filter
-    fetchToursByRating(rating); // Fetch tours based on the rating filter
+    setRatingFilter(rating);
+    fetchToursByRating(rating);
   };
 
   const handleAvailabilityChange = (e) => {
@@ -55,32 +77,12 @@ const FilterSidebar = () => {
   };
 
   useEffect(() => {
-    // Optional: Trigger tour filtering when availability or travel type changes
-    // This could involve fetching tours based on these filters if needed
-  }, [tourAvailability, travelType]);
+    const binaryString = convertToBinaryString(accommodation);
+    fetchToursByAccommodation(binaryString);
+  }, [accommodation]);
 
   return (
     <div className="border p-4 rounded-lg shadow-lg bg-white">
-      <h2 className="text-lg font-semibold mb-4">Filters</h2>
-
-      {/* Participants */}
-      <div className="mb-4">
-        <label className="block mb-2">Maximum Participants</label>
-        <input
-          type="range"
-          min="0"
-          max="35"
-          value={participants}
-          onChange={(e) => setParticipants(e.target.value)}
-          className="w-full"
-        />
-        <div className="flex justify-between">
-          <span>0</span>
-          <span>{participants}</span>
-          <span>35</span>
-        </div>
-      </div>
-
       {/* Price Range */}
       <div className="mb-4">
         <h3 className="font-semibold mb-2">Price Range</h3>
@@ -88,29 +90,18 @@ const FilterSidebar = () => {
           <input
             type="number"
             value={priceRange.min}
-            onChange={(e) =>
-              setPriceRange({ ...priceRange, min: e.target.value })
-            }
+            onChange={(e) => handlePriceChange("min", e.target.value)}
             className="border rounded p-3"
             placeholder="Min"
           />
           <input
             type="number"
             value={priceRange.max}
-            onChange={(e) =>
-              setPriceRange({ ...priceRange, max: e.target.value })
-            }
+            onChange={(e) => handlePriceChange("max", e.target.value)}
             className="border rounded p-3"
             placeholder="Max"
           />
         </div>
-        {/* Optional Apply Filter Button */}
-        <button
-          onClick={handleFilter}
-          className="mt-4 bg-blue-500 text-white py-2 px-4 rounded"
-        >
-          Apply Filter
-        </button>
       </div>
 
       {/* Accommodation */}
@@ -121,7 +112,7 @@ const FilterSidebar = () => {
             <input
               type="checkbox"
               name={key}
-              checked={accommodation[key]}
+              checked={accommodation[key] === 1}
               onChange={handleAccommodationChange}
               className="mr-2"
             />
@@ -148,39 +139,6 @@ const FilterSidebar = () => {
           </label>
         ))}
       </div>
-
-      {/* Tour Availability */}
-      {/* <div className="mb-4">
-        <h3 className="font-semibold mb-2">Tour Availability</h3>
-        <select
-          value={tourAvailability}
-          onChange={handleAvailabilityChange}
-          className="border rounded w-full p-2"
-        >
-          <option value="all">All</option>
-          <option value="fullyBooked">Fully booked</option>
-          <option value="available">Available</option>
-        </select>
-      </div> */}
-
-      {/* Travel Type Filter */}
-      {/* <div>
-        <h3 className="font-semibold mb-2">Travel Type Filter</h3>
-        {["all", "roundTrip", "multiDestination"].map((type) => (
-          <label key={type} className="flex items-center mb-2">
-            <input
-              type="radio"
-              value={type}
-              checked={travelType === type}
-              onChange={handleTravelTypeChange}
-              className="mr-2"
-            />
-            {type
-              .replace(/([A-Z])/g, " $1")
-              .replace(/^./, (str) => str.toUpperCase())}
-          </label>
-        ))}
-      </div> */}
     </div>
   );
 };

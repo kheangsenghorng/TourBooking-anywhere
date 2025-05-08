@@ -14,6 +14,7 @@ import reviewRoutes from "./routes/review-routes.js";
 import itineraryRouter from "./routes/itineraries-routes.js";
 import locationRoutes from "./routes/location-routes.js";
 import categoryRoutes from "./routes/category-routes.js";
+import bookingRoutes from "./routes/bookingTour-routes.js";
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/itinerarie", itineraryRouter);
 app.use("/api/locations", locationRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/booking", bookingRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

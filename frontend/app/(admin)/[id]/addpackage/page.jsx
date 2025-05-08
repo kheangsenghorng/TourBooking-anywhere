@@ -45,11 +45,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useGalleryStore } from "@/store/useGalleryStore";
+import { useBookingStore } from "@/store/useBookingStore";
 
 export default function TourManagement() {
   const params = useParams();
   const { fetchTours, tours, isLoading, error } = useTourStore();
   const { deleteTour, loading, error: tourError } = useGalleryStore();
+  const {
+    fetchAllTourBookings,
+    tourSeatCounts,
+    loading: bookingLoading,
+    error: bookingError,
+  } = useBookingStore();
+
+  useEffect(() => {
+    fetchAllTourBookings();
+  }, []);
+
+  const seatCountsByTourId = tourSeatCounts.reduce((acc, item) => {
+    acc[item.tour_id] = item.count;
+    return acc;
+  }, {});
 
   useEffect(() => {
     if (params?.id) {
@@ -375,7 +391,7 @@ export default function TourManagement() {
                                 className="mr-2 text-muted-foreground"
                               />
                               <span className="inline-flex items-center justify-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                                0/{tour.limit || "∞"}
+                                {tour.totalBookedSeats}/{tour.limit || "∞"}
                               </span>
                             </div>
                           </td>

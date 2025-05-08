@@ -12,19 +12,11 @@ const tourbookingSchema = new mongoose.Schema(
       ref: "User", // Reference to User model
       required: true,
     },
-    bookingDate: {
-      type: Date,
-      required: true,
-    },
-    bookingTime: {
-      type: String,
-      required: true,
-    },
-    bookingQuantity: {
+    bookingSit: {
       type: Number,
       required: true,
     },
-    bookingPrice: {
+    bookingTotal: {
       type: Number,
       required: true,
     },

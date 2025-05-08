@@ -143,7 +143,10 @@ export const getreviewsUser = async (req, res) => {
       process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
 
     // Step 1: Find all reviews from this user
-    const userReviews = await Review.find({ userId }).populate("tourId");
+    const userReviews = await Review.find({ userId }).populate({
+      path: "tourId",
+      populate: ["start_location", "first_destination", "second_destination"],
+    });
 
     if (!userReviews || userReviews.length === 0) {
       return res

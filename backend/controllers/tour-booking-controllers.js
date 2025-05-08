@@ -9,6 +9,7 @@ import { processUploadedFiles } from "../utils/processUploadedFile.js";
 import { createItineraryEntry } from "../services/itineraryService.js";
 import Location from "../models/loaction-models.js";
 import { Category } from "../models/category-models.js";
+import { Tourbooking } from "../models/tour-booking-models.js";
 
 // Create a new tour
 export const createTour = async (req, res) => {
@@ -121,12 +122,74 @@ export const createTour = async (req, res) => {
   }
 };
 // Display all tours
+// export const getAllTours = async (req, res) => {
+//   try {
+//     const now = new Date();
+
+//     // Check if current time is exactly 00:00:00
+
+//     const result = await Tour.updateMany(
+//       {
+//         startDate: { $lte: now },
+//         status: { $nin: ["Close", "Full"] },
+//       },
+//       { $set: { status: "Close" } }
+//     );
+
+//     const baseUrl =
+//       process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+
+//     // Step 2: Fetch all tours with populated fields
+//     const tours = await Tour.find()
+//       .populate("admin", "name email")
+//       .populate("start_location")
+//       .populate("first_destination")
+//       .populate("second_destination")
+//       .populate("category");
+
+//     // Step 3: Enhance each tour with image URLs and review stats
+//     const updatedTours = await Promise.all(
+//       tours.map(async (tour) => {
+//         const reviews = await Review.find({ tourId: tour._id });
+
+//         const averageRating =
+//           reviews.length > 0
+//             ? reviews.reduce((sum, review) => sum + review.rating, 0) /
+//               reviews.length
+//             : 0;
+
+//         return {
+//           ...tour.toObject(),
+//           galleryImages: tour.galleryImages.map(
+//             (image) => `${baseUrl}/uploads/tours/${image}`
+//           ),
+//           averageRating: parseFloat(averageRating.toFixed(1)),
+//           totalReviews: reviews.length,
+//         };
+//       })
+//     );
+
+//     // Step 4: Send response
+//     res.status(200).json({
+//       success: true,
+//       updatedStatusCount: result.modifiedCount,
+//       count: updatedTours.length,
+//       tours: updatedTours,
+//     });
+//   } catch (error) {
+//     console.error("❌ Error in getAllTours:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
 export const getAllTours = async (req, res) => {
   try {
     const now = new Date();
 
-    // Check if current time is exactly 00:00:00
-
+    // Step 1: Auto-close expired tours
     const result = await Tour.updateMany(
       {
         startDate: { $lte: now },
@@ -138,7 +201,7 @@ export const getAllTours = async (req, res) => {
     const baseUrl =
       process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
 
-    // Step 2: Fetch all tours with populated fields
+    // Step 2: Fetch all tours
     const tours = await Tour.find()
       .populate("admin", "name email")
       .populate("start_location")
@@ -146,29 +209,40 @@ export const getAllTours = async (req, res) => {
       .populate("second_destination")
       .populate("category");
 
-    // Step 3: Enhance each tour with image URLs and review stats
+    // Step 3: Get all bookings and calculate total booked seats per tour
+    const bookings = await Tourbooking.find();
+    const bookingMap = new Map();
+
+    bookings.forEach((booking) => {
+      const tourId = booking.tourId?.toString();
+      if (!tourId) return;
+
+      const current = bookingMap.get(tourId) || 0;
+      bookingMap.set(tourId, current + (booking.bookingSit || 0));
+    });
+
+    // Step 4: Enhance each tour with images, reviews, and booked seats
     const updatedTours = await Promise.all(
       tours.map(async (tour) => {
         const reviews = await Review.find({ tourId: tour._id });
 
         const averageRating =
           reviews.length > 0
-            ? reviews.reduce((sum, review) => sum + review.rating, 0) /
-              reviews.length
+            ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
             : 0;
 
         return {
           ...tour.toObject(),
           galleryImages: tour.galleryImages.map(
-            (image) => `${baseUrl}/uploads/tours/${image}`
+            (img) => `${baseUrl}/uploads/tours/${img}`
           ),
           averageRating: parseFloat(averageRating.toFixed(1)),
           totalReviews: reviews.length,
+          totalBookedSeats: bookingMap.get(tour._id.toString()) || 0,
         };
       })
     );
 
-    // Step 4: Send response
     res.status(200).json({
       success: true,
       updatedStatusCount: result.modifiedCount,
@@ -183,6 +257,7 @@ export const getAllTours = async (req, res) => {
     });
   }
 };
+
 // Display a single tour
 export const FiltersTour = async (req, res) => {
   try {
@@ -398,6 +473,101 @@ export const ratings = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error while retrieving ratings for tours",
+      error: error.message,
+    });
+  }
+};
+
+// Filter tours by location(s) and date range
+
+export const filterToursByLocationAndDate = async (req, res) => {
+  try {
+    const { location, startDate, endDate } = req.query;
+
+    if (!location || !startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Location, startDate, and endDate are required",
+      });
+    }
+
+    // 1. Match exact location from DB
+    const matchedLocations = await Location.find({
+      $or: [
+        { name: { $regex: `^${location}$`, $options: "i" } },
+        { slug: { $regex: `^${location}$`, $options: "i" } },
+      ],
+    });
+
+    const matchedLocationIds = matchedLocations.map((loc) => loc._id);
+
+    if (!matchedLocationIds.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No tours found for the given location",
+      });
+    }
+
+    // 2. Build strict query requiring all conditions
+    const query = {
+      $and: [
+        {
+          $or: [
+            { start_location: { $in: matchedLocationIds } },
+            { first_destination: { $in: matchedLocationIds } },
+            { second_destination: { $in: matchedLocationIds } },
+          ],
+        },
+        { startDate: { $gte: new Date(startDate) } },
+        { endDate: { $lte: new Date(endDate) } },
+      ],
+    };
+
+    // 3. Find matching tours
+    const tours = await Tour.find(query)
+      .populate("start_location", "name slug")
+      .populate("first_destination", "name slug")
+      .populate("second_destination", "name slug")
+      .populate("category")
+      .populate("admin", "name email");
+
+    if (!tours.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No tours found for the given location and date range",
+      });
+    }
+
+    const baseUrl =
+      process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+
+    const formattedTours = await Promise.all(
+      tours.map(async (tour) => {
+        const { averageRating, totalReviews } = await getReviewsForTour(
+          tour._id
+        );
+
+        return {
+          ...tour.toObject(),
+          galleryImages: tour.galleryImages.map(
+            (image) => `${baseUrl}/uploads/tours/${image}`
+          ),
+          averageRating,
+          totalReviews,
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      count: formattedTours.length,
+      tours: formattedTours,
+    });
+  } catch (error) {
+    console.error("Error filtering tours:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error while filtering tours",
       error: error.message,
     });
   }
