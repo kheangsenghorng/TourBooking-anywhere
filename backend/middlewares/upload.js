@@ -3,7 +3,8 @@ import path from "path";
 
 // Function to check allowed file types
 function checkFileType(file, cb) {
-  const filetypes = /jpeg|jpg|png|gif/;
+  const filetypes =
+    /jpeg|jpg|png|gif|webp|svg|bmp|pdf|doc|docx|xls|xlsx|ppt|pptx/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = filetypes.test(file.mimetype);
 

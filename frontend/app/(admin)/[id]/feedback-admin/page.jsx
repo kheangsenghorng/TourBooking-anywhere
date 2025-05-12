@@ -371,7 +371,7 @@ export default function TourManagement() {
                                 className="mr-2 text-muted-foreground"
                               />
                               <span className="inline-flex items-center justify-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                                0/{tour.limit || "∞"}
+                                {tour.totalBookedSeats}/{tour.limit || "∞"}
                               </span>
                             </div>
                           </td>

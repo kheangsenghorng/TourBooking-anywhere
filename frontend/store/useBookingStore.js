@@ -1,10 +1,20 @@
 import { create } from "zustand";
+import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Use the correct API URL
 
 export const useBookingStore = create((set) => ({
   bookings: [],
+  bookingsUser: [],
+  bookingAll: [],
   tourSeatCounts: [],
+  groupedBookings: [],
+  totalSit: 0,
+  totalPrice: 0,
+  total: 0,
+  totalBookings: 0,
+  totalSeats: 0,
+  totalUniqueUsers: 0,
   loading: false,
   error: null,
   success: false,
@@ -19,7 +29,7 @@ export const useBookingStore = create((set) => ({
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // optional: for cookies/session-based auth
+        credentials: "include",
       });
 
       if (!res.ok) {
@@ -28,10 +38,58 @@ export const useBookingStore = create((set) => ({
       }
 
       const data = await res.json();
-      set({ bookings: data, loading: false });
+
+      set({
+        bookings: data.bookings, // Flat array of all bookings
+        groupedBookings: data.groupedBookings, // Aggregated bookings per user
+        totalBookings: data.totalBookings,
+        totalUniqueUsers: data.totalUniqueUsers,
+        loading: false,
+      });
     } catch (err) {
       set({ error: err.message, loading: false });
     }
+  },
+
+  fetchBookingsByUserId: async (userId) => {
+    set({ loading: true, error: null });
+
+    try {
+      const response = await axios.get(`${API_URL}/booking/user/${userId}`);
+      const { groupedBookings, totalBookings, totalUniqueTours } =
+        response.data;
+      console.log(groupedBookings);
+
+      set({
+        bookings: groupedBookings,
+        totalBookings,
+        totalUniqueTours,
+        loading: false,
+      });
+    } catch (error) {
+      console.error("Fetch bookings failed:", error);
+
+      set({
+        bookings: [],
+        totalBookings: 0,
+        totalUniqueTours: 0,
+        loading: false,
+        error:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Something went wrong",
+      });
+    }
+  },
+
+  resetBookings: () => {
+    set({
+      bookings: [],
+      totalBookings: 0,
+      totalUniqueUsers: 0,
+      loading: false,
+      error: null,
+    });
   },
   fetchAllTourBookings: async () => {
     set({ loading: true, error: null });
@@ -53,6 +111,7 @@ export const useBookingStore = create((set) => ({
       const data = await res.json();
       set({
         bookings: data.bookings,
+        total: data.totalBookings,
         tourSeatCounts: data.tourSeatCounts,
         loading: false,
       });
@@ -91,6 +150,49 @@ export const useBookingStore = create((set) => ({
         loading: false,
         success: false,
       });
+    }
+  },
+
+  fetchBookingsByUser: async (userId) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const res = await axios.get(`${API_URL}/booking/by-user/${userId}`);
+
+      set({
+        bookingAll: res.data.bookings,
+        totalSeats: res.data.totalSeats,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error?.response?.data?.message || "Failed to fetch bookings",
+        isLoading: false,
+      });
+    }
+  },
+
+  fetchTourBookingsUser: async (tourId, userId) => {
+    set({ loading: true });
+    try {
+      const response = await fetch(
+        `${API_URL}/booking/by-user/${userId}/tour/${tourId}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch bookings");
+      }
+      const data = await response.json();
+      // console.log(data);
+
+      set({
+        bookingsUser: data.bookings,
+        totalSit: data.totalSit,
+        totalPrice: data.totalPrice,
+        bookingCount: data.bookingCount,
+        loading: false,
+      });
+    } catch (error) {
+      set({ error: error.message, loading: false });
     }
   },
 

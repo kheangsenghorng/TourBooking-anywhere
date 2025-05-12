@@ -267,7 +267,7 @@ export default function Edituser() {
                             placeholder="Enter your phone number"
                           />
                         </div>
-
+{/* 
                         <div className="space-y-2">
                           <Label htmlFor="street">Street</Label>
                           <Input
@@ -327,7 +327,7 @@ export default function Edituser() {
                             onChange={handleAddressChange}
                             placeholder="Enter your home number"
                           />
-                        </div>
+                        </div> */}
                       </div>
 
                       <div className="pt-4">

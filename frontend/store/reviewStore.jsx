@@ -56,14 +56,19 @@ export const useReviewStore = create((set) => ({
     }
   },
   // Create a new review
-  addReview: async (tourId, userId, reviewData) => {
+  addReview: async ({ tourId, userId, rating, review, text }) => {
     set({ isLoading: true, error: null });
 
     try {
       const res = await axios.post(
-        `/api/reviews/${tourId}/${userId}`,
-        reviewData
+        `${API_URL}/reviews/${tourId}/${userId}/review`,
+        {
+          rating,
+          review,
+          text,
+        }
       );
+
       set((state) => ({
         reviews: [...state.reviews, res.data], // Add the new review to the list
         isLoading: false,

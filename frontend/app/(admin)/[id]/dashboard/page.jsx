@@ -20,11 +20,18 @@ import {
   faPen,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTourStore } from "@/store/tourStore";
+import { useBookingStore } from "@/store/useBookingStore";
 
 export default function AdminDashboard() {
   const { id } = useParams();
   const { user, loading, error, fetchUserById, getAllUsers, count } =
     userStore();
+
+  const {
+    fetchAllTourBookings,
+    total,
+    bookings: bookingTour,
+  } = useBookingStore();
 
   const { fetchGalleryImages, countTour } = useTourStore();
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +46,8 @@ export default function AdminDashboard() {
     if (id) {
       getAllUsers(id);
     }
-  }, [id]);
+    fetchAllTourBookings();
+  }, [id, getAllUsers, fetchAllTourBookings]);
 
   useEffect(() => {
     fetchGalleryImages(); // Fetch gallery images when the component mounts
@@ -134,8 +142,8 @@ export default function AdminDashboard() {
         <div className="p-6 bg-white rounded-lg shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-bold text-gray-700">2040</h2>
-              <p className="text-sm text-gray-500">Total Pending Bookings</p>
+              <h2 className="text-2xl font-bold text-gray-700">{total}</h2>
+              <p className="text-sm text-gray-500">Total Bookings</p>
             </div>
             <div className="text-2xl">⏳</div>
           </div>
@@ -181,32 +189,36 @@ export default function AdminDashboard() {
               <th className="px-4 py-2">ID</th>
               <th className="px-4 py-2">User Name</th>
               <th className="px-4 py-2">Tour Name</th>
-              <th className="px-4 py-2">Tour Rating</th>
+              <th className="px-4 py-2">booking Sit</th>
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Booked Date</th>
               <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {bookings.map((booking, i) => (
+            {bookingTour.map((booking, i) => (
               <tr key={i} className="border-t">
-                <td className="px-4 py-3">{booking.id}</td>
-                <td className="px-4 py-3">{booking.userName}</td>
-                <td className="px-4 py-3">{booking.tourName}</td>
-                <td className="px-4 py-3">{booking.tourRating}</td>
+               <td className="px-4 py-3">{booking?.tourId?.tour_id.slice(-6)}</td>
+                <td className="px-4 py-3">
+                  {booking?.userId?.firstname} {booking?.userId?.lastname}
+                </td>
+                <td className="px-4 py-3">{booking?.tourId?.tour_name}</td>
+                <td className="px-4 py-3">{booking.bookingSit}</td>
                 <td className="px-4 py-3">
                   <button
                     onClick={() => toggleStatus(booking.id)}
                     className={`px-3 py-1 text-xs rounded-full ${
-                      booking.status === "Booked"
+                      booking?.tourId?.status === "Ongoing"
                         ? "bg-green-100 text-green-700 hover:bg-green-200"
                         : "bg-red-100 text-red-700 hover:bg-red-200"
                     }`}
                   >
-                    {booking.status}
+                    {booking?.tourId?.status}
                   </button>
                 </td>
-                <td className="px-4 py-3">{booking.bookedDate}</td>
+                <td className="px-4 py-3">
+                  {new Date(booking.createdAt).toLocaleDateString()}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button className="p-1 hover:text-blue-500">

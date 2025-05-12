@@ -7,6 +7,7 @@ import { User } from "../models/user-models.js";
 import Tour from "../models/tour-models.js";
 import { singleUpload } from "../middlewares/upload.js";
 import { Itinerary } from "../models/itinerary-models.js";
+import { Tourbooking } from "../models/tour-booking-models.js";
 
 export const handleUpqload = asyncHandler(async (req, res) => {
   //'send past in db
@@ -479,10 +480,12 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+//by id tour
 export const getGallery = async (req, res) => {
   try {
     const { tourId } = req.params;
 
+    // 1. Find the tour by ID and populate related fields
     const tour = await Tour.findById(tourId)
       .populate("start_location")
       .populate("first_destination")
@@ -495,24 +498,40 @@ export const getGallery = async (req, res) => {
         .json({ success: false, message: "Tour not found" });
     }
 
-    // Copy the tour object and modify the gallery images
+    // 2. Get base URL
     const baseUrl =
       process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+
+    // 3. Map gallery image URLs
     const copiedTour = {
-      ...tour.toObject(), // Convert Mongoose document to a plain object
+      ...tour.toObject(),
       galleryImages: tour.galleryImages.map(
         (image) => `${baseUrl}/uploads/tours/${image}`
       ),
     };
+
+    // 4. Find only bookings related to this tourId
+    const bookings = await Tourbooking.find({ tourId });
+
+    const totalSit = bookings.reduce(
+      (sum, booking) => sum + (booking.bookingSit || 0),
+      0
+    );
+    const totalPrice = totalSit * (tour.price || 0); // Assuming `tour.price` is per sit
+
+    // 5. Get itineraries
     const itineraries = await Itinerary.find({ tour: tourId });
 
+    // 6. Return response
     return res.status(200).json({
       success: true,
       tour: copiedTour,
       itineraries,
+      totalSit,
+      totalPrice,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

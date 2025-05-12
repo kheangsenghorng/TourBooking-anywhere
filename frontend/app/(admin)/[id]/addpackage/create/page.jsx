@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useRef, useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { useTourStore } from "@/store/tourStore"
-import { useLocationStore } from "@/store/useLocationStore"
-import { useCategoryStore } from "@/store/categoryStore"
+import { useRef, useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useTourStore } from "@/store/tourStore";
+import { useLocationStore } from "@/store/useLocationStore";
+import { useCategoryStore } from "@/store/categoryStore";
 import {
   Calendar,
   Clock,
@@ -18,42 +18,48 @@ import {
   DollarSign,
   Users,
   ImageIcon,
-} from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 const getToday = () => {
-  const t = new Date()
-  const yyyy = t.getFullYear()
-  const mm = String(t.getMonth() + 1).padStart(2, "0")
-  const dd = String(t.getDate()).padStart(2, "0")
-  return `${yyyy}-${mm}-${dd}`
-}
+  const t = new Date();
+  const yyyy = t.getFullYear();
+  const mm = String(t.getMonth() + 1).padStart(2, "0");
+  const dd = String(t.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
 
 export default function CreateTourPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { fetchTours, tours, createTour, exists, checkTourId, isChecking } = useTourStore()
+  const params = useParams();
+  const router = useRouter();
+  const { fetchTours, tours, createTour, exists, checkTourId, isChecking } =
+    useTourStore();
 
-  const fileInputRef = useRef(null)
+  const fileInputRef = useRef(null);
 
-  const [images, setImages] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [isPageLoading, setIsPageLoading] = useState(true)
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [showSuggestions, setShowSuggestions] = useState({
     start_location: false,
     first_destination: false,
     second_destination: false,
     category: false,
-  })
-  const [activeField, setActiveField] = useState(null)
-  const [categoryId, setCategoryId] = useState("")
+  });
+  const [activeField, setActiveField] = useState(null);
+  const [categoryId, setCategoryId] = useState("");
 
-  const { locations, fetchLocations, loading: locationsLoading, error: locationError } = useLocationStore()
+  const {
+    locations,
+    fetchLocations,
+    loading: locationsLoading,
+    error: locationError,
+  } = useLocationStore();
   const {
     categories,
     error: categoryError,
@@ -62,7 +68,7 @@ export default function CreateTourPage() {
     fetchCategories,
     updateCategory,
     deleteCategory,
-  } = useCategoryStore()
+  } = useCategoryStore();
 
   const [formState, setFormState] = useState({
     tour_name: "",
@@ -76,13 +82,13 @@ export default function CreateTourPage() {
     start_location: "",
     first_destination: "",
     second_destination: "",
-  })
+  });
 
   const [locationIds, setLocationIds] = useState({
     start_location: "",
     first_destination: "",
     second_destination: "",
-  })
+  });
 
   const [itineraries, setItineraries] = useState([
     {
@@ -93,117 +99,127 @@ export default function CreateTourPage() {
       endTime: "",
       expanded: true,
     },
-  ])
+  ]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        await Promise.all([fetchLocations(), fetchCategories(), fetchTours(params.id)])
+        await Promise.all([
+          fetchLocations(),
+          fetchCategories(),
+          fetchTours(params.id),
+        ]);
       } catch (err) {
-        setError(err.message || "Failed to load data")
+        setError(err.message || "Failed to load data");
       } finally {
-        setIsPageLoading(false)
+        setIsPageLoading(false);
       }
-    }
-    loadData()
-  }, [params.id])
+    };
+    loadData();
+  }, [params.id]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (formState.tour_id) {
-        checkTourId(formState.tour_id)
+        checkTourId(formState.tour_id);
       }
-    }, 500)
-    return () => clearTimeout(timeout)
-  }, [formState.tour_id])
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [formState.tour_id]);
 
   const handleFormChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormState((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleDeleteItinerary = (index) => {
-    setItineraries((prev) => prev.filter((_, i) => i !== index))
-  }
+    setItineraries((prev) => prev.filter((_, i) => i !== index));
+  };
 
-  const handleAddClick = () => fileInputRef.current?.click()
+  const handleAddClick = () => fileInputRef.current?.click();
 
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files)
+    const files = Array.from(e.target.files);
     if (files.length + images.length > 10) {
-      setError("Maximum 10 images allowed")
-      return
+      setError("Maximum 10 images allowed");
+      return;
     }
-    setImages((prev) => [...prev, ...files])
-    setError(null)
-  }
+    setImages((prev) => [...prev, ...files]);
+    setError(null);
+  };
 
   const handleRemoveImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index))
-  }
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const toggleExpand = (index) => {
-    setItineraries((prev) => prev.map((item, i) => (i === index ? { ...item, expanded: !item.expanded } : item)))
-  }
+    setItineraries((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, expanded: !item.expanded } : item
+      )
+    );
+  };
 
   const handleItineraryChange = (index, field, value) => {
-    setItineraries((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)))
-  }
+    setItineraries((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  };
 
   const filteredLocations = locations.filter((loc) =>
-    loc.name.toLowerCase().includes(formState[activeField]?.toLowerCase() || ""),
-  )
+    loc.name.toLowerCase().includes(formState[activeField]?.toLowerCase() || "")
+  );
 
   const handleSelectCategory = (category) => {
     setFormState((prev) => ({
       ...prev,
       category: category.name, // For display
-    }))
-    setCategoryId(category._id) // Store the ID for submission
-    setShowSuggestions((prev) => ({ ...prev, category: false }))
-    setActiveField(null)
-  }
+    }));
+    setCategoryId(category._id); // Store the ID for submission
+    setShowSuggestions((prev) => ({ ...prev, category: false }));
+    setActiveField(null);
+  };
 
   const filteredCategories = categories.filter((cat) =>
-    cat.name.toLowerCase().includes(formState.category?.toLowerCase() || ""),
-  )
+    cat.name.toLowerCase().includes(formState.category?.toLowerCase() || "")
+  );
 
   const handleSelectLocation = (location) => {
     setFormState((prev) => ({
       ...prev,
       [activeField]: location.name,
-    }))
+    }));
 
     setLocationIds((prev) => ({
       ...prev,
       [activeField]: location._id,
-    }))
+    }));
 
     setShowSuggestions((prev) => ({
       ...prev,
       [activeField]: false,
-    }))
-  }
+    }));
+  };
 
   const handleInputFocus = (fieldName) => {
-    setActiveField(fieldName)
+    setActiveField(fieldName);
     setShowSuggestions((prev) => ({
       ...prev,
       [fieldName]: true,
-    }))
-  }
+    }));
+  };
 
   const handleInputBlur = (fieldName) => {
     setTimeout(() => {
       setShowSuggestions((prev) => ({
         ...prev,
         [fieldName]: false,
-      }))
-    }, 200)
-  }
+      }));
+    }, 200);
+  };
 
   const addNewItinerary = () => {
     setItineraries((prev) => [
@@ -216,123 +232,133 @@ export default function CreateTourPage() {
         endTime: "",
         expanded: true,
       },
-    ])
-  }
+    ]);
+  };
 
   const validateForm = () => {
     if (!formState.tour_name) {
-      setError("Tour name is required")
-      return false
+      setError("Tour name is required");
+      return false;
     }
     if (images.length === 0) {
-      setError("Tour images are required")
-      return false
+      setError("Tour images are required");
+      return false;
     }
     if (!locationIds.start_location) {
-      setError("Start location is required")
-      return false
+      setError("Start location is required");
+      return false;
     }
     if (!categoryId) {
-      setError("Category is required")
-      return false
+      setError("Category is required");
+      return false;
     }
     if (!formState.startDate || !formState.endDate) {
-      setError("Start and end dates are required")
-      return false
+      setError("Start and end dates are required");
+      return false;
     }
     if (new Date(formState.endDate) < new Date(formState.startDate)) {
-      setError("End date must be after start date")
-      return false
+      setError("End date must be after start date");
+      return false;
     }
     if (!formState.price || isNaN(formState.price)) {
-      setError("Valid price is required")
-      return false
+      setError("Valid price is required");
+      return false;
     }
     if (!formState.limit || isNaN(formState.limit)) {
-      setError("Valid participant limit is required")
-      return false
+      setError("Valid participant limit is required");
+      return false;
     }
     if (itineraries.length === 0) {
-      setError("At least one itinerary is required")
-      return false
+      setError("At least one itinerary is required");
+      return false;
     }
     if (itineraries.some((item) => !item.name || !item.date)) {
-      setError("All itineraries must have a name and date")
-      return false
+      setError("All itineraries must have a name and date");
+      return false;
     }
 
-    return true
-  }
+    return true;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    const formData = new FormData()
+    const formData = new FormData();
 
     Object.entries(formState).forEach(([key, value]) => {
       // Skip location fields (we'll handle them separately with their IDs)
-      if (["start_location", "first_destination", "second_destination"].includes(key)) {
-        return
+      if (
+        ["start_location", "first_destination", "second_destination"].includes(
+          key
+        )
+      ) {
+        return;
       }
 
       // Skip category field (we'll handle it separately with its ID)
       if (key === "category") {
-        return
+        return;
       }
 
       // Add all other fields that have values
       if (value !== undefined && value !== null && value !== "") {
-        formData.append(key, value)
+        formData.append(key, value);
       }
-    })
+    });
 
     if (locationIds.start_location) {
-      formData.append("start_location", locationIds.start_location)
+      formData.append("start_location", locationIds.start_location);
     }
 
     if (locationIds.first_destination) {
-      formData.append("first_destination", locationIds.first_destination)
+      formData.append("first_destination", locationIds.first_destination);
     }
 
     if (locationIds.second_destination) {
-      formData.append("second_destination", locationIds.second_destination)
+      formData.append("second_destination", locationIds.second_destination);
     }
 
     if (categoryId) {
-      formData.append("category", categoryId)
+      formData.append("category", categoryId);
     }
 
-    images.forEach((image) => formData.append("files", image))
-    formData.append("itineraries", JSON.stringify(itineraries))
+    images.forEach((image) => formData.append("files", image));
+    formData.append("itineraries", JSON.stringify(itineraries));
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await createTour(formData, params.id)
-      router.push(`/${params.id}/addpackage`)
+      await createTour(formData, params.id);
+      router.push(`/${params.id}/addpackage`);
     } catch (err) {
-      setError(err.message || "Failed to create tour")
+      setError(err.message || "Failed to create tour");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   if (isPageLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-teal-500"></div>
-        <p className="mt-4 text-lg text-gray-700">Loading your tour creator...</p>
+        <p className="mt-4 text-lg text-gray-700">
+          Loading your tour creator...
+        </p>
       </div>
-    )
+    );
   }
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Tour</h1>
-        <p className="text-gray-500">Fill in the details to create an amazing tour experience</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Create New Tour
+        </h1>
+        <p className="text-gray-500">
+          Fill in the details to create an amazing tour experience
+        </p>
       </div>
 
       {error && (
@@ -354,11 +380,20 @@ export default function CreateTourPage() {
           <CardContent className="pt-6">
             <div className="mb-4 flex items-center">
               <ImageIcon className="h-5 w-5 text-teal-500 mr-2" />
-              <h2 className="text-xl font-semibold text-gray-800">Tour Images</h2>
+              <h2 className="text-xl font-semibold text-gray-800">
+                Tour Images
+              </h2>
             </div>
 
-            <p className="text-sm text-gray-500 mb-4">
-              Upload up to 10 high-quality images that showcase your tour (required)
+            <p className="text-sm text-gray-600 mb-4 bg-gray-100 p-3 rounded-lg border border-gray-200">
+              <span className="font-medium text-gray-700">
+                Upload up to 10 high-quality images
+              </span>{" "}
+              that showcase your tour (required).
+              <br />
+              <span className="text-gray-500 text-xs">
+                Supported formats: jpeg, jpg, png, gif, webp
+              </span>
             </p>
 
             <div className="flex flex-wrap gap-3 mt-4">
@@ -384,7 +419,10 @@ export default function CreateTourPage() {
               />
 
               {images.map((img, idx) => (
-                <div key={idx} className="relative h-24 w-24 rounded-md overflow-hidden group">
+                <div
+                  key={idx}
+                  className="relative h-24 w-24 rounded-md overflow-hidden group"
+                >
                   <img
                     src={URL.createObjectURL(img) || "/placeholder.svg"}
                     alt={`preview-${idx}`}
@@ -403,7 +441,8 @@ export default function CreateTourPage() {
 
             {images.length > 0 && (
               <p className="text-sm text-gray-500 mt-3">
-                {images.length} {images.length === 1 ? "image" : "images"} selected ({10 - images.length} remaining)
+                {images.length} {images.length === 1 ? "image" : "images"}{" "}
+                selected ({10 - images.length} remaining)
               </p>
             )}
           </CardContent>
@@ -412,12 +451,17 @@ export default function CreateTourPage() {
         {/* Basic Information */}
         <Card>
           <CardContent className="pt-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">Basic Information</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+              Basic Information
+            </h2>
 
             <div className="space-y-6">
               {/* Tour Name */}
               <div>
-                <label htmlFor="tour_name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="tour_name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Tour Name <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -434,7 +478,10 @@ export default function CreateTourPage() {
               {/* Dates */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="startDate"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Start Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -453,7 +500,10 @@ export default function CreateTourPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="endDate"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     End Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -474,7 +524,10 @@ export default function CreateTourPage() {
 
               {/* Category */}
               <div className="relative">
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Category <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -510,7 +563,10 @@ export default function CreateTourPage() {
               {/* Price and Capacity */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="price"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Price ($) <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -531,7 +587,10 @@ export default function CreateTourPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="limit" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="limit"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Participant Limit <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -565,7 +624,10 @@ export default function CreateTourPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Start Location */}
               <div className="relative">
-                <label htmlFor="start_location" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="start_location"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Start Location <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -579,26 +641,30 @@ export default function CreateTourPage() {
                   required
                   className="w-full"
                 />
-                {showSuggestions.start_location && filteredLocations.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto">
-                    <ul className="py-1">
-                      {filteredLocations.map((location) => (
-                        <li
-                          key={location._id}
-                          onClick={() => handleSelectLocation(location)}
-                          className="px-4 py-2 hover:bg-teal-50 cursor-pointer text-gray-700"
-                        >
-                          {location.name}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {showSuggestions.start_location &&
+                  filteredLocations.length > 0 && (
+                    <div className="absolute z-10 mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto">
+                      <ul className="py-1">
+                        {filteredLocations.map((location) => (
+                          <li
+                            key={location._id}
+                            onClick={() => handleSelectLocation(location)}
+                            className="px-4 py-2 hover:bg-teal-50 cursor-pointer text-gray-700"
+                          >
+                            {location.name}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
               </div>
 
               {/* First Destination */}
               <div className="relative">
-                <label htmlFor="first_destination" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="first_destination"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   First Destination
                 </label>
                 <Input
@@ -611,26 +677,30 @@ export default function CreateTourPage() {
                   placeholder="Optional first stop"
                   className="w-full"
                 />
-                {showSuggestions.first_destination && filteredLocations.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto">
-                    <ul className="py-1">
-                      {filteredLocations.map((location) => (
-                        <li
-                          key={location._id}
-                          onClick={() => handleSelectLocation(location)}
-                          className="px-4 py-2 hover:bg-teal-50 cursor-pointer text-gray-700"
-                        >
-                          {location.name}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {showSuggestions.first_destination &&
+                  filteredLocations.length > 0 && (
+                    <div className="absolute z-10 mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto">
+                      <ul className="py-1">
+                        {filteredLocations.map((location) => (
+                          <li
+                            key={location._id}
+                            onClick={() => handleSelectLocation(location)}
+                            className="px-4 py-2 hover:bg-teal-50 cursor-pointer text-gray-700"
+                          >
+                            {location.name}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
               </div>
 
               {/* Second Destination */}
               <div className="relative">
-                <label htmlFor="second_destination" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="second_destination"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Second Destination
                 </label>
                 <Input
@@ -643,21 +713,22 @@ export default function CreateTourPage() {
                   placeholder="Optional second stop"
                   className="w-full"
                 />
-                {showSuggestions.second_destination && filteredLocations.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto">
-                    <ul className="py-1">
-                      {filteredLocations.map((location) => (
-                        <li
-                          key={location._id}
-                          onClick={() => handleSelectLocation(location)}
-                          className="px-4 py-2 hover:bg-teal-50 cursor-pointer text-gray-700"
-                        >
-                          {location.name}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {showSuggestions.second_destination &&
+                  filteredLocations.length > 0 && (
+                    <div className="absolute z-10 mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto">
+                      <ul className="py-1">
+                        {filteredLocations.map((location) => (
+                          <li
+                            key={location._id}
+                            onClick={() => handleSelectLocation(location)}
+                            className="px-4 py-2 hover:bg-teal-50 cursor-pointer text-gray-700"
+                          >
+                            {location.name}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
               </div>
             </div>
           </CardContent>
@@ -666,11 +737,16 @@ export default function CreateTourPage() {
         {/* Description and Overview */}
         <Card>
           <CardContent className="pt-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">Tour Details</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+              Tour Details
+            </h2>
 
             <div className="space-y-6">
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Short Description
                 </label>
                 <Textarea
@@ -685,7 +761,10 @@ export default function CreateTourPage() {
               </div>
 
               <div>
-                <label htmlFor="overview" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="overview"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Detailed Overview <span className="text-red-500">*</span>
                 </label>
                 <Textarea
@@ -709,9 +788,14 @@ export default function CreateTourPage() {
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center">
                 <Calendar className="h-5 w-5 text-teal-500 mr-2" />
-                <h2 className="text-xl font-semibold text-gray-800">Itinerary</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Itinerary
+                </h2>
               </div>
-              <Badge variant="outline" className="text-teal-600 border-teal-200 bg-teal-50">
+              <Badge
+                variant="outline"
+                className="text-teal-600 border-teal-200 bg-teal-50"
+              >
                 {itineraries.length} {itineraries.length === 1 ? "day" : "days"}
               </Badge>
             </div>
@@ -722,18 +806,28 @@ export default function CreateTourPage() {
 
             <div className="space-y-4">
               {itineraries.map((item, index) => (
-                <div key={index} className="border rounded-lg overflow-hidden bg-white">
+                <div
+                  key={index}
+                  className="border rounded-lg overflow-hidden bg-white"
+                >
                   <div
                     className="flex justify-between items-center p-4 bg-gray-50 cursor-pointer"
                     onClick={() => toggleExpand(index)}
                   >
                     <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200">
+                      <Badge
+                        variant="outline"
+                        className="bg-teal-50 text-teal-700 border-teal-200"
+                      >
                         Day {index + 1}
                       </Badge>
-                      <h3 className="font-medium text-gray-800">{item.name || "Untitled Day"}</h3>
+                      <h3 className="font-medium text-gray-800">
+                        {item.name || "Untitled Day"}
+                      </h3>
                       {item.date && (
-                        <span className="text-sm text-gray-500">{new Date(item.date).toLocaleDateString()}</span>
+                        <span className="text-sm text-gray-500">
+                          {new Date(item.date).toLocaleDateString()}
+                        </span>
                       )}
                     </div>
 
@@ -741,8 +835,8 @@ export default function CreateTourPage() {
                       <button
                         type="button"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteItinerary(index)
+                          e.stopPropagation();
+                          handleDeleteItinerary(index);
                         }}
                         className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100"
                       >
@@ -764,7 +858,9 @@ export default function CreateTourPage() {
                         </label>
                         <Input
                           value={item.name || ""}
-                          onChange={(e) => handleItineraryChange(index, "name", e.target.value)}
+                          onChange={(e) =>
+                            handleItineraryChange(index, "name", e.target.value)
+                          }
                           placeholder="e.g., City Tour, Beach Day, Mountain Hike"
                           required
                           className="w-full"
@@ -772,10 +868,18 @@ export default function CreateTourPage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Description
+                        </label>
                         <Textarea
                           value={item.description || ""}
-                          onChange={(e) => handleItineraryChange(index, "description", e.target.value)}
+                          onChange={(e) =>
+                            handleItineraryChange(
+                              index,
+                              "description",
+                              e.target.value
+                            )
+                          }
                           placeholder="Detailed description of the day's activities"
                           rows={3}
                           className="w-full"
@@ -790,7 +894,13 @@ export default function CreateTourPage() {
                           <Input
                             type="date"
                             value={item.date}
-                            onChange={(e) => handleItineraryChange(index, "date", e.target.value)}
+                            onChange={(e) =>
+                              handleItineraryChange(
+                                index,
+                                "date",
+                                e.target.value
+                              )
+                            }
                             min={formState.startDate}
                             max={formState.endDate}
                             required
@@ -809,7 +919,13 @@ export default function CreateTourPage() {
                             <Input
                               type="time"
                               value={item.startTime || ""}
-                              onChange={(e) => handleItineraryChange(index, "startTime", e.target.value)}
+                              onChange={(e) =>
+                                handleItineraryChange(
+                                  index,
+                                  "startTime",
+                                  e.target.value
+                                )
+                              }
                               required
                               className="w-full pl-10"
                             />
@@ -825,7 +941,13 @@ export default function CreateTourPage() {
                             <Input
                               type="time"
                               value={item.endTime || ""}
-                              onChange={(e) => handleItineraryChange(index, "endTime", e.target.value)}
+                              onChange={(e) =>
+                                handleItineraryChange(
+                                  index,
+                                  "endTime",
+                                  e.target.value
+                                )
+                              }
                               required
                               className="w-full pl-10"
                             />
@@ -853,10 +975,19 @@ export default function CreateTourPage() {
 
         {/* Submit Button */}
         <div className="flex justify-end space-x-4">
-          <Button type="button" variant="outline" onClick={() => router.back()} className="px-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            className="px-6"
+          >
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading} className="px-8 bg-teal-600 hover:bg-teal-700 text-white">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="px-8 bg-teal-600 hover:bg-teal-700 text-white"
+          >
             {isLoading ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
@@ -869,5 +1000,5 @@ export default function CreateTourPage() {
         </div>
       </form>
     </div>
-  )
+  );
 }

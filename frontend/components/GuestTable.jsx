@@ -1,15 +1,43 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useBookingStore } from "@/store/useBookingStore"; // Removed named import
-import { useParams } from "next/navigation";
+// import { BookingDetailCard } from "@/components/booking-detail-card";
+import { useBookingStore } from "@/store/useBookingStore";
+import { useParams, useRouter } from "next/navigation";
+
+// import { Calendar } from "@/components/ui/calendar";
+
+import {
+  ChevronRight,
+  X,
+  Calendar,
+  Users,
+  CreditCard,
+  Clock,
+  MapPin,
+  Phone,
+  Mail,
+} from "lucide-react";
 
 export default function GuestTable() {
   const params = useParams();
   const tourId = params?.bookingtourId;
-  const id = params?.id; // Adjust based on your routing
-  const { bookings, loading, error, fetchTourBookings } = useBookingStore();
+  const id = params?.id;
+  const router = useRouter();
+  const {
+    bookings,
+    groupedBookings,
+    totalSeats,
+    totalBookings,
+    totalUniqueUsers,
+    loading,
+    error,
+    fetchTourBookings,
+  } = useBookingStore();
+
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showDetailCard, setShowDetailCard] = useState(false);
 
   useEffect(() => {
     if (tourId) {
@@ -42,18 +70,57 @@ export default function GuestTable() {
     return formattedDate;
   }
 
+  function formatTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+
+  const handleViewDetails = (userId) => {
+    router.push(`/${id}/addpackage/bookingtour/${tourId}/${userId}`);
+  };
+
+  const closeDetailCard = () => {
+    setShowDetailCard(false);
+    // Reset selected booking after animation completes
+    setTimeout(() => {
+      setSelectedBooking(null);
+    }, 300);
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg p-6 overflow-hidden relative">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-semibold text-gray-800">Guest List</h3>
+        <div className="flex items-center space-x-4">
+          <div className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-medium">
+            Total Bookings: {totalBookings || totalBookings.length}
+          </div>
+          <div className="bg-green-50 text-green-600 px-3 py-1 rounded-full text-sm font-medium">
+            Total user: {totalUniqueUsers || 0}
+          </div>
+        </div>
       </div>
-
       {loading ? (
-        <p>Loading bookings...</p>
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent"></div>
+          <p className="ml-3 text-gray-600">Loading bookings...</p>
+        </div>
       ) : error ? (
-        <p className="">{error}</p>
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg">{error}</div>
       ) : bookings.length === 0 ? (
-        <p>No guests found for this tour.</p>
+        <div className="text-center py-8 text-gray-500">
+          <div className="mb-3">
+            <Users className="h-12 w-12 mx-auto text-gray-400" />
+          </div>
+          <p className="text-lg">No guests found for this tour.</p>
+          <p className="text-sm mt-2">
+            Bookings will appear here once guests make reservations.
+          </p>
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -62,13 +129,14 @@ export default function GuestTable() {
                 <th className="p-4 font-medium">ID</th>
                 <th className="p-4 font-medium">Guest</th>
                 <th className="p-4 font-medium">Email</th>
-                <th className="p-4 font-medium">Book Date</th>
+                <th className="p-4 font-medium">Booking</th>
                 <th className="p-4 font-medium">No. Guests</th>
                 <th className="p-4 font-medium text-right">Total</th>
+                <th className="p-4 font-medium text-center">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {bookings.map((booking, index) => (
+              {groupedBookings.map((booking, index) => (
                 <tr
                   key={booking._id || index}
                   className="hover:bg-gray-50 transition-colors"
@@ -80,7 +148,9 @@ export default function GuestTable() {
                         <AvatarImage
                           src={
                             booking.userId?.profile_image ||
-                            "/default-profile.png"
+                            "/default-profile.png" ||
+                            "/placeholder.svg" ||
+                            "/placeholder.svg"
                           }
                           alt={booking.userId?.name}
                         />
@@ -99,12 +169,19 @@ export default function GuestTable() {
                     </div>
                   </td>
                   <td className="p-4 text-gray-600">{booking.userId?.email}</td>
-                  <td className="p-4 text-gray-600">
-                    {formatBookingDate(booking.createdAt)}
-                  </td>
-                  <td className="p-4 text-gray-600">{booking.bookingSit}</td>
+                  <td className="p-4 text-gray-600">{booking.bookingCount}</td>
+                  <td className="p-4 text-gray-600">{booking.totalSit}</td>
                   <td className="p-4 text-right font-medium">
-                    ${booking.bookingTotal?.toLocaleString() || 0}
+                    ${booking.totalPrice?.toLocaleString() || 0}
+                  </td>
+                  <td className="p-4 text-center">
+                    <button
+                      onClick={() => handleViewDetails(booking.userId?._id)}
+                      className="p-2 rounded-full hover:bg-blue-50 text-blue-600 transition-colors"
+                      aria-label="View booking details"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -112,10 +189,10 @@ export default function GuestTable() {
           </table>
         </div>
       )}
-
       <div className="flex justify-between items-center mt-6 text-sm text-gray-600">
         <div>
-          Showing {bookings.length} of {bookings.length} guests
+          Showing {groupedBookings.length} of{" "}
+          {totalUniqueUsers || groupedBookings.length} guests
         </div>
         {/* Pagination Placeholder */}
         <div className="flex space-x-4">
@@ -130,6 +207,13 @@ export default function GuestTable() {
           </button>
         </div>
       </div>
+      {/* <BookingDetailCard
+        selectedBooking={selectedBooking}
+        bookings={bookings}
+        showDetailCard={showDetailCard}
+        closeDetailCard={closeDetailCard}
+        handleViewDetails={handleViewDetails}
+      /> */}
     </div>
   );
 }
