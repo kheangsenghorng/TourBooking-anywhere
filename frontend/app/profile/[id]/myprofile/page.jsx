@@ -51,11 +51,11 @@ const Page = () => {
     }
   }, [user, loading]);
 
-  useEffect(() => {
-    if (addressError) {
-      toast.error("Failed to load address");
-    }
-  }, [addressError]);
+  // useEffect(() => {
+  //   if (addressError) {
+  //     toast.error("Failed to load address");
+  //   }
+  // }, [addressError]);
 
   useEffect(() => {
     if (!params.id) return;

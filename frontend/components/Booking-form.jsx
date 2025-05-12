@@ -84,7 +84,7 @@ export function BookingForm() {
       setShowSuccess(true);
 
       setTimeout(() => {
-        router.push(`/profile/${response.data._id}/notication`);
+        router.push(`/profile/${id}/notication`);
       }, 3000); // 3-second wait before redirecting
     } catch (err) {
       console.error("Booking failed:", err);

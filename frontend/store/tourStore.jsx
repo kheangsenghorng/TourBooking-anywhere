@@ -10,6 +10,8 @@ export const useTourStore = create((set) => ({
   tours: [],
   isLoading: false,
   tour: null,
+  totalSit: 0,
+  totalPrice: 0,
   itineraries: [],
   loading: false,
   error: null,
@@ -60,6 +62,8 @@ export const useTourStore = create((set) => ({
       if (data.success) {
         set({
           tour: data.tour,
+          totalSit: data.totalSit,
+          totalPrice: data.totalPrice,
           itineraries: data.itineraries, // Fixed typo: tineraries -> itineraries
           loading: false,
         });
@@ -329,7 +333,7 @@ export const useTourStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await axios.get(
-       `${API_URL}/tour/by-accommodation?accommodation=${accommodation}`
+        `${API_URL}/tour/by-accommodation?accommodation=${accommodation}`
       );
       set({ tours: response.data, loading: false });
     } catch (err) {

@@ -35,7 +35,6 @@ export default function TourDetailsPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
-
   const {
     accommodation,
     setAccommodation,
@@ -44,6 +43,8 @@ export default function TourDetailsPage() {
     tour,
     fetchGallery,
     gallery,
+    totalSit,
+    totalPrice,
   } = useTourStore();
 
   const accommodationLabels = [
@@ -111,7 +112,6 @@ export default function TourDetailsPage() {
   const bookingPercentage = tour.maxParticipants
     ? Math.round((tour.currentParticipants / tour.maxParticipants) * 100)
     : 0;
-
 
   return (
     <div>
@@ -181,7 +181,7 @@ export default function TourDetailsPage() {
                       <span className="text-xs font-medium">Bookings</span>
                     </div>
                     <div className="font-semibold text-center">
-                      {tour.totalBookedSeats}/{tour?.limit}
+                      {totalSit}/{tour?.limit}
                     </div>
                   </CardContent>
                 </Card>

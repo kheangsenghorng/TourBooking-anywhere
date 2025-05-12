@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import Link from "next/link";
 import { CalendarDays, Clock, MapPin, Users } from "lucide-react";
+import { useBookingStore } from "@/store/useBookingStore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +20,9 @@ import { useParams } from "next/navigation";
 
 export default function Home() {
   const { id, tourID } = useParams();
+
+  // console.log(id);
+
   return (
     <div className="container mx-auto py-10">
       <div className="mb-10 space-y-2">
@@ -28,7 +32,7 @@ export default function Home() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
+        {/* <Card>
           <CardHeader className="pb-2">
             <CardTitle>Notifications</CardTitle>
             <CardDescription>
@@ -40,11 +44,11 @@ export default function Home() {
               <TourNotifications />
             </Suspense>
           </CardContent>
-        </Card>
+        </Card> */}
 
         <Card className="md:col-span-2">
           <CardHeader className="pb-2">
-            <CardTitle>Upcoming Tours</CardTitle>
+            <CardTitle> Hostory Booking Tour</CardTitle>
             <CardDescription>
               Tours you've booked that are coming up soon
             </CardDescription>
@@ -61,7 +65,7 @@ export default function Home() {
           </CardFooter>
         </Card>
 
-        <Card>
+        {/* <Card>
           <CardHeader className="pb-2">
             <CardTitle>Featured Tour</CardTitle>
             <CardDescription>Special offer for this month</CardDescription>
@@ -103,7 +107,7 @@ export default function Home() {
               </Link>
             </Button>
           </CardFooter>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );
