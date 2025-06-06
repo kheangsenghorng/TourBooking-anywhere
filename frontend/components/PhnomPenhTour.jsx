@@ -4,10 +4,11 @@ import { useTourStore } from "@/store/tourStore";
 import { useItineraryStore } from "@/store/itinerariesStore";
 import { Star } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function PhnomPenhTour() {
+  const router = useRouter(); // ✅ initialize router
   const { tourId } = useParams();
   const { tour, loading, error, fetchTour } = useTourStore();
   const {
@@ -25,8 +26,6 @@ export default function PhnomPenhTour() {
     ratingCounts,
   } = useReviewStore();
 
-  
-
   useEffect(() => {
     if (tourId) {
       fetchTour(tourId);
@@ -40,8 +39,16 @@ export default function PhnomPenhTour() {
     }
   }, [tourId, fetchAllReviews]);
 
+  // ✅ Go back to the previous page if status is "Close"
+  useEffect(() => {
+    if (tour?.status === "Close") {
+      router.back();
+    }
+  }, [tour, router]);
+
   if (loading) return <p className="text-center text-lg">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
+
   return (
     <div className="min-h-screen w-[800px]">
       {/* Header Section */}
@@ -98,6 +105,7 @@ export default function PhnomPenhTour() {
           {itineraries.length === 0 && !itinerariesError && (
             <p className="text-gray-500">No itineraries available.</p>
           )}
+
           <div className="border-l-2 border-gray-300 ml-4">
             {itineraries.map((item, index) => {
               const formattedDate = item?.date

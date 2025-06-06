@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -21,11 +22,6 @@ const Reviews = () => {
     }
   }, [tourId, fetchAllReviews]);
 
-
-  if (isLoading) return <div>Loading reviews...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
-  if (!reviews.length) return <div>No reviews yet</div>;
-
   const renderStars = (count) =>
     Array(5)
       .fill(0)
@@ -41,15 +37,24 @@ const Reviews = () => {
         </svg>
       ));
 
+  if (isLoading)
+    return <div className="text-center text-gray-500">Loading reviews...</div>;
+
+  if (error)
+    return <div className="text-center text-red-500 font-medium">{error}</div>;
+
+  if (!reviews.length)
+    return <div className="text-center text-gray-500">No reviews yet.</div>;
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       {/* Title and Rating */}
-      <div className="text-center mb-6 flex items-center">
+      <div className="text-center mb-6 flex flex-wrap gap-4">
         <Link href="#Reviews" id="Reviews">
           <h2 className="text-2xl font-bold">Reviews</h2>
         </Link>
 
-        <div className="flex items-center text-green-500 text-2xl font-bold space-x-2 ps-4">
+        <div className="flex items-center text-green-500 text-2xl font-bold space-x-2">
           <span>{averageRating?.toFixed(1)}</span>
           {renderStars(Math.round(averageRating))}
           <span className="text-gray-500 text-lg">
@@ -62,7 +67,8 @@ const Reviews = () => {
       <div className="mb-8">
         {[5, 4, 3, 2, 1].map((star) => {
           const count = ratingCounts?.[star] || 0;
-          const percentage = (count / lengthuserRating) * 100;
+          const percentage =
+            lengthuserRating > 0 ? (count / lengthuserRating) * 100 : 0;
           return (
             <div key={star} className="flex items-center space-x-4 mb-2">
               <div className="flex items-center">{renderStars(star)}</div>
@@ -83,7 +89,7 @@ const Reviews = () => {
       {/* Review Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {reviews.map((review, index) => (
-          <div key={index} className="bg-white p-4 rounded-lg flex space-x-4">
+          <div key={index} className="bg-white p-4 rounded-lg flex space-x-4 ">
             <img
               src={review.copiedUser?.profile_image || "/placeholder.svg"}
               alt={review.copiedUser?.firstname || "Reviewer"}
@@ -104,7 +110,7 @@ const Reviews = () => {
                 {renderStars(review.rating)}
               </div>
               <p className="text-gray-600 text-sm line-clamp-2">
-                {review.review}
+                {review.review || review.text}
               </p>
               <p className="text-gray-600 text-sm line-clamp-2">
                 {review.text}
@@ -115,11 +121,13 @@ const Reviews = () => {
       </div>
 
       {/* Show All Reviews Button */}
-      <div className="mt-6">
-        <button className="px-4 py-2 text-black border-2 rounded-md hover:bg-green-500 hover:text-white transition">
-          Show All {lengthuserRating} Reviews
-        </button>
-      </div>
+      {lengthuserRating > 6 && (
+        <div className="mt-6 text-center">
+          <button className="px-4 py-2 text-black border-2 rounded-md hover:bg-green-500 hover:text-white transition">
+            Show All {lengthuserRating} Reviews
+          </button>
+        </div>
+      )}
     </div>
   );
 };

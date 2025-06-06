@@ -1,40 +1,65 @@
 "use client";
 
-import React, { useState } from "react";
-import { Trash2, GripVertical, Pencil, Check, X } from "lucide-react"; // icons
+import React, { useEffect, useState } from "react";
+import { Trash2, GripVertical, Pencil, Check, X } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useInfoItemStore } from "@/store/useInfoItemStore";
 
 export default function AdditionalInfo() {
-  const [infoItems, setInfoItems] = useState([
-    "Confirmation will be received at time of booking",
-    "Not wheelchair accessible",
-    "Not wheelchair accessible",
-    "Not wheelchair accessible",
-    "Not wheelchair accessible",
-  ]);
-  const [editIndex, setEditIndex] = useState(null); // index of item being edited
-  const [editText, setEditText] = useState(""); // temporary edited text
+  const { id, bookingtourId } = useParams();
+  const tourId = bookingtourId || id;
 
-  const handleDelete = (indexToDelete) => {
-    const newItems = infoItems.filter((_, index) => index !== indexToDelete);
-    setInfoItems(newItems);
+  const [editIndex, setEditIndex] = useState(null);
+  const [editText, setEditText] = useState("");
+
+  const [isCreating, setIsCreating] = useState(false);
+  const [newText, setNewText] = useState("");
+
+  const {
+    infoItems,
+    loading,
+    error,
+    fetchInfoItems,
+    createInfoItem,
+    updateInfoItem,
+    deleteInfoItem,
+  } = useInfoItemStore();
+
+  useEffect(() => {
+    if (tourId) fetchInfoItems(tourId);
+  }, [tourId]);
+
+  const handleDelete = async (itemId) => {
+    await deleteInfoItem(itemId);
   };
 
   const handleEdit = (index) => {
     setEditIndex(index);
-    setEditText(infoItems[index]);
+    setEditText(infoItems[index].text);
   };
 
-  const handleSave = (index) => {
-    const newItems = [...infoItems];
-    newItems[index] = editText;
-    setInfoItems(newItems);
+  const handleSaveEdit = async (itemId) => {
+    await updateInfoItem(itemId, editText);
     setEditIndex(null);
     setEditText("");
   };
 
-  const handleCancel = () => {
+  const handleCancelEdit = () => {
     setEditIndex(null);
     setEditText("");
+  };
+
+  const handleCreate = async () => {
+    if (newText.trim()) {
+      await createInfoItem(tourId, newText);
+      setNewText("");
+      setIsCreating(false);
+    }
+  };
+
+  const handleCancelCreate = () => {
+    setNewText("");
+    setIsCreating(false);
   };
 
   return (
@@ -42,14 +67,27 @@ export default function AdditionalInfo() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Additional Info</h3>
-        <Pencil className="w-4 h-4 text-gray-500 cursor-pointer" />
+        <Pencil
+          className="w-4 h-4 text-gray-500 cursor-pointer"
+          onClick={() => setIsCreating(true)}
+        />
       </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="text-sm text-gray-500 mb-2">Loading info items...</div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="text-sm text-red-500 mb-2">Error: {error}</div>
+      )}
 
       {/* Info Items */}
       <div className="space-y-3">
         {infoItems.map((item, index) => (
           <div
-            key={index}
+            key={item._id}
             className="flex items-center justify-between bg-gray-50 rounded-md p-3"
           >
             {editIndex === index ? (
@@ -60,7 +98,7 @@ export default function AdditionalInfo() {
                 className="text-sm text-gray-700 bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 w-full mr-4"
               />
             ) : (
-              <span className="text-sm text-gray-700">{item}</span>
+              <span className="text-sm text-gray-700">{item.text}</span>
             )}
 
             <div className="flex items-center space-x-2 ml-4">
@@ -68,11 +106,11 @@ export default function AdditionalInfo() {
                 <>
                   <Check
                     className="w-4 h-4 text-green-500 cursor-pointer"
-                    onClick={() => handleSave(index)}
+                    onClick={() => handleSaveEdit(item._id)}
                   />
                   <X
                     className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
-                    onClick={handleCancel}
+                    onClick={handleCancelEdit}
                   />
                 </>
               ) : (
@@ -83,7 +121,7 @@ export default function AdditionalInfo() {
                   />
                   <Trash2
                     className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
-                    onClick={() => handleDelete(index)}
+                    onClick={() => handleDelete(item._id)}
                   />
                   <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
                 </>
@@ -91,6 +129,29 @@ export default function AdditionalInfo() {
             </div>
           </div>
         ))}
+
+        {/* Create New Item Form */}
+        {isCreating && (
+          <div className="flex items-center justify-between bg-gray-50 rounded-md p-3">
+            <input
+              type="text"
+              value={newText}
+              onChange={(e) => setNewText(e.target.value)}
+              placeholder="Enter new info"
+              className="text-sm text-gray-700 bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500 w-full mr-4"
+            />
+            <div className="flex items-center space-x-2 ml-4">
+              <Check
+                className="w-4 h-4 text-green-500 cursor-pointer"
+                onClick={handleCreate}
+              />
+              <X
+                className="w-4 h-4 text-gray-400 cursor-pointer hover:text-red-500"
+                onClick={handleCancelCreate}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

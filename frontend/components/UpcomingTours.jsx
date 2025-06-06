@@ -22,8 +22,6 @@ export default function UpcomingTours() {
     }
   }, [id, fetchBookingsByUserId, fetchBookingsByUser]);
 
-  console.log(bookings);
-
   const formatDateRange = (start, end) => {
     const startDate = new Date(start);
     const endDate = new Date(end);
@@ -48,14 +46,23 @@ export default function UpcomingTours() {
     return `${Math.ceil(diffTime / (1000 * 60 * 60 * 24))} days`;
   };
 
+  // Filter only future or ongoing tours
+  const upcomingBookings = bookings.filter((tour) => {
+    const endDate = new Date(tour.tourId?.endDate);
+    const today = new Date();
+    endDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return endDate >= today;
+  });
+
   return (
     <div className="space-y-4">
-      {bookings.length === 0 ? (
+      {upcomingBookings.length === 0 ? (
         <p className="text-center text-muted-foreground">
-          Hostory Booking Tour
+          No upcoming booked tours.
         </p>
       ) : (
-        bookings.map((tour, index) => {
+        upcomingBookings.map((tour, index) => {
           const startDate = tour.tourId?.startDate;
           const endDate = tour.tourId?.endDate;
           const image = tour.galleryImages?.[0] || "/placeholder.svg";
@@ -75,7 +82,7 @@ export default function UpcomingTours() {
                     variant={daysUntilStart <= 1 ? "destructive" : "secondary"}
                   >
                     {daysUntilStart <= 0
-                      ? "Today"
+                      ? `Today `
                       : daysUntilStart === 1
                       ? "Tomorrow"
                       : `In ${daysUntilStart} days`}
@@ -98,7 +105,6 @@ export default function UpcomingTours() {
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       <span>{tour.tourId.start_location?.name}</span>
                       <span>{tour.tourId.first_destination?.name}</span>
-                      {/* <span>{tour.tourId.start_location?.name}</span> */}
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="h-4 w-4 text-muted-foreground" />

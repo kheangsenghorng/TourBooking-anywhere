@@ -66,8 +66,6 @@ const CardTour = () => {
   // Always display the first 4 tours
   const displayedTours = galleryImages.slice(0, 4);
 
-  
-
   const handleClick = async (tourId) => {
     if (!id) {
       router.push(`/login`); // Redirect if not logged in
@@ -97,6 +95,8 @@ const CardTour = () => {
   // if (error) return <p className="text-center text-red-500">{error}</p>;
   // if (errorFavorite)
   //   return <p className="text-center text-red-500">{errorFavorite}</p>;
+
+  const href = id ? `/list-tour?id=${id}` : "/list-tour";
 
   return (
     <section className="py-8">
@@ -164,7 +164,7 @@ const CardTour = () => {
         </div>
 
         <div className="mt-8 flex justify-center md:justify-end">
-          <Link href="/list-tour" passHref>
+          <Link href={href} passHref>
             <Button
               variant="outline"
               className="px-8 rounded-full border-green-600 text-green-700 hover:bg-green-600 hover:text-white hover:border-green-600"
