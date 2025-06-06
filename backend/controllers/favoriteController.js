@@ -218,7 +218,11 @@ export const getUserFavoriteTours = async (req, res) => {
     const tourIds = favorites.tourIds;
 
     // Step 3: Fetch favorite tours
-    const tours = await Tour.find({ _id: { $in: tourIds } }).lean();
+    const tours = await Tour.find({ _id: { $in: tourIds } })
+      .populate("start_location", "name")
+      .populate("first_destination", "name")
+      .populate("second_destination", "name")
+      .lean();
     if (!tours.length) {
       return res.status(404).json({ message: "No matching tours found" });
     }

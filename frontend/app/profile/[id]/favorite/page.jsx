@@ -11,6 +11,15 @@ import {
   Clock,
   Bus,
   Calendar,
+  Snowflake,
+  Flame,
+  Utensils,
+  PawPrint,
+  Dumbbell,
+  Plane,
+  Sparkles,
+  Droplet,
+  BedDouble,
 } from "lucide-react";
 import { useFavoriteStore } from "@/store/favoriteStore";
 import { useParams } from "next/navigation";
@@ -22,17 +31,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  Snowflake,
-  Flame,
-  Utensils,
-  PawPrint,
-  Dumbbell,
-  Plane,
-  Sparkles,
-  Droplet,
-  BedDouble,
-} from "lucide-react";
 
 export default function FavoritesPage() {
   const params = useParams();
@@ -135,152 +133,178 @@ export default function FavoritesPage() {
 
         <div className="grid gap-6">
           {favorites.map((tour, index) => (
-            <Card
+            <div
               key={index}
-              className="overflow-hidden border-none shadow-md hover:shadow-lg transition-shadow"
+              className={`relative ${
+                tour.status === "Close"
+                  ? "pointer-events-none"
+                  : ""
+              }`}
             >
-              <CardContent className="p-0">
-                <div className="flex flex-col md:flex-row">
-                  <div className="w-full md:w-1/3 relative">
-                    <Link href={`/tour-detail/${tour._id}`}>
-                      <div className="relative h-64 md:h-full">
-                        <Image
-                          src={
-                            tour.galleryImages?.[0] ??
-                            "/placeholder.svg?height=300&width=300"
-                          }
-                          alt={tour.title || "Tour image"}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="w-full md:w-2/3 p-6 relative">
-                    <div className="absolute top-6 right-6">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleClick(tour._id)}
-                        className="hover:bg-rose-50"
-                      >
-                        <Heart
-                          className={`h-6 w-6 ${
-                            favorited
-                              ? "fill-red-500 text-red-500"
-                              : "fill-gray-300 text-gray-300 hover:fill-gray-400 hover:text-gray-400"
-                          }`}
-                        />
-                      </Button>
-                    </div>
-
-                    <div className="mb-3 flex flex-wrap gap-2">
-                      <Badge
-                        variant="secondary"
-                        className="bg-teal-100 text-teal-700 hover:bg-teal-200"
-                      >
-                        {tour.tour_name || "Tour"}
-                      </Badge>
-                      {tour.specialStatus && (
-                        <Badge
-                          variant="secondary"
-                          className="bg-rose-100 text-rose-700 hover:bg-rose-200"
-                        >
-                          {tour.specialStatus}
-                        </Badge>
-                      )}
-                    </div>
-
-                    <Link href={`/tour-detail/${tour._id}`}>
-                      <h2 className="text-xl font-semibold mb-2 hover:text-rose-600 transition-colors">
-                        {tour.tour_name || "Amazing Tour Experience"}
-                      </h2>
-                    </Link>
-
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {tour.description}
-                    </p>
-
-                    <div className="flex items-center mb-4">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`w-5 h-5 ${
-                            star <= Math.round(tour.averageRating)
-                              ? "text-yellow-400 fill-yellow-400"
-                              : "text-gray-200"
-                          }`}
-                        />
-                      ))}
-                      <span className="ml-2 font-medium">
-                        {tour.averageRating || "4.8"}
-                      </span>
-                      <span className="ml-1 text-sm text-muted-foreground">
-                        ({tour.totalReviews || "124"} reviews)
-                      </span>
-                    </div>
-
-                    <Separator className="my-4" />
-
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div className="flex flex-wrap gap-4">
-                        <div className="flex items-center gap-2 text-sm">
-                          <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
-                            <Clock className="h-4 w-4 text-rose-500" />
-                          </div>
-                          <span>
-                            {getDuration(tour.startDate, tour.endDate) || "14"}{" "}
-                            days
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          {/* <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
-                            <Bus className="h-4 w-4 text-rose-500" />
-                          </div>
-                          <span>Transport</span> */}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {getAccommodationFeatures(tour.accommodation)
-                              ?.length > 0 ? (
-                              getAccommodationFeatures(tour.accommodation)
-                                .slice(0, 3)
-                                .map((feature) => (
-                                  <div
-                                    key={feature}
-                                    className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs text-gray-700"
-                                  >
-                                    {accommodationIcons[feature]}
-                                    <span className="capitalize">
-                                      {feature}
-                                    </span>
-                                  </div>
-                                ))
-                            ) : (
-                              <span className="text-gray-500 text-sm">
-                                No accommodation info
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
-                            <Calendar className="h-4 w-4 text-rose-500" />
-                          </div>
-                          <span>Available</span>
-                        </div>
-                      </div>
-                      <div className="flex items-baseline gap-1">
-                        <div className="font-bold text-2xl text-rose-600">
-                          ${tour.price || "1,299"}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          /person
-                        </div>
-                      </div>
-                    </div>
+              {["Close", "Full"].includes(tour.status) && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center">
+                  <div className="bg-black bg-opacity-70 text-white px-4 py-2 rounded text-sm">
+                    {tour.status}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+
+              <Card className="overflow-hidden border-none shadow-md hover:shadow-lg transition-shadow">
+                <CardContent className="p-0">
+                  <div className="flex flex-col md:flex-row">
+                    <div className="w-full md:w-1/3 relative">
+                      <Link href={`/${params.id}/tour-detail/${tour._id}`}>
+                        <div className="relative h-64 md:h-full">
+                          <Image
+                            src={
+                              tour.galleryImages?.[0] ??
+                              "/placeholder.svg?height=300&width=300"
+                            }
+                            alt={tour.title || "Tour image"}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      </Link>
+                    </div>
+                    <div className="w-full md:w-2/3 p-6 relative">
+                      <div className="absolute top-6 right-6">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleClick(tour._id)}
+                          className="hover:bg-rose-50"
+                        >
+                          <Heart
+                            className={`h-6 w-6 ${
+                              favorited
+                                ? "fill-red-500 text-red-500"
+                                : "fill-gray-300 text-gray-300 hover:fill-gray-400 hover:text-gray-400"
+                            }`}
+                          />
+                        </Button>
+                      </div>
+
+                      <div className="mb-3 flex flex-wrap gap-2">
+                        <Badge
+                          variant="secondary"
+                          className="bg-teal-100 text-teal-700 hover:bg-teal-200"
+                        >
+                          {tour.tour_name || "Tour"}
+                        </Badge>
+
+                        {tour.status && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-rose-100 text-rose-700 hover:bg-rose-200"
+                          >
+                            {tour.status}
+                          </Badge>
+                        )}
+                        {tour.specialStatus && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-rose-100 text-rose-700 hover:bg-rose-200"
+                          >
+                            {tour.specialStatus}
+                          </Badge>
+                        )}
+                      </div>
+
+                      <Link href={`/${params.id}/tour-detail/${tour._id}`}>
+                        <h2 className="text-xl font-semibold mb-2 hover:text-rose-600 transition-colors">
+                          {tour.first_destination?.name
+                            ? tour.start_location?.name
+                              ? `${tour.start_location.name} ↔ ${tour.first_destination.name}`
+                              : tour.first_destination.name
+                            : tour.start_location?.name}
+                        </h2>
+                      </Link>
+
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        {tour.description}
+                      </p>
+
+                      <div className="flex items-center mb-4">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-5 h-5 ${
+                              star <= Math.round(tour.averageRating)
+                                ? "text-yellow-400 fill-yellow-400"
+                                : "text-gray-200"
+                            }`}
+                          />
+                        ))}
+                        <span className="ml-2 font-medium">
+                          {tour.averageRating || "4.8"}
+                        </span>
+                        <span className="ml-1 text-sm text-muted-foreground">
+                          ({tour.totalReviews || "124"} reviews)
+                        </span>
+                      </div>
+
+                      <Separator className="my-4" />
+
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex flex-wrap gap-4">
+                          <div className="flex items-center gap-2 text-sm">
+                            <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
+                              <Clock className="h-4 w-4 text-rose-500" />
+                            </div>
+                            <span>
+                              {getDuration(tour.startDate, tour.endDate) ||
+                                "14"}{" "}
+                              days
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2 text-sm">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {getAccommodationFeatures(tour.accommodation)
+                                .length > 0 ? (
+                                getAccommodationFeatures(tour.accommodation)
+                                  .slice(0, 3)
+                                  .map((feature) => (
+                                    <div
+                                      key={feature}
+                                      className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs text-gray-700"
+                                    >
+                                      {accommodationIcons[feature]}
+                                      <span className="capitalize">
+                                        {feature}
+                                      </span>
+                                    </div>
+                                  ))
+                              ) : (
+                                <span className="text-gray-500 text-sm">
+                                  No accommodation info
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 text-sm">
+                            <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
+                              <Calendar className="h-4 w-4 text-rose-500" />
+                            </div>
+                            <span>Available</span>
+                          </div>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <div className="font-bold text-2xl text-rose-600">
+                            ${tour.price || "1,299"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            /person
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           ))}
         </div>
 
@@ -300,7 +324,6 @@ export default function FavoritesPage() {
         </div>
       </div>
 
-      {/* Toast Container for notifications */}
       <ToastContainer />
     </div>
   );

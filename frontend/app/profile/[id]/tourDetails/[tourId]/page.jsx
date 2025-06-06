@@ -75,7 +75,7 @@ export default function TourDetailPage() {
   const daysUntil = getDaysUntilStart(startDate);
   const badgeText =
     daysUntil <= 0
-      ? "Today"
+      ? `Today In ${daysUntil} days`
       : daysUntil === 1
       ? "Tomorrow"
       : `In ${daysUntil} days`;
@@ -133,10 +133,10 @@ export default function TourDetailPage() {
           </div>
 
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
-              <TabsTrigger value="details">Details</TabsTrigger>
+              {/* <TabsTrigger value="details">Details</TabsTrigger> */}
             </TabsList>
 
             <TabsContent value="overview" className="mt-6">
