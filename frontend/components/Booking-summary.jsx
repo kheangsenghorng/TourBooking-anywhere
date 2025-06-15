@@ -40,7 +40,7 @@ export function BookingSummary() {
       <CardContent className="p-6">
         <div className="mb-4">
           <Image
-            src={tour?.galleryImages[0] || "/image/1.jpg"}
+            src={tour?.galleryImages[0] || "/logo-edit.png"}
             alt="Phnom Penh Tour"
             width={350}
             height={200}

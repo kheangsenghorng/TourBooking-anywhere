@@ -66,7 +66,7 @@ const LoginPage = () => {
         }
 
         if (role === "admin") {
-          router.push(`/${id}/dashboard`);
+          router.push(`/admin/${id}/dashboard`);
         } else {
           router.push(`/profile/${id}/myprofile`);
         }

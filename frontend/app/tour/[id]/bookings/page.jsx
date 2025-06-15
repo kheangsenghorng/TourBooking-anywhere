@@ -18,7 +18,7 @@ const Booking = () => {
           <div className="lg:col-span-2">
             <BookingForm id={id} />
           </div>
-          <div>
+          <div> 
             <BookingSummary id={id} />
           </div>
         </div>

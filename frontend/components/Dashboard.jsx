@@ -38,12 +38,16 @@ export default function Sidebar({ children }) {
   const mainMargin = collapsed ? "ml-20" : "ml-64";
 
   const menuItems = [
-    { href: `/${id}/dashboard`, icon: BarChart2, label: "Dashboard" },
-    { href: `/${id}/category`, icon: Grid, label: "Category" },
-    { href: `/${id}/location`, icon: FiMapPin, label: "Location" },
-    { href: `/${id}/addpackage`, icon: PlusSquare, label: "Add Package" },
-    { href: `/${id}/user`, icon: User, label: "User" },
-    { href: `/${id}/feedback-admin`, icon: MessageSquare, label: "Feedback" },
+    { href: `/admin/${id}/dashboard`, icon: BarChart2, label: "Dashboard" },
+    { href: `/admin/${id}/category`, icon: Grid, label: "Category" },
+    { href: `/admin/${id}/location`, icon: FiMapPin, label: "Location" },
+    { href: `/admin/${id}/addpackage`, icon: PlusSquare, label: "Add Package" },
+    { href: `/admin/${id}/user`, icon: User, label: "User" },
+    {
+      href: `/admin/${id}/feedback-admin`,
+      icon: MessageSquare,
+      label: "Feedback",
+    },
   ];
 
   useEffect(() => {

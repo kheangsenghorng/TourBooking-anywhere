@@ -124,7 +124,7 @@ export default function BookingConfirmation() {
               </div>
             </div>
 
-            <Link href={`/${adminId}/edituser/${userId}`}>
+            <Link href={`/admin/${adminId}/edituser/${userId}`}>
               <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                 Edit
               </button>
@@ -162,7 +162,20 @@ export default function BookingConfirmation() {
               <div className="text-sm text-gray-500 mb-2">Booking Date</div>
               <div className="flex items-center gap-2">
                 <Calendar size={18} className="text-gray-400" />
-                <span>{bookingsUser?.[0]?.createdAt} </span>
+                <span>
+                  {bookingsUser?.[0]?.createdAt &&
+                    new Date(bookingsUser[0].createdAt).toLocaleString(
+                      "en-US",
+                      {
+                        timeZone: "Asia/Phnom_Penh",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
+                </span>
               </div>
             </div>
 
@@ -279,12 +292,23 @@ export default function BookingConfirmation() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    {new Date(tour.createdAt).toLocaleDateString()}
+                    {bookingsUser?.[0]?.createdAt &&
+                      new Date(bookingsUser[0].createdAt).toLocaleString(
+                        "en-US",
+                        {
+                          timeZone: "Asia/Phnom_Penh",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
                   </td>
                   <td className="px-6 py-4">
                     <span
                       className={`inline-block px-2 py-1 text-xs rounded-full font-medium ${
-                        tour.bookingStatus === "paid"
+                        tour.bookingStatus === "approved"
                           ? "bg-green-100 text-green-700"
                           : "bg-red-100 text-red-600"
                       }`}
@@ -295,10 +319,27 @@ export default function BookingConfirmation() {
                   <td className="px-6 py-4">{tour.bookingSit}</td>
                   <td className="px-6 py-4">${tour.bookingTotal}</td>
                   <td className="px-6 py-4">
-                    {new Date(tour.tourId.startDate).toLocaleDateString()}
+                    {tour?.tourId?.startDate
+                      ? new Date(tour.tourId.startDate).toLocaleString(
+                          "en-US",
+                          {
+                            timeZone: "Asia/Phnom_Penh",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )
+                      : "N/A"}
                   </td>
                   <td className="px-6 py-4">
-                    {new Date(tour.tourId.endDate).toLocaleDateString()}
+                    {tour?.tourId?.startDate
+                      ? new Date(tour.tourId.endDate).toLocaleString("en-US", {
+                          timeZone: "Asia/Phnom_Penh",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "N/A"}
                   </td>
                 </tr>
               ))}

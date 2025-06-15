@@ -188,15 +188,15 @@ export default function Home() {
                   <Link
                     href={
                       userId
-                        ? `/${userId}/tour-detail/${tour._id}`
-                        : `/tour-detail/${tour._id}`
+                        ? `/tour/${userId}/tour-detail/${tour._id}`
+                        : `/tourpage/tour-detail/${tour._id}`
                     }
                   >
                     <Image
                       src={
                         tour.galleryImages?.[0]
                           ? `${tour.galleryImages?.[0]}`
-                          : "/placeholder.svg?height=200&width=200"
+                          : "/logo-edit.png"
                       }
                       alt={`Image of ${tour.tour_name} showing the main view`}
                       fill
@@ -257,8 +257,8 @@ export default function Home() {
                     <Link
                       href={
                         userId
-                          ? `/${userId}/tour-detail/${tour._id}`
-                          : `/tour-detail/${tour._id}`
+                          ? `/tour/${userId}/tour-detail/${tour._id}`
+                          : `/tourpage/tour-detail/${tour._id}`
                       }
                     >
                       <h2 className="text-xl font-semibold mb-2 hover:text-rose-600">
