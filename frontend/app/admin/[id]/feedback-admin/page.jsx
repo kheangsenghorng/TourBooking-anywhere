@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   ChevronLeft,
@@ -44,35 +44,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { useGalleryStore } from "@/store/useGalleryStore";
-import { useBookingStore } from "@/store/useBookingStore";
 
 export default function TourManagement() {
   const params = useParams();
   const { fetchTours, tours, isLoading, error } = useTourStore();
-  const { deleteTour, loading, error: tourError } = useGalleryStore();
-  const {
-    fetchAllTourBookings,
-    tourSeatCounts,
-    loading: bookingLoading,
-    error: bookingError,
-  } = useBookingStore();
 
   useEffect(() => {
-    fetchAllTourBookings();
-  }, []);
+    fetchTours(params.id);
+  }, [fetchTours, params.id]);
 
-  const seatCountsByTourId = tourSeatCounts.reduce((acc, item) => {
-    acc[item.tour_id] = item.count;
-    return acc;
-  }, {});
-
-  useEffect(() => {
-    if (params?.id) {
-      fetchTours(params.id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id, fetchTours]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState("tour_name");
@@ -91,7 +71,9 @@ export default function TourManagement() {
         const matchesStatus =
           statusFilter === "all" || tour.status === statusFilter;
 
-        return matchesSearch && matchesStatus;
+        const hasAverageRating = tour.averageRating && tour.averageRating > 0;
+
+        return matchesSearch && matchesStatus && hasAverageRating;
       })
     : [];
 
@@ -137,12 +119,6 @@ export default function TourManagement() {
       setSortDirection("asc");
     }
   };
-  const handleDeleteTour = async (tourId) => {
-    if (window.confirm("Are you sure you want to delete this tour?")) {
-      await deleteTour(tourId);
-      fetchTours(params.id);
-    }
-  };
 
   const getStatusBadgeVariant = (status) => {
     switch (status) {
@@ -169,20 +145,18 @@ export default function TourManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-2xl font-bold">
-                  Tour Management
+                  Feedback Tour
                 </CardTitle>
                 <CardDescription>
                   Manage your tours, track bookings, and monitor performance
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
-                <Link href={`addpackage/create`}>
-                  <Button className="bg-teal-600 hover:bg-teal-700 text-white shadow-md transition-all hover:shadow-lg h-9">
-                    <Plus size={16} className="mr-2" />
-                    Create New Tour
-                  </Button>
-                </Link>
-              </div>
+              {/* <div className="flex items-center gap-2">
+                <Button className="bg-teal-600 hover:bg-teal-700 text-white shadow-md transition-all hover:shadow-lg h-9">
+                  <Plus size={16} className="mr-2" />
+                  Create New Tour
+                </Button>
+              </div> */}
             </div>
           </div>
         </CardHeader>
@@ -224,9 +198,11 @@ export default function TourManagement() {
           </div>
 
           {isLoading ? (
-            <div className="flex justify-center items-center h-screen">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-green-500"></div>
-              <p className="mt-4 text-lg">Loading your Tour...</p>
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-full" />
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
             </div>
           ) : error ? (
             <div className="text-center py-8 text-destructive">
@@ -322,7 +298,9 @@ export default function TourManagement() {
                           className="border-t hover:bg-muted/30 transition-colors"
                         >
                           <td className="py-3 px-4 text-sm font-medium text-nowrap">
-                            <Link href={`addpackage/bookingtour/${tour._id}`}>
+                            <Link
+                              href={`/admin/${params.id}/feedback-admin/tourfeedback/${tour._id}`}
+                            >
                               {tour?.tour_id || "N/A"}
                             </Link>
                           </td>
@@ -362,24 +340,26 @@ export default function TourManagement() {
                               </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm">
+                          <td className="py-3 px-4 text-sm ">
                             <div className="flex items-center">
                               <MapPin
                                 size={14}
                                 className="mr-2 text-muted-foreground"
                               />
-                              <div className="flex flex-col text-nowrap">
-                                <span>{tour?.start_location?.name}</span>
-                                <span className="text-muted-foreground">
-                                  {tour?.first_destination?.name}
-                                  {tour?.second_destination?.name &&
-                                    ` → ${tour.second_destination?.name}`}
+                              <div className="flex flex-col">
+                                <span>{tour.start_location.name || "N/A"}</span>
+                                <span className="text-muted-foreground text-nowrap">
+                                  {tour.start_location?.name || "N/A"}
+                                  {tour.first_destination?.name &&
+                                    ` → ${tour.first_destination.name}`}
+                                  {tour.second_destination?.name &&
+                                    ` → ${tour.second_destination.name}`}
                                 </span>
                               </div>
                             </div>
                           </td>
                           <td className="py-3 px-4 text-sm">
-                            <span className="font-medium">
+                            <span className="font-medium text-nowrap">
                               {tour.category?.name}
                             </span>
                           </td>
@@ -418,16 +398,14 @@ export default function TourManagement() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Link href={`addpackage/edit/${tour._id}`}>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                      >
-                                        <Edit2 size={16} />
-                                        <span className="sr-only">Edit</span>
-                                      </Button>
-                                    </Link>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                    >
+                                      <Edit2 size={16} />
+                                      <span className="sr-only">Edit</span>
+                                    </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
                                     <p>Edit tour</p>
@@ -435,7 +413,6 @@ export default function TourManagement() {
                                 </Tooltip>
                               </TooltipProvider>
 
-                              {/* Tooltip for delete tour button */}
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -443,7 +420,6 @@ export default function TourManagement() {
                                       variant="ghost"
                                       size="icon"
                                       className="h-8 w-8 text-destructive hover:text-destructive"
-                                      onClick={() => handleDeleteTour(tour._id)} // Add the onClick handler
                                     >
                                       <Trash2 size={16} />
                                       <span className="sr-only">Delete</span>

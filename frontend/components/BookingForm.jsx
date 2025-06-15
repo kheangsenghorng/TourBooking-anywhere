@@ -37,7 +37,7 @@ const BookingForm = () => {
       total: totalPayment.toString(),
     }).toString();
 
-    router.push(`/${userId}/bookings/?${queryParams}`);
+    router.push(`/tour/${userId}/bookings/?${queryParams}`);
   };
 
   const totalPayment = sit * (tour?.price || 0);

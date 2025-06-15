@@ -80,7 +80,7 @@ export default function GuestTable() {
   }
 
   const handleViewDetails = (userId) => {
-    router.push(`/${id}/addpackage/bookingtour/${tourId}/${userId}`);
+    router.push(`/admin/${id}/addpackage/bookingtour/${tourId}/${userId}`);
   };
 
   const closeDetailCard = () => {

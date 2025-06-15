@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import '@fortawesome/fontawesome-free/css/all.min.css';
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const BannerHotel = () => {
   return (
@@ -11,7 +11,7 @@ const BannerHotel = () => {
           {/* Left Image (Airplane) */}
           <div className="flex-shrink-0 mb-5 md:mb-0 md:mr-5 text-center">
             <img
-              src="./image/download.png" // Ensure this path is correct
+              src="/image/download.png" // Ensure this path is correct
               alt="Airplane"
               className="mx-auto w-[150px] sm:w-[200px] md:w-[250px]"
             />
@@ -32,7 +32,7 @@ const BannerHotel = () => {
           {/* Right Image (Traveler) */}
           <div className="flex-shrink-0 mt-5 md:mt-0 md:ml-5 text-center">
             <img
-              src="./image/pic-banner1.png" // Ensure this path is correct
+              src="/image/pic-banner1.png" // Ensure this path is correct
               alt="Traveler"
               className="mx-auto w-[150px] sm:w-[200px] md:w-[250px]"
             />

@@ -117,7 +117,7 @@ export default function UserDetailsPage() {
                     </CardDescription>
                   </div>
                   <Link
-                    href={`/${params.id}/edituser/${params.userId}`}
+                    href={`/admin/${params.id}/edituser/${params.userId}`}
                     className="px-3 py-2 border border-gray-300 rounded text-sm flex items-center hover:bg-gray-100"
                   >
                     <Pencil className="h-4 w-4 mr-2" />

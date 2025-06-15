@@ -46,7 +46,6 @@
 //     return () => document.removeEventListener("mousedown", handleClickOutside);
 //   }, [isOpen]);
 
-  
 //   return (
 //     <>
 //       <nav className="bg-white shadow-md h-[80px] md:h-[100px] fixed top-0 left-0 w-full z-50">
@@ -223,7 +222,7 @@ export default function Navbar() {
       <nav className="bg-white shadow-md h-[80px] md:h-[100px] fixed top-0 left-0 w-full z-50">
         <div className="flex items-center justify-between max-w-7xl mx-auto px-4 h-full">
           {/* Logo */}
-          <Link href={id ? `/${id}/` : "/"}>
+          <Link href={id ? `/tour/${id}/` : "/"}>
             <img
               src="/image/logo-edit.png"
               alt="Travel With Us"
@@ -233,17 +232,37 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-7">
-            <NavItem href={id ? `/${id}/` : "/"} icon="fa-house" label="Home" />
-            <NavItem href={id ? `/${id}/about` : "/about"} icon="fa-users" label="About" />
-            <NavItem href={id ? `/${id}/contact` : "/contact"} icon="fa-phone" label="Contact" />
+            <NavItem
+              href={id ? `/tour/${id}/` : "/"}
+              icon="fa-house"
+              label="Home"
+            />
+            <NavItem
+              href={id ? `/tour/${id}/about` : "/about"}
+              icon="fa-users"
+              label="About"
+            />
+            <NavItem
+              href={id ? `/tour/${id}/contact` : "/contact"}
+              icon="fa-phone"
+              label="Contact"
+            />
           </div>
 
           {/* Buttons */}
           <div className="hidden md:flex space-x-2">
             {isLoggedIn ? (
               <>
-                <NavButton href={`/${id}/list-tour`} icon="fa-calendar-check" label="Booking Now" />
-                <NavButton href={`/profile/${id}/myprofile`} icon="fa-user" label="Profile" />
+                <NavButton
+                  href={`/tour/${id}/list-tour`}
+                  icon="fa-calendar-check"
+                  label="Booking Now"
+                />
+                <NavButton
+                  href={`/profile/${id}/myprofile`}
+                  icon="fa-user"
+                  label="Profile"
+                />
                 <button
                   onClick={handleLogout}
                   className="text-green-700 py-2 px-4 border border-green-700 rounded-md hover:bg-green-700 hover:text-white flex items-center space-x-2"
@@ -255,7 +274,11 @@ export default function Navbar() {
             ) : (
               <>
                 <NavButton href="/login" icon="fa-sign-in-alt" label="Login" />
-                <NavButton href="/register" icon="fa-registered" label="Register" />
+                <NavButton
+                  href="/register"
+                  icon="fa-registered"
+                  label="Register"
+                />
               </>
             )}
           </div>
@@ -279,14 +302,39 @@ export default function Navbar() {
               id="dropdown-menu"
               className="fixed top-[80px] left-0 w-full bg-white shadow-lg p-4 flex flex-col space-y-3 z-40"
             >
-              <NavItem href="/" icon="fa-house" label="Home" onClick={() => setIsOpen(false)} />
-              <NavItem href="/about" icon="fa-users" label="About" onClick={() => setIsOpen(false)} />
-              <NavItem href="/contact" icon="fa-phone" label="Contact" onClick={() => setIsOpen(false)} />
+              <NavItem
+                href="/"
+                icon="fa-house"
+                label="Home"
+                onClick={() => setIsOpen(false)}
+              />
+              <NavItem
+                href="/about"
+                icon="fa-users"
+                label="About"
+                onClick={() => setIsOpen(false)}
+              />
+              <NavItem
+                href="/contact"
+                icon="fa-phone"
+                label="Contact"
+                onClick={() => setIsOpen(false)}
+              />
               <hr className="border-gray-300" />
               {isLoggedIn ? (
                 <>
-                  <NavButton href={`/${id}/list-tour`} icon="fa-calendar-check" label="Booking Now" onClick={() => setIsOpen(false)} />
-                  <NavButton href={`/profile/${id}/myprofile`} icon="fa-user" label="Profile" onClick={() => setIsOpen(false)} />
+                  <NavButton
+                    href={`/tour/${id}/list-tour`}
+                    icon="fa-calendar-check"
+                    label="Booking Now"
+                    onClick={() => setIsOpen(false)}
+                  />
+                  <NavButton
+                    href={`/profile/${id}/myprofile`}
+                    icon="fa-user"
+                    label="Profile"
+                    onClick={() => setIsOpen(false)}
+                  />
                   <button
                     onClick={() => {
                       handleLogout();
@@ -300,8 +348,18 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <NavButton href="/login" icon="fa-sign-in-alt" label="Login" onClick={() => setIsOpen(false)} />
-                  <NavButton href="/register" icon="fa-registered" label="Register" onClick={() => setIsOpen(false)} />
+                  <NavButton
+                    href="/login"
+                    icon="fa-sign-in-alt"
+                    label="Login"
+                    onClick={() => setIsOpen(false)}
+                  />
+                  <NavButton
+                    href="/register"
+                    icon="fa-registered"
+                    label="Register"
+                    onClick={() => setIsOpen(false)}
+                  />
                 </>
               )}
             </div>
@@ -314,7 +372,11 @@ export default function Navbar() {
 
 // Component for Nav Items
 const NavItem = ({ href, icon, label, onClick }) => (
-  <Link href={href} className="text-green-700 hover:text-green-900 flex items-center space-x-2" onClick={onClick}>
+  <Link
+    href={href}
+    className="text-green-700 hover:text-green-900 flex items-center space-x-2"
+    onClick={onClick}
+  >
     <i className={`fa-solid ${icon}`}></i>
     <span>{label}</span>
   </Link>

@@ -96,8 +96,7 @@ const CardTour = () => {
   // if (errorFavorite)
   //   return <p className="text-center text-red-500">{errorFavorite}</p>;
 
-  const href = id ? `/list-tour?id=${id}` : "/list-tour";
-
+  const href = id ? `/tour/${id}/list-tour` : "/tourpage/list-tour";
   return (
     <section className="py-8">
       <div className="container mx-auto px-4 max-w-screen-xl">
@@ -116,10 +115,16 @@ const CardTour = () => {
               className="overflow-hidden group hover:shadow-md transition-shadow duration-300"
             >
               <div className="relative">
-                <Link href={`/tour-detail/${tour._id}`}>
+                <Link
+                  href={
+                    id
+                      ? `/tour/${id}/tour-detail/${tour._id}`
+                      : `/tourpage/tour-detail/${tour._id}`
+                  }
+                >
                   <div className="w-full h-56 overflow-hidden">
                     <img
-                      src={tour?.galleryImages?.[0] || "/default-image.jpg"}
+                      src={tour?.galleryImages?.[0] || "/logo-edit.png"}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       alt={`Tour from ${tour?.start_location} to ${tour?.first_destination}`}
                     />

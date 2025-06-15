@@ -102,7 +102,7 @@ const UserPage = () => {
               />
             </div>
             <Link
-              href={`/${params.id}/adduser`}
+              href={`/admin/${params.id}/adduser`}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
             >
               Add User
@@ -218,7 +218,7 @@ const UserPage = () => {
                         )}
 
                         {/* ✅ Profile Image inside Link */}
-                        <Link href={`/${params.id}/viewuser/${user._id}`}>
+                        <Link href={`/admin/${params.id}/viewuser/${user._id}`}>
                           <div className="w-10 h-10 rounded-full overflow-hidden">
                             <Image
                               src={
@@ -236,7 +236,7 @@ const UserPage = () => {
                     </td>
                     <td className="px-4 py-3">
                       <Link
-                        href={`/${params.id}/viewuser/${user._id}`}
+                        href={`/admin/${params.id}/viewuser/${user._id}`}
                         className="hover:underline"
                       >
                         {user.lastname} {user.firstname}
