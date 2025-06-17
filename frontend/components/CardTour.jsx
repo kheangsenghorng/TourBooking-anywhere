@@ -11,6 +11,7 @@ import { useTourStore } from "@/store/tourStore";
 import { useFavoriteStore } from "@/store/favoriteStore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useReviewStore } from "@/store/reviewStore";
 
 const CardTour = () => {
   const router = useRouter();
@@ -25,6 +26,17 @@ const CardTour = () => {
     error: errorFavorite,
     fetchFavorites,
   } = useFavoriteStore();
+
+  const {
+    loading: reviewsLoading,
+    error: reviewsError,
+    groupedReviews,
+    fetchTopRatedReviews,
+  } = useReviewStore();
+
+  useEffect(() => {
+    fetchTopRatedReviews();
+  }, []);
 
   const [favoritedTours, setFavoritedTours] = useState({});
 
@@ -64,7 +76,12 @@ const CardTour = () => {
   };
 
   // Always display the first 4 tours
-  const displayedTours = galleryImages.slice(0, 4);
+  const displayedTours = groupedReviews
+    .filter((tour) => {
+      const status = tour?.tour?.status?.toLowerCase();
+      return status !== "close" && status !== "full";
+    })
+    .slice(0, 4);
 
   const handleClick = async (tourId) => {
     if (!id) {
@@ -109,24 +126,26 @@ const CardTour = () => {
 
         {/* Tour cards grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 my-6">
-          {displayedTours.map((tour) => (
+          {displayedTours.map((tour, index) => (
             <Card
-              key={tour._id}
+              key={index}
               className="overflow-hidden group hover:shadow-md transition-shadow duration-300"
             >
               <div className="relative">
                 <Link
                   href={
                     id
-                      ? `/tour/${id}/tour-detail/${tour._id}`
-                      : `/tourpage/tour-detail/${tour._id}`
+                      ? `/tour/${id}/tour-detail/${tour?.tour?._id}`
+                      : `/tourpage/tour-detail/${tour?.tour?._id}`
                   }
                 >
                   <div className="w-full h-56 overflow-hidden">
                     <img
-                      src={tour?.galleryImages?.[0] || "/logo-edit.png"}
+                      src={
+                        tour?.tour?.galleryImages?.[0] || "/image/logo-edit.png"
+                      }
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      alt={`Tour from ${tour?.start_location} to ${tour?.first_destination}`}
+                      alt={`Tour from ${tour?.tour.first_destination?.name} to ${tour?.tour?.first_destination}`}
                     />
                   </div>
                 </Link>
@@ -134,7 +153,7 @@ const CardTour = () => {
                 {id && (
                   <button
                     className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-sm hover:bg-white transition-colors duration-200"
-                    onClick={() => handleClick(tour._id)}
+                    onClick={() => handleClick(tour.tour._id)}
                     aria-label={
                       favoritedTours[tour._id]
                         ? "Remove from favorites"
@@ -143,7 +162,7 @@ const CardTour = () => {
                   >
                     <Heart
                       className={`h-5 w-5 transition duration-300 ${
-                        favoritedTours[tour._id]
+                        favoritedTours[tour.tour._id]
                           ? "fill-red-500 text-red-500"
                           : "fill-transparent text-gray-600 hover:text-red-400"
                       }`}
@@ -155,13 +174,14 @@ const CardTour = () => {
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-2">
                   <p className="text-sm text-gray-600">
-                    {tour?.start_location?.name} <span className="mx-1">↔</span>{" "}
-                    {tour?.first_destination?.name}
+                    {tour?.tour?.start_location?.name}{" "}
+                    <span className="mx-1">↔</span>{" "}
+                    {tour?.tour?.first_destination?.name}
                   </p>
-                  <p className="font-bold text-lg">${tour?.price}</p>
+                  <p className="font-bold text-lg">${tour?.tour?.price}</p>
                 </div>
                 <p className="text-gray-500 text-sm">
-                  Period: {getDuration(tour.startDate, tour.endDate)}
+                  Period: {getDuration(tour.tour.startDate, tour.tour.endDate)}
                 </p>
               </CardContent>
             </Card>

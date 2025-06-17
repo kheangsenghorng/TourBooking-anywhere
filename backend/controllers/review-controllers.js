@@ -282,3 +282,75 @@ export const deleteReview = async (req, res) => {
     res.status(500).json({ message: "Error deleting review", error });
   }
 };
+
+export const getAllTopRatedReviews = async (req, res) => {
+  try {
+    const baseUrl =
+      process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+
+    // Fetch all reviews with populated tour and user data
+    const reviews = await Review.find()
+      .populate("userId")
+      .populate({
+        path: "tourId",
+        populate: [
+          { path: "start_location" },
+          { path: "first_destination" },
+          { path: "second_destination" },
+        ],
+      });
+
+    const reviewsMap = {};
+
+    for (const review of reviews) {
+      const tour = review.tourId;
+
+      // Skip if no tour linked or invalid
+      if (!tour || !tour._id) continue;
+
+      const tid = tour._id.toString();
+
+      if (!reviewsMap[tid]) {
+        const updatedGalleryImages = Array.isArray(tour.galleryImages)
+          ? tour.galleryImages.map((img) => `${baseUrl}/uploads/tours/${img}`)
+          : [];
+
+        reviewsMap[tid] = {
+          tour: {
+            ...tour.toObject(),
+            galleryImages: updatedGalleryImages,
+          },
+          reviews: [],
+          totalReviews: 0,
+          totalRating: 0,
+        };
+      }
+
+      reviewsMap[tid].reviews.push(review);
+      reviewsMap[tid].totalReviews += 1;
+      reviewsMap[tid].totalRating += review.rating;
+    }
+
+    const topRatedThreshold = 4;
+
+    const groupedReviews = Object.values(reviewsMap)
+      .map((group) => ({
+        tour: group.tour,
+        reviews: group.reviews,
+        totalReviews: group.totalReviews,
+        averageRating: parseFloat(
+          (group.totalRating / group.totalReviews).toFixed(1)
+        ),
+      }))
+      .filter((group) => group.averageRating >= topRatedThreshold);
+
+    res.status(200).json({
+      totalReviews: reviews.length,
+      totalTopRatedTours: groupedReviews.length,
+      groupedReviews,
+    });
+  } catch (error) {
+    console.error("Error in getAllTopRatedReviews:", error);
+    res.status(500).json({ message: "Error fetching reviews", error });
+  }
+};
