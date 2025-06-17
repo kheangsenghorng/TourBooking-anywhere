@@ -19,20 +19,29 @@ A full-featured tour booking platform built with **Next.js**, **Express.js**, **
 
 ## 🧩 Getting Started
 
-### Backend Setup
+### Frontend Setup
 
 ```bash
 cd frontend
 npm install
 npm run dev
 
+```
+
+
+### Backend Setup
+
 ```bash
-cd backend
+cd frontend
 npm install
 npm run dev
+```
 
+```
 /tour-booking-anywhere
-  ├── backend/        # Node.js, Express.js API
-  ├── frontend/       # Next.js frontend
-  └── README.md
+  ├── backend/        # Express.js API and services
+  ├── frontend/       # Next.js frontend app
+  └── README.md       # Project documentation
+```
+
 
