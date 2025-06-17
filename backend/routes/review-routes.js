@@ -5,6 +5,7 @@ import {
   getAllReviews,
   getReviewsByTourId,
   getreviewsUser,
+  getAllTopRatedReviews,
 } from "../controllers/review-controllers.js";
 import { verifyAdmin } from "../middlewares/adminVerify.js";
 
@@ -18,7 +19,7 @@ router.post("/:tourId/:userId/review", createReview);
 router.get("/:id/:tourId", verifyAdmin, getReviewsByTourId);
 // GET /api/reviews - Get all reviews
 router.get("/", getAllReviews);
-
+router.get("/topRated", getAllTopRatedReviews);
 // GET /api/reviews/tour/:tourId - Get reviews by tour
 router.get("/:tourId", getReviewsByTourId);
 

@@ -153,7 +153,7 @@ export default function EditTourPage() {
   const handleImageUpload = (e) => {
     if (!e.target.files) return;
     const files = Array.from(e.target.files);
-    if (files.length + newImages.length + gallery.length > 10) {
+    if (files.length + newImages.length + gallery.length > 20) {
       setError("Maximum 10 images allowed");
       return;
     }
@@ -332,7 +332,7 @@ export default function EditTourPage() {
       };
 
       await updateTour(params.tourId, tourData);
-      router.push(`/${params.id}/addpackage`);
+      router.push(`/admin/${params.id}/addpackage`);
     } catch (err) {
       console.error("Error updating tour:", err);
       setError(err.message || "Failed to update tour");

@@ -12,6 +12,9 @@ export const useReviewStore = create((set) => ({
   tourStatus: "Ongoing",
   isLoading: false,
   error: null,
+  totalReviews: 0,
+  totalTopRatedTours: 0,
+  groupedReviews: [],
 
   // Fetch reviews for a specific tour
   fetchReviews: async (id, tourId) => {
@@ -153,6 +156,27 @@ export const useReviewStore = create((set) => ({
       set({
         error: error.response?.data?.message || "Failed to fetch reviews",
         loading: false,
+      });
+    }
+  },
+
+  fetchTopRatedReviews: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/reviews/toprated`);
+      const data = response.data;
+
+      set({
+        loading: false,
+        totalReviews: data.totalReviews,
+        totalTopRatedTours: data.totalTopRatedTours,
+        groupedReviews: data.groupedReviews,
+      });
+    } catch (error) {
+      set({
+        loading: false,
+        error:
+          error.response?.data?.message || error.message || "Failed to fetch",
       });
     }
   },

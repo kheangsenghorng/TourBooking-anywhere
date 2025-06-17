@@ -143,7 +143,7 @@ export default function CreateTourPage() {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length + images.length > 10) {
+    if (files.length + images.length > 20) {
       setError("Maximum 10 images allowed");
       return;
     }
@@ -331,7 +331,7 @@ export default function CreateTourPage() {
     setIsLoading(true);
     try {
       await createTour(formData, params.id);
-      router.push(`/${params.id}/addpackage`);
+      router.push(`/admin/${params.id}/addpackage`);
     } catch (err) {
       setError(err.message || "Failed to create tour");
     } finally {
