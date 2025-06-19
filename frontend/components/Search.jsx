@@ -1,80 +1,204 @@
 "use client";
-import React from "react"; // Make sure React is imported
-import "@fortawesome/fontawesome-free/css/all.min.css";
-import DatePicker from "./ui/DatePicker"; // Import DatePicker component
 
-const TabsAndSearch = () => {
-  // State to manage dates
-  const [dates, setDates] = React.useState({
-    checkIn: "",
-    checkOut: "",
-  });
+import { useState } from "react";
+import { CalendarIcon, Search } from "lucide-react";
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+// import { format } from "date-fns";
 
-  // State to manage rooms and guests
-  const [rooms, setRooms] = React.useState(1); // Default to 1 room
-  const [adults, setAdults] = React.useState(1); // Default to 1 adult
-  const [children, setChildren] = React.useState(0); // Default to 0 children
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { useTourStore } from "@/store/tourStore"; // Ensure you're importing the correct store
+import { useRouter } from "next/navigation";
 
-  // Update the check-in date
-  const handleCheckInChange = (newCheckIn) => {
-    setDates((prevDates) => ({
-      ...prevDates,
-      checkIn: newCheckIn,
-    }));
-  };
+const provinces = [
+  "Phnom Penh",
+  "Siem Reap",
+  "Battambang",
+  "Kampot",
+  "Sihanoukville",
+  "Koh Kong",
+  "Takeo",
+  "Kampong Cham",
+  "Kampong Thom",
+  "Kampong Speu",
+  "Kampong Chhnang",
+  "Prey Veng",
+  "Svay Rieng",
+  "Banteay Meanchey",
+  "Pailin",
+  "Pursat",
+  "Kratie",
+  "Stung Treng",
+  "Ratanakiri",
+  "Mondulkiri",
+  "Oddar Meanchey",
+  "Kep",
+  "Tbong Khmum",
+  "Preah Vihear",
+];
 
-  // Update the check-out date
-  const handleCheckOutChange = (newCheckOut) => {
-    setDates((prevDates) => ({
-      ...prevDates,
-      checkOut: newCheckOut,
-    }));
+export default function SearchTour() {
+  const router = useRouter();
+  // const userId = router.query.id; // Assuming user ID is passed in the query params
+  const [destination, setDestination] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [loading, setLoading] = useState(false); // 👈 added
+  const [error, setError] = useState(null); // 👈 added
+  // Access Zustand store functions
+  const { setFilterParams, fetchFilteredTours } = useTourStore();
+
+  const handleSearch = async () => {
+    setLoading(true);
+    setError(null);
+
+    const formattedStartDate = startDate
+      ? format(startDate, "yyyy-MM-dd")
+      : null;
+    const formattedEndDate = endDate ? format(endDate, "yyyy-MM-dd") : null;
+
+    // Set filter parameters (Zustand or useState, depending on your app)
+    setFilterParams({
+      location: destination,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+    });
+
+    // Build query params
+    const queryParams = new URLSearchParams();
+    if (destination) queryParams.append("location", destination);
+    if (formattedStartDate) queryParams.append("startDate", formattedStartDate);
+    if (formattedEndDate) queryParams.append("endDate", formattedEndDate);
+
+    try {
+      await fetchFilteredTours();
+
+      // Navigate to bookings page with filters
+      router.push(`/tourpage/list-tour/?${queryParams.toString()}`);
+    } catch (err) {
+      setError("Failed to fetch tours. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <section>
-      <div className="container mx-auto my-8 relative px-4">
-        <div className="p-6 rounded-lg">
-          {/* Search Fields */}
-          <div className="bg-gray-50 p-6 rounded-lg shadow max-w-[1250px] mx-auto">
-            <div className="grid gap-6">
-              {/* Tabs */}
-              <div className="absolute w-full max-w-[800px] left-1/2 top-1 transform -translate-x-1/2 flex justify-center items-center rounded-full">
-                <a
-                  className="flex items-center w-full md:w-[500px] border-green-700 justify-center px-6 py-2 text-gray-600 bg-gray-100 rounded-full hover:text-green-600 hover:bg-white shadow-lg transition hover:scale-105"
-                  href="#tour-tab"
-                >
-                  <i className="fas fa-map mr-2"></i> Tour With Us
-                </a>
-              </div>
-
-              {/* Check-in/Check-out Dates */}
-              <div className="grid gap-6 mt-12 md:mt-8">
-                <div className="flex items-center bg-white rounded-full p-4 border w-full">
-                  <i className="fas fa-calendar-days text-green-700 mr-4"></i>
-                  <DatePicker
-                    checkIn={dates.checkIn}
-                    checkOut={dates.checkOut}
-                    onCheckInChange={handleCheckInChange}
-                    onCheckOutChange={handleCheckOutChange}
-                  />
-                </div>
-
-                {/* Rooms and Guests */}
-              </div>
-
-              {/* Search Button */}
-              <div className="relative mt-8 flex justify-center">
-                <button className="absolute w-full md:w-[800px] top-[calc(100%+10px)] left-1/2 transform -translate-x-1/2 bg-green-700 text-white text-lg font-medium px-8 py-3 rounded-full shadow-lg hover:scale-105 transition">
-                  Search
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="mx-auto my-5 flex h-[100px] w-full max-w-[1000px] items-center justify-between rounded-full border bg-white p-6 shadow-md">
+      {/* Destination Dropdown */}
+      <div className="w-1/3">
+        <label className="text-sm font-semibold text-gray-600">Where to</label>
+        <Select value={destination} onValueChange={setDestination}>
+          <SelectTrigger className="mt-1 border-none font-semibold shadow-none focus:ring-0">
+            <SelectValue placeholder="Select a Province" />
+          </SelectTrigger>
+          <SelectContent>
+            {provinces.map((province) => (
+              <SelectItem key={province} value={province}>
+                {province}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-    </section>
-  );
-};
 
-export default TabsAndSearch;
+      {/* Vertical Line */}
+      <div className="mx-4 h-8 border-l-2 border-gray-300"></div>
+
+      {/* Date Section */}
+      <div className="flex flex-col items-start">
+        <div className="flex items-center gap-2">
+          {/* Start Date Picker */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[140px] justify-start rounded-full border-none pl-3 font-semibold text-gray-600 shadow-none",
+                  !startDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {startDate ? format(startDate, "PPP") : <span>Start Date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={startDate}
+                onSelect={setStartDate}
+                initialFocus
+                disabled={(date) => date < new Date()}
+              />
+            </PopoverContent>
+          </Popover>
+
+          {/* Vertical Line */}
+          <div className="mx-2 h-8 border-l-2 border-gray-300"></div>
+
+          {/* End Date Picker */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[140px] justify-start rounded-full border-none pl-3 font-semibold text-gray-600 shadow-none",
+                  !endDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {endDate ? format(endDate, "PPP") : <span>End Date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={endDate}
+                onSelect={setEndDate}
+                initialFocus
+                disabled={(date) =>
+                  date < new Date() || (startDate ? date < startDate : false)
+                }
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        {startDate && endDate && (
+          <div className="mt-2 text-sm text-gray-800">
+            {format(startDate, "MMM d, yyyy")} -{" "}
+            {format(endDate, "MMM d, yyyy")}
+          </div>
+        )}
+      </div>
+
+      {/* Search Button */}
+      <Button
+        onClick={handleSearch}
+        disabled={loading}
+        className="relative h-12 w-12 rounded-full bg-green-500 p-0 hover:bg-green-600"
+      >
+        {loading ? (
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+        ) : (
+          <Search className="h-5 w-5" />
+        )}
+        <span className="sr-only">Search</span>
+      </Button>
+
+      {/* Error Message */}
+      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+    </div>
+  );
+}
