@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CalendarIcon, Search } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useTourStore } from "@/store/tourStore"; // Ensure you're importing the correct store
+import { useTourStore } from "@/store/tourStore";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const provinces = [
   "Phnom Penh",
@@ -48,22 +50,30 @@ const provinces = [
 ];
 
 export default function SearchTour() {
+  const router = useRouter();
+
   const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [loading, setLoading] = useState(false); // 👈 added
-  const [error, setError] = useState(null); // 👈 added
-  // Access Zustand store functions
+  const [endDate, setEndDate] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const { setFilterParams, fetchFilteredTours } = useTourStore();
+  const searchParams = useSearchParams();
 
   const handleSearch = async () => {
+    if (!destination || !startDate || !endDate) {
+      setError("Location, start date, and end date are required.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     setFilterParams({
       location: destination,
-      startDate: startDate ? format(startDate, "yyyy-MM-dd") : null,
-      endDate: endDate ? format(endDate, "yyyy-MM-dd") : null,
+      startDate: format(startDate, "yyyy-MM-dd"),
+      endDate: format(endDate, "yyyy-MM-dd"),
     });
 
     try {
@@ -74,6 +84,31 @@ export default function SearchTour() {
       setLoading(false);
     }
   };
+
+  const locationParam = searchParams.get("location");
+  const startParam = searchParams.get("startDate");
+  const endParam = searchParams.get("endDate");
+
+  useEffect(() => {
+    if (!locationParam || !startParam || !endParam) return;
+
+    setDestination(locationParam);
+    setStartDate(new Date(startParam));
+    setEndDate(new Date(endParam));
+  }, []); // Set state only once on mount
+
+  useEffect(() => {
+    if (!destination || !startDate || !endDate) return;
+
+    const runSearchAndCleanURL = async () => {
+      await handleSearch(); // wait for search
+
+      // Replace current URL with clean version (no query string)
+      router.replace("/tourpage/list-tour");
+    };
+
+    runSearchAndCleanURL();
+  }, [destination, startDate, endDate]);
 
   return (
     <div className="mx-auto my-5 flex h-[100px] w-full max-w-[1000px] items-center justify-between rounded-full border bg-white p-6 shadow-md">

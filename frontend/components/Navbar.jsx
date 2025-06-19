@@ -238,12 +238,12 @@ export default function Navbar() {
               label="Home"
             />
             <NavItem
-              href={id ? `/tour/${id}/about` : "/about"}
+              href={id ? `/tour/${id}/about` : "/tourpage/about"}
               icon="fa-users"
               label="About"
             />
             <NavItem
-              href={id ? `/tour/${id}/contact` : "/contact"}
+              href={id ? `/tour/${id}/contact` : "/tourpage/contact"}
               icon="fa-phone"
               label="Contact"
             />
@@ -309,13 +309,13 @@ export default function Navbar() {
                 onClick={() => setIsOpen(false)}
               />
               <NavItem
-                href="/about"
+                href="/tourpage/about"
                 icon="fa-users"
                 label="About"
                 onClick={() => setIsOpen(false)}
               />
               <NavItem
-                href="/contact"
+                href="/tourpage/contact"
                 icon="fa-phone"
                 label="Contact"
                 onClick={() => setIsOpen(false)}

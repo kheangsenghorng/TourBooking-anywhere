@@ -542,6 +542,7 @@ export default function EditTourPage() {
                       onChange={handleFormChange}
                       placeholder="e.g., THO-000010"
                       required
+                      disabled
                       className="w-full pl-10"
                     />
                     <FileText className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />

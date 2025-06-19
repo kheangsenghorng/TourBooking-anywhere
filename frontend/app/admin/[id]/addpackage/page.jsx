@@ -323,7 +323,7 @@ export default function TourManagement() {
                         >
                           <td className="py-3 px-4 text-sm font-medium text-nowrap">
                             <Link
-                              href={`/admin/addpackage/bookingtour/${tour._id}`}
+                              href={`/admin/${params.id}/addpackage/bookingtour/${tour._id}`}
                             >
                               {tour?.tour_id || "N/A"}
                             </Link>
