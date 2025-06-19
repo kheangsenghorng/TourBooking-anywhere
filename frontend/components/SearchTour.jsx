@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { CalendarIcon, Search } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useTourStore } from "@/store/tourStore";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const provinces = [
   "Phnom Penh",
@@ -59,7 +58,6 @@ export default function SearchTour() {
   const [error, setError] = useState(null);
 
   const { setFilterParams, fetchFilteredTours } = useTourStore();
-  const searchParams = useSearchParams();
 
   const handleSearch = async () => {
     if (!destination || !startDate || !endDate) {
@@ -85,6 +83,7 @@ export default function SearchTour() {
     }
   };
 
+  const searchParams = useSearchParams();
   const locationParam = searchParams.get("location");
   const startParam = searchParams.get("startDate");
   const endParam = searchParams.get("endDate");
